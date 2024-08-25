@@ -56,6 +56,12 @@ namespace InteractionKit.Systems
                 return;
             }
 
+            Vector3 position = world.GetComponent(cameraEntity, Position.Default).value;
+            Quaternion rotation = world.GetComponent(cameraEntity, Rotation.Default).value;
+            Vector3 forward = Vector3.Transform(Vector3.UnitZ, rotation);
+            Vector3 up = Vector3.Transform(Vector3.UnitY, rotation);
+            Vector3 target = position + forward;
+            Matrix4x4 view = Matrix4x4.CreateLookAt(position, target, up);
             Matrix4x4 projection = Matrix4x4.Identity;
             if (world.TryGetComponent(cameraEntity, out CameraOrthographicSize orthographicSize))
             {
@@ -66,7 +72,8 @@ namespace InteractionKit.Systems
 
                 (uint width, uint height) = world.GetComponent<IsDestination>(cameraOutput.destination).Size;
                 (float min, float max) = world.GetComponent<IsCamera>(cameraEntity).Depth;
-                projection = Matrix4x4.CreateOrthographic(orthographicSize.value * width, orthographicSize.value * height, min, max);
+                projection = Matrix4x4.CreateOrthographicOffCenter(0, orthographicSize.value * width, 0, orthographicSize.value * height, -min, max);
+                view = Matrix4x4.CreateTranslation(-position);
             }
             else if (world.TryGetComponent(cameraEntity, out CameraFieldOfView fov))
             {
@@ -85,12 +92,6 @@ namespace InteractionKit.Systems
                 throw new InvalidOperationException($"Camera does not have either {nameof(CameraOrthographicSize)} or {nameof(CameraFieldOfView)} component");
             }
 
-            Vector3 position = world.GetComponent(cameraEntity, Position.Default).value;
-            Quaternion rotation = world.GetComponent(cameraEntity, Rotation.Default).value;
-            Vector3 forward = Vector3.Transform(Vector3.UnitZ, rotation);
-            Vector3 up = Vector3.Transform(Vector3.UnitY, rotation);
-            Vector3 target = position + forward;
-            Matrix4x4 view = Matrix4x4.CreateLookAt(position, target, up);
             component = new(projection, view);
         }
     }
