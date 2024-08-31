@@ -8,7 +8,7 @@ using Unmanaged;
 
 namespace InteractionKit.Tests
 {
-    public class Tests
+    public class TriggerTests
     {
         [TearDown]
         public void CleanUp()
