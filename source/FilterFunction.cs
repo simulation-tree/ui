@@ -21,7 +21,7 @@ namespace InteractionKit.Functions
         }
 #endif
 
-        public readonly void Invoke(World world, Span<eint> entities)
+        public readonly void Invoke(World world, Span<uint> entities)
         {
             Input input = new(world, entities);
             function(input);
@@ -34,12 +34,12 @@ namespace InteractionKit.Functions
             private readonly nint address;
             private readonly int length;
 
-            public readonly Span<eint> Entities => new((eint*)address, length);
+            public readonly Span<uint> Entities => new((uint*)address, length);
 
-            public Input(World world, Span<eint> entities)
+            public Input(World world, Span<uint> entities)
             {
                 this.world = world;
-                fixed (eint* entity = entities)
+                fixed (uint* entity = entities)
                 {
                     address = (nint)entity;
                 }

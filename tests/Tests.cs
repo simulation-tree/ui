@@ -28,9 +28,9 @@ namespace InteractionKit.Tests
             using World world = new();
             using InvokeTriggersSystem invokeTriggers = new(world);
 
-            eint triggerA = world.CreateEntity();
-            eint triggerB = world.CreateEntity();
-            eint triggerC = world.CreateEntity();
+            uint triggerA = world.CreateEntity();
+            uint triggerB = world.CreateEntity();
+            uint triggerC = world.CreateEntity();
             world.AddComponent(triggerA, new Trigger(new(&BadCondition), new(&Callback)));
             world.AddComponent(triggerB, new Trigger(new(&BadCondition), new(&Callback)));
             world.AddComponent(triggerC, new Trigger(new(&BadCondition), new(&Callback)));
@@ -55,7 +55,7 @@ namespace InteractionKit.Tests
             [UnmanagedCallersOnly]
             static void BadCondition(FilterFunction.Input input)
             {
-                foreach (ref eint entity in input.Entities)
+                foreach (ref uint entity in input.Entities)
                 {
                     entity = default;
                 }
@@ -64,7 +64,7 @@ namespace InteractionKit.Tests
             [UnmanagedCallersOnly]
             static void SelectFirstEntity(FilterFunction.Input input)
             {
-                foreach (ref eint entity in input.Entities)
+                foreach (ref uint entity in input.Entities)
                 {
                     if ((uint)entity != 1)
                     {
@@ -74,7 +74,7 @@ namespace InteractionKit.Tests
             }
 
             [UnmanagedCallersOnly]
-            static void Callback(World world, eint entity)
+            static void Callback(World world, uint entity)
             {
                 world.RemoveComponent<byte>(entity);
             }

@@ -10,8 +10,8 @@ namespace InteractionKit.Systems
     public class InvokeTriggersSystem : SystemBase
     {
         private readonly Query<Trigger> invokeQuery;
-        private readonly UnmanagedArray<eint> currentEntities;
-        private readonly UnmanagedDictionary<int, UnmanagedList<eint>> entitiesPerTrigger;
+        private readonly UnmanagedArray<uint> currentEntities;
+        private readonly UnmanagedDictionary<int, UnmanagedList<uint>> entitiesPerTrigger;
         private readonly UnmanagedDictionary<int, (FilterFunction, CallbackFunction)> functions;
 
         public InvokeTriggersSystem(World world) : base(world)
@@ -42,11 +42,11 @@ namespace InteractionKit.Systems
             invokeQuery.Update();
             foreach (var x in invokeQuery)
             {
-                eint entity = x.entity;
+                uint entity = x.entity;
                 FilterFunction condition = x.Component1.filter;
                 CallbackFunction callback = x.Component1.callback;
                 int hash = HashCode.Combine(condition, callback);
-                if (!entitiesPerTrigger.TryGetValue(hash, out UnmanagedList<eint> entities))
+                if (!entitiesPerTrigger.TryGetValue(hash, out UnmanagedList<uint> entities))
                 {
                     entities = new();
                     entitiesPerTrigger.Add(hash, entities);
@@ -59,13 +59,13 @@ namespace InteractionKit.Systems
             foreach (int functionHash in entitiesPerTrigger.Keys)
             {
                 (FilterFunction condition, CallbackFunction callback) = functions[functionHash];
-                UnmanagedList<eint> entities = entitiesPerTrigger[functionHash];
+                UnmanagedList<uint> entities = entitiesPerTrigger[functionHash];
                 currentEntities.Resize(entities.Count);
                 currentEntities.CopyFrom(entities.AsSpan());
                 condition.Invoke(world, currentEntities.AsSpan());
                 for (uint i = 0; i < currentEntities.Length; i++)
                 {
-                    eint entity = currentEntities[i];
+                    uint entity = currentEntities[i];
                     if (entity != default)
                     {
                         callback.Invoke(world, entity);

@@ -28,7 +28,7 @@ namespace InteractionKit.Systems
             cameraQuery.Update();
             foreach (var x in cameraQuery)
             {
-                eint cameraEntity = x.entity;
+                uint cameraEntity = x.entity;
 
                 //todo: should have methods that let user to switch camera from projection to ortho and back
                 ref CameraProjection projection = ref world.TryGetComponentRef<CameraProjection>(cameraEntity, out bool has);
@@ -41,7 +41,7 @@ namespace InteractionKit.Systems
             }
         }
 
-        private void CalculateProjection(eint cameraEntity, ref CameraProjection component)
+        private void CalculateProjection(uint cameraEntity, ref CameraProjection component)
         {
             if (world.TryGetComponent(cameraEntity, out CameraOutput cameraOutput))
             {
