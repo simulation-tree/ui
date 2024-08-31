@@ -7,6 +7,7 @@ namespace InteractionKit.Components
     {
         public FilterFunction filter;
         public CallbackFunction callback;
+        public ulong identifier;
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -16,10 +17,11 @@ namespace InteractionKit.Components
         }
 #endif
 
-        public Trigger(FilterFunction filter, CallbackFunction callback)
+        public Trigger(FilterFunction filter, CallbackFunction callback, ulong identifier = default)
         {
             this.filter = filter;
             this.callback = callback;
+            this.identifier = identifier;
         }
     }
 }

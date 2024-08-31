@@ -1,8 +1,6 @@
 ﻿using InteractionKit.Components;
 using InteractionKit.Events;
-using InteractionKit.Functions;
 using Simulation;
-using System;
 using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
@@ -12,7 +10,7 @@ namespace InteractionKit.Systems
         private readonly Query<Trigger> invokeQuery;
         private readonly UnmanagedArray<uint> currentEntities;
         private readonly UnmanagedDictionary<int, UnmanagedList<uint>> entitiesPerTrigger;
-        private readonly UnmanagedDictionary<int, (FilterFunction, CallbackFunction)> functions;
+        private readonly UnmanagedDictionary<int, Trigger> functions;
 
         public InvokeTriggersSystem(World world) : base(world)
         {
@@ -43,14 +41,13 @@ namespace InteractionKit.Systems
             foreach (var x in invokeQuery)
             {
                 uint entity = x.entity;
-                FilterFunction condition = x.Component1.filter;
-                CallbackFunction callback = x.Component1.callback;
-                int hash = HashCode.Combine(condition, callback);
-                if (!entitiesPerTrigger.TryGetValue(hash, out UnmanagedList<uint> entities))
+                Trigger trigger = x.Component1;
+                int triggerHash = trigger.GetHashCode();
+                if (!entitiesPerTrigger.TryGetValue(triggerHash, out UnmanagedList<uint> entities))
                 {
                     entities = new();
-                    entitiesPerTrigger.Add(hash, entities);
-                    functions.Add(hash, (condition, callback));
+                    entitiesPerTrigger.Add(triggerHash, entities);
+                    functions.Add(triggerHash, trigger);
                 }
 
                 entities.Add(entity);
@@ -58,17 +55,17 @@ namespace InteractionKit.Systems
 
             foreach (int functionHash in entitiesPerTrigger.Keys)
             {
-                (FilterFunction condition, CallbackFunction callback) = functions[functionHash];
+                Trigger trigger = functions[functionHash];
                 UnmanagedList<uint> entities = entitiesPerTrigger[functionHash];
                 currentEntities.Resize(entities.Count);
                 currentEntities.CopyFrom(entities.AsSpan());
-                condition.Invoke(world, currentEntities.AsSpan());
+                trigger.filter.Invoke(world, currentEntities.AsSpan(), trigger.identifier);
                 for (uint i = 0; i < currentEntities.Length; i++)
                 {
                     uint entity = currentEntities[i];
                     if (entity != default)
                     {
-                        callback.Invoke(world, entity);
+                        trigger.callback.Invoke(world, entity);
                     }
                 }
 
