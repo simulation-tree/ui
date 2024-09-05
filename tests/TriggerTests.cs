@@ -31,9 +31,9 @@ namespace InteractionKit.Tests
             uint triggerA = world.CreateEntity();
             uint triggerB = world.CreateEntity();
             uint triggerC = world.CreateEntity();
-            world.AddComponent(triggerA, new Trigger(new(&BadCondition), new(&Callback)));
-            world.AddComponent(triggerB, new Trigger(new(&BadCondition), new(&Callback)));
-            world.AddComponent(triggerC, new Trigger(new(&BadCondition), new(&Callback)));
+            world.AddComponent(triggerA, new IsTrigger(new(&BadCondition), new(&Callback)));
+            world.AddComponent(triggerB, new IsTrigger(new(&BadCondition), new(&Callback)));
+            world.AddComponent(triggerC, new IsTrigger(new(&BadCondition), new(&Callback)));
 
             world.AddComponent(triggerA, (byte)1);
             world.AddComponent(triggerB, (byte)2);
@@ -44,9 +44,9 @@ namespace InteractionKit.Tests
             Assert.That(world.ContainsComponent<byte>(triggerA), Is.True);
             Assert.That(world.ContainsComponent<byte>(triggerB), Is.True);
 
-            world.GetComponentRef<Trigger>(triggerA).filter = new(&SelectFirstEntity);
-            world.GetComponentRef<Trigger>(triggerB).filter = new(&SelectFirstEntity);
-            world.GetComponentRef<Trigger>(triggerC).filter = new(&SelectFirstEntity);
+            world.GetComponentRef<IsTrigger>(triggerA).filter = new(&SelectFirstEntity);
+            world.GetComponentRef<IsTrigger>(triggerB).filter = new(&SelectFirstEntity);
+            world.GetComponentRef<IsTrigger>(triggerC).filter = new(&SelectFirstEntity);
             Simulate(world);
 
             Assert.That(world.ContainsComponent<byte>(triggerA), Is.False);

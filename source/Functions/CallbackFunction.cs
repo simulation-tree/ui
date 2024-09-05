@@ -24,5 +24,10 @@ namespace InteractionKit.Functions
         {
             function(world, entity);
         }
+
+        public readonly override int GetHashCode()
+        {
+            return ((nint)function).GetHashCode();
+        }
     }
 }

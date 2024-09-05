@@ -7,14 +7,14 @@ namespace InteractionKit.Systems
 {
     public class InvokeTriggersSystem : SystemBase
     {
-        private readonly Query<Trigger> invokeQuery;
+        private readonly ComponentQuery<IsTrigger> invokeQuery;
         private readonly UnmanagedArray<uint> currentEntities;
         private readonly UnmanagedDictionary<int, UnmanagedList<uint>> entitiesPerTrigger;
-        private readonly UnmanagedDictionary<int, Trigger> functions;
+        private readonly UnmanagedDictionary<int, IsTrigger> functions;
 
         public InvokeTriggersSystem(World world) : base(world)
         {
-            invokeQuery = new(world);
+            invokeQuery = new();
             currentEntities = new();
             entitiesPerTrigger = new();
             functions = new();
@@ -37,11 +37,11 @@ namespace InteractionKit.Systems
 
         private void Update(InteractionUpdate update)
         {
-            invokeQuery.Update();
+            invokeQuery.Update(world);
             foreach (var x in invokeQuery)
             {
                 uint entity = x.entity;
-                Trigger trigger = x.Component1;
+                IsTrigger trigger = x.Component1;
                 int triggerHash = trigger.GetHashCode();
                 if (!entitiesPerTrigger.TryGetValue(triggerHash, out UnmanagedList<uint> entities))
                 {
@@ -55,7 +55,7 @@ namespace InteractionKit.Systems
 
             foreach (int functionHash in entitiesPerTrigger.Keys)
             {
-                Trigger trigger = functions[functionHash];
+                IsTrigger trigger = functions[functionHash];
                 UnmanagedList<uint> entities = entitiesPerTrigger[functionHash];
                 currentEntities.Resize(entities.Count);
                 currentEntities.CopyFrom(entities.AsSpan());

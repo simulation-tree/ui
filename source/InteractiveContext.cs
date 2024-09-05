@@ -1,0 +1,99 @@
+﻿using Automations;
+using Cameras.Components;
+using Data;
+using DefaultPresentationAssets;
+using Meshes;
+using Rendering;
+using Simulation;
+using System;
+using System.Numerics;
+using Textures;
+using Transforms.Components;
+using Unmanaged;
+
+namespace InteractionKit
+{
+    public readonly struct InteractiveContext : IDisposable
+    {
+        public readonly World world;
+        public readonly Camera camera;
+        public readonly Canvas canvas;
+        public readonly Mesh quadMesh;
+        public readonly Material unlitMaterial;
+        public readonly StateMachine controlStateMachine;
+        public readonly Automation idleAutomation;
+        public readonly Automation selectedAutomation;
+        public readonly Automation pressedAutomation;
+
+#if NET
+        [Obsolete("Default constructor not available", true)]
+        public InteractiveContext()
+        {
+            throw new NotSupportedException();
+        }
+#endif
+
+        public InteractiveContext(Canvas canvas)
+        {
+            USpan<AvailableState> states = stackalloc AvailableState[3];
+            states[0] = new("idle");
+            states[1] = new("selected");
+            states[2] = new("pressed");
+
+            USpan<Transition> transitions = stackalloc Transition[4];
+            transitions[0] = new("idle", "selected", "selected", Transition.Condition.GreaterThan, 0f);
+            transitions[1] = new("selected", "pressed", "pressed", Transition.Condition.GreaterThan, 0f);
+            transitions[2] = new("pressed", "selected", "pressed", Transition.Condition.LessThan, 1f);
+            transitions[3] = new("selected", "idle", "selected", Transition.Condition.LessThan, 1f);
+
+            this.canvas = canvas;
+            this.camera = canvas.Camera;
+            world = canvas.transform.entity.world;
+            controlStateMachine = new(world, states, transitions);
+
+            //automations for each state
+            USpan<Keyframe<Vector4>> keyframes = stackalloc Keyframe<Vector4>[1];
+            keyframes[0] = new(0f, new Vector4(0.8f));
+            idleAutomation = new Automation<Vector4>(world, keyframes);
+
+            keyframes[0] = new(0f, new Vector4(1.4f));
+            selectedAutomation = new Automation<Vector4>(world, keyframes);
+
+            keyframes[0] = new(0f, new Vector4(0.6f));
+            pressedAutomation = new Automation<Vector4>(world, keyframes);
+
+            //create default quad mesh
+            quadMesh = new(world);
+            Mesh.Collection<Vector3> positions = quadMesh.CreatePositions();
+            positions.Add(new(0, 0, 0));
+            positions.Add(new(1, 0, 0));
+            positions.Add(new(1, 1, 0));
+            positions.Add(new(0, 1, 0));
+            Mesh.Collection<Vector2> uvs = quadMesh.CreateUVs();
+            uvs.Add(new(0, 0));
+            uvs.Add(new(1, 0));
+            uvs.Add(new(1, 1));
+            uvs.Add(new(0, 1));
+            Mesh.Collection<Vector3> normals = quadMesh.CreateNormals();
+            normals.Add(new(0, 0, 1));
+            normals.Add(new(0, 0, 1));
+            normals.Add(new(0, 0, 1));
+            normals.Add(new(0, 0, 1));
+            quadMesh.AddTriangle(0, 1, 2);
+            quadMesh.AddTriangle(2, 3, 0);
+
+            //create default coloured unlit material
+            Texture squareTexture = new(world, Address.Get<SquareTexture>());
+            unlitMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            unlitMaterial.AddPushBinding<Color>();
+            unlitMaterial.AddPushBinding<LocalToWorld>();
+            unlitMaterial.AddComponentBinding<CameraProjection>(0, 0, camera.entity);
+            unlitMaterial.AddTextureBinding(1, 0, squareTexture);
+        }
+
+        public readonly void Dispose()
+        {
+            controlStateMachine.Destroy();
+        }
+    }
+}
