@@ -12,9 +12,9 @@ namespace InteractionKit.Functions
             this.function = function;
         }
 #else
-        private readonly delegate*<World, uint, uint, void> function;
+        private readonly delegate*<World, uint, void> function;
 
-        public TriggerFunction(delegate*<World, uint, uint, void> function)
+        public TriggerFunction(delegate*<World, uint, void> function)
         {
             this.function = function;
         }   

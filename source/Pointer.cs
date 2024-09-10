@@ -31,24 +31,24 @@ namespace InteractionKit
         /// The currently selected entity.
         /// <para>Can be <c>default</c>.</para>
         /// </summary>
-        public readonly Selectable Selected
+        public readonly Entity Selected
         {
             get
             {
                 rint selectedReference = entity.GetComponent<IsPointer>().selectedReference;
                 uint selectedEntity = entity.GetReference(selectedReference);
-                return new Entity(entity.world, selectedEntity).As<Selectable>();
+                return new Entity(entity.world, selectedEntity);
             }
             set
             {
                 ref IsPointer pointer = ref entity.GetComponentRef<IsPointer>();
                 if (pointer.selectedReference == default)
                 {
-                    pointer.selectedReference = entity.AddReference(value.transform.entity);
+                    pointer.selectedReference = entity.AddReference(value);
                 }
                 else
                 {
-                    entity.SetReference(pointer.selectedReference, value.transform.entity);
+                    entity.SetReference(pointer.selectedReference, value);
                 }
             }
         }

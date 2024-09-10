@@ -10,29 +10,35 @@ using Unmanaged;
 
 namespace InteractionKit
 {
-    public readonly struct Button : ISelectable
+    public readonly struct Button : IEntity
     {
-        public readonly Selectable selectable;
+        public readonly Box box;
 
-        public readonly Vector2 Size
+        public readonly Entity Parent
         {
-            get => selectable.Size;
-            set => selectable.Size = value;
+            get => box.Parent;
+            set => box.Parent = value;
         }
 
         public readonly Vector2 Position
         {
-            get => selectable.Position;
-            set => selectable.Position = value;
+            get => box.Position;
+            set => box.Position = value;
         }
 
-        public readonly ref Anchor Anchor => ref selectable.Anchor;
-        public readonly ref Vector3 Pivot => ref selectable.Pivot;
-        public readonly ref Color Color => ref selectable.Color;
+        public readonly Vector2 Size
+        {
+            get => box.Size;
+            set => box.Size = value;
+        }
 
-        readonly uint IEntity.Value => selectable.transform.entity.value;
-        readonly World IEntity.World => selectable.transform.entity.world;
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsSelectable>(), RuntimeType.Get<IsTrigger>()], []);
+        public readonly ref Anchor Anchor => ref box.Anchor;
+        public readonly ref Vector3 Pivot => ref box.Pivot;
+        public readonly ref Color Color => ref box.Color;
+
+        readonly uint IEntity.Value => box.GetEntityValue();
+        readonly World IEntity.World => box.GetWorld();
+        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsTrigger>(), RuntimeType.Get<IsSelectable>()], []);
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -44,8 +50,14 @@ namespace InteractionKit
 
         public unsafe Button(World world, CallbackFunction callback, InteractiveContext context)
         {
-            selectable = new(world, context);
-            selectable.transform.entity.AddComponent(new IsTrigger(new(&Filter), callback));
+            box = new(world, context);
+            box.AsEntity().AddComponent(new IsTrigger(new(&Filter), callback));
+            box.AsEntity().AddComponent(new IsSelectable());
+        }
+
+        public readonly Entity AsEntity()
+        {
+            return box.AsEntity();
         }
 
         [UnmanagedCallersOnly]

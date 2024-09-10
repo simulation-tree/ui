@@ -25,6 +25,7 @@
 		<ProjectReference Include="..\..\cameras\source\Cameras.csproj" />
 		<ProjectReference Include="..\..\default-presentation-assets\source\Default Presentation Assets.csproj" />
 		<ProjectReference Include="..\..\rendering\source\Rendering.csproj" />
+		<ProjectReference Include="..\..\text-rendering\source\Text Rendering.csproj" />
 		<ProjectReference Include="..\..\transforms\source\Transforms.csproj" />
 	</ItemGroup>
 

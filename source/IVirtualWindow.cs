@@ -1,0 +1,13 @@
+﻿using InteractionKit.Functions;
+using Unmanaged;
+
+namespace InteractionKit
+{
+    public interface IVirtualWindow
+    {
+        FixedString Title { get; }
+        VirtualWindowCloseFunction CloseCallback { get; }
+
+        void OnCreated(VirtualWindow window, InteractiveContext context);
+    }
+}

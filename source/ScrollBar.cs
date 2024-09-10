@@ -1,0 +1,89 @@
+﻿using Data;
+using InteractionKit.Components;
+using Simulation;
+using System.Numerics;
+using Transforms;
+using Transforms.Components;
+using Unmanaged;
+
+namespace InteractionKit
+{
+    public readonly struct ScrollBar : ISelectable
+    {
+        public readonly Box box;
+
+        public readonly Entity Parent
+        {
+            get => box.Parent;
+            set => box.Parent = value;
+        }
+
+        public readonly Vector2 Position
+        {
+            get => box.Position;
+            set => box.Position = value;
+        }
+
+        public readonly Vector2 Size
+        {
+            get => box.Size;
+            set => box.Size = value;
+        }
+
+        public readonly ref Anchor Anchor => ref box.Anchor;
+        public readonly ref Vector3 Pivot => ref box.Pivot;
+
+        public readonly ref Color BackgroundColor => ref box.Color;
+
+        public readonly ref Color ScrollHandleColor
+        {
+            get
+            {
+                rint scrollHandleReference = box.AsEntity().GetComponent<IsScrollBar>().scrollHandleReference;
+                uint scrollHandleEntity = box.AsEntity().GetReference(scrollHandleReference);
+                Box scrollHandle = new(box.AsEntity().GetWorld(), scrollHandleEntity);
+                return ref scrollHandle.Color;
+            }
+        }
+
+        public readonly ref Vector2 Axis => ref box.AsEntity().GetComponentRef<IsScrollBar>().axis;
+
+        readonly uint IEntity.Value => box.GetEntityValue();
+        readonly World IEntity.World => box.GetWorld();
+        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsSelectable>(), RuntimeType.Get<IsScrollBar>()], []);
+
+        public ScrollBar(World world, InteractiveContext context, Vector2 axis, float handlePercentageSize)
+        {
+            box = new Box(world, context);
+            box.transform.LocalPosition = new(0f, 0f, 0.1f);
+
+            Transform scrollRegion = new(world);
+            scrollRegion.Parent = box.AsEntity();
+            scrollRegion.AsEntity().AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
+
+            Box scrollHandle = new(world, context);
+            scrollHandle.Parent = scrollRegion.AsEntity();
+            scrollHandle.Color = Color.Black;
+            if (axis.Y > axis.X)
+            {
+                scrollHandle.Anchor = new(new(0f, false), default, default, new(1f, false), default, default);
+                scrollHandle.Size = new(1, handlePercentageSize);
+            }
+            else if (axis.X > axis.Y)
+            {
+                scrollHandle.Anchor = new(default, new(0f, false), default, default, new(1f, false), default);
+                scrollHandle.Size = new(handlePercentageSize, 1f);
+            }
+            else
+            {
+                scrollHandle.Anchor = default;
+                scrollHandle.Size = new(handlePercentageSize);
+            }
+
+            scrollHandle.AsEntity().AddComponent(new IsSelectable());
+
+            rint scrollHandleReference = box.AsEntity().AddReference(scrollHandle);
+            box.transform.entity.AddComponent(new IsScrollBar(scrollHandleReference, axis));
+        }
+    }
+}

@@ -2,6 +2,7 @@
 using Cameras.Components;
 using Data;
 using DefaultPresentationAssets;
+using Fonts;
 using Meshes;
 using Rendering;
 using Simulation;
@@ -19,7 +20,10 @@ namespace InteractionKit
         public readonly Camera camera;
         public readonly Canvas canvas;
         public readonly Mesh quadMesh;
+        public readonly Texture squareTexture;
+        public readonly Font defaultFont;
         public readonly Material unlitMaterial;
+        public readonly Material textMaterial;
         public readonly StateMachine controlStateMachine;
         public readonly Automation idleAutomation;
         public readonly Automation selectedAutomation;
@@ -83,12 +87,19 @@ namespace InteractionKit
             quadMesh.AddTriangle(2, 3, 0);
 
             //create default coloured unlit material
-            Texture squareTexture = new(world, Address.Get<SquareTexture>());
+            squareTexture = new(world, Address.Get<SquareTexture>());
             unlitMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
             unlitMaterial.AddPushBinding<Color>();
             unlitMaterial.AddPushBinding<LocalToWorld>();
             unlitMaterial.AddComponentBinding<CameraProjection>(0, 0, camera.entity);
             unlitMaterial.AddTextureBinding(1, 0, squareTexture);
+
+            textMaterial = new(world, Address.Get<TextMaterial>());
+            textMaterial.AddComponentBinding<CameraProjection>(1, 0, camera.entity);
+            textMaterial.AddPushBinding<Color>();
+            textMaterial.AddPushBinding<LocalToWorld>();
+
+            defaultFont = new(world, Address.Get<CascadiaMonoFont>());
         }
 
         public readonly void Dispose()

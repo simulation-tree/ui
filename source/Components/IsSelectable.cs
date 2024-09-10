@@ -6,6 +6,8 @@ namespace InteractionKit.Components
     {
         public State state;
 
+        public readonly bool IsSelected => (state & State.Selected) != 0;
+
         [Flags]
         public enum State : byte
         {

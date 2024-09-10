@@ -37,6 +37,7 @@ namespace InteractionKit.Systems
 
         private void Update(InteractionUpdate update)
         {
+            //find new entities
             invokeQuery.Update(world);
             foreach (var x in invokeQuery)
             {
@@ -57,6 +58,17 @@ namespace InteractionKit.Systems
             {
                 IsTrigger trigger = functions[functionHash];
                 UnmanagedList<uint> entities = entitiesPerTrigger[functionHash];
+
+                //remove entities that no longer exist
+                for (uint i = entities.Count - 1; i != uint.MaxValue; i--)
+                {
+                    uint entity = entities[i];
+                    if (!world.ContainsEntity(entity))
+                    {
+                        entities.RemoveAt(i);
+                    }
+                }
+
                 currentEntities.Resize(entities.Count);
                 currentEntities.CopyFrom(entities.AsSpan());
                 trigger.filter.Invoke(world, currentEntities.AsSpan(), trigger.identifier);
