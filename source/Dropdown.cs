@@ -4,7 +4,6 @@ using InteractionKit.Functions;
 using Rendering.Components;
 using Simulation;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms.Components;
@@ -81,8 +80,19 @@ namespace InteractionKit
                     rint labelReference = dropdown.labelReference;
                     uint labelEntity = box.AsEntity().GetReference(labelReference);
                     Label dropdownLabel = new(box.GetWorld(), labelEntity);
-                    dropdownLabel.SetText(option.label);
+                    dropdownLabel.SetText(option.text);
                 }
+            }
+        }
+
+        public readonly USpan<DropdownOption> Options => box.AsEntity().GetArray<DropdownOption>();
+
+        public readonly ref DropdownCallbackFunction Callback
+        {
+            get
+            {
+                ref IsDropdown dropdown = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                return ref dropdown.callback;
             }
         }
 
@@ -98,7 +108,12 @@ namespace InteractionKit
         }
 #endif
 
-        public unsafe Dropdown(World world, InteractiveContext context)
+        public Dropdown(World world, uint existingEntity)
+        {
+            box = new(world, existingEntity);
+        }
+
+        public unsafe Dropdown(World world, InteractiveContext context, DropdownCallbackFunction callback = default)
         {
             box = new(world, context);
             box.AsEntity().AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
@@ -119,12 +134,11 @@ namespace InteractionKit
             triangle.Size = new(16f, 16f);
             triangle.Color = Color.Black;
             triangle.Pivot = new(0.5f, 0.5f, 0f);
-            //triangle.Position = new(-8, -8);
             triangle.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
 
             rint labelReference = box.AsEntity().AddReference(label);
             rint triangleReference = box.AsEntity().AddReference(triangle);
-            box.AsEntity().AddComponent(new IsDropdown(labelReference, triangleReference));
+            box.AsEntity().AddComponent(new IsDropdown(labelReference, triangleReference, callback));
         }
 
         public unsafe readonly uint AddOption(FixedString label, InteractiveContext context)
@@ -170,24 +184,46 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private unsafe static void ChoseOption(World world, uint optionButtonEntity)
         {
+            uint dropdownEntity = world.GetParent(optionButtonEntity);
+            USpan<uint> dropdownChildren = world.GetChildren(dropdownEntity);
+            uint selectedOption = 0;
+            for (uint i = 0; i < dropdownChildren.length; i++)
+            {
+                uint childEntity = dropdownChildren[i];
+                if (childEntity == optionButtonEntity)
+                {
+                    break;
+                }
+
+                if (world.ContainsComponent<IsTrigger>(childEntity))
+                {
+                    selectedOption++;
+                }
+            }
+
             USpan<uint> buttonChildren = world.GetChildren(optionButtonEntity);
             for (uint i = 0; i < buttonChildren.length; i++)
             {
                 uint childEntity = buttonChildren[i];
                 if (world.TryGetComponent(childEntity, out IsTextRenderer textRenderer))
                 {
-                    uint dropdownEntity = world.GetParent(optionButtonEntity);
                     ref IsDropdown dropdown = ref world.GetComponentRef<IsDropdown>(dropdownEntity);
                     rint textMeshReference = textRenderer.textMeshReference;
                     uint textMeshEntity = world.GetReference(childEntity, textMeshReference);
                     USpan<char> text = world.GetArray<char>(textMeshEntity);
-                    dropdown.selectedOption = i;
+
+                    if (dropdown.callback != default)
+                    {
+                        dropdown.callback.Invoke(new Dropdown(world, dropdownEntity), dropdown.selectedOption, selectedOption);
+                    }
+
+                    dropdown.selectedOption = selectedOption;
                     rint dropdownLabelReference = dropdown.labelReference;
                     uint dropdownLabelEntity = world.GetReference(dropdownEntity, dropdownLabelReference);
                     Label dropdownLabel = new(world, dropdownLabelEntity);
                     dropdownLabel.SetText(text);
-                    
-                    delegate *unmanaged<World, uint, void> functionPointer = &ToggleDropdown;
+
+                    delegate* unmanaged<World, uint, void> functionPointer = &ToggleDropdown;
                     functionPointer(world, dropdownEntity);
                     break;
                 }

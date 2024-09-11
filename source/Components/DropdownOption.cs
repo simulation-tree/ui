@@ -5,13 +5,13 @@ namespace InteractionKit.Components
 {
     public struct DropdownOption
     {
-        public FixedString label;
+        public FixedString text;
         public rint buttonReference;
         public rint buttonLabelReference;
 
         public DropdownOption(FixedString label, rint buttonReference, rint buttonLabelReference)
         {
-            this.label = label;
+            this.text = label;
             this.buttonReference = buttonReference;
             this.buttonLabelReference = buttonLabelReference;
         }
