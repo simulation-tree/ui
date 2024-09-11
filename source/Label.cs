@@ -83,7 +83,7 @@ namespace InteractionKit
 
         public Label(World world, InteractiveContext context, FixedString text, Font font)
         {
-            TextMesh textMesh = new(world, text, font, new(0f, 1f));
+            TextMesh textMesh = new(world, text, font);
 
             Transform transform = new(world);
             transform.entity.AddComponent(new Anchor());

@@ -10,7 +10,7 @@ using Unmanaged;
 
 namespace InteractionKit
 {
-    public readonly struct Button : IEntity
+    public readonly struct Button : ISelectable
     {
         public readonly Box box;
 

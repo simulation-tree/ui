@@ -1,7 +1,6 @@
 ﻿using InteractionKit.Components;
 using InteractionKit.Events;
 using Simulation;
-using System;
 using System.Numerics;
 using Transforms.Components;
 using Unmanaged.Collections;
@@ -35,7 +34,7 @@ namespace InteractionKit.Systems
 
         private void Update(InteractionUpdate update)
         {
-            scrollBarQuery.Update(world);
+            scrollBarQuery.Update(world, true);
             foreach (var s in scrollBarQuery)
             {
                 uint scrollBarEntity = s.entity;

@@ -60,7 +60,7 @@ namespace InteractionKit.Systems
                 }
             }
 
-            selectableQuery.Update(world);
+            selectableQuery.Update(world, true);
             foreach (var x in selectableQuery)
             {
                 uint selectableEntity = x.entity;

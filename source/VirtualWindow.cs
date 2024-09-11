@@ -88,6 +88,7 @@ namespace InteractionKit
             title.Anchor = Anchor.TopLeft;
             title.Color = Color.White;
             title.Position = new(4f, -4f);
+            title.Pivot = new(0f, 1f, 0f);
 
             Button closeButton = new(world, new(&PressedWindowCloseButton), context);
             closeButton.Parent = header.AsEntity();

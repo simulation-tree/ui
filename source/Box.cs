@@ -6,6 +6,7 @@ using Rendering.Components;
 using Simulation;
 using System;
 using System.Numerics;
+using Textures;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
@@ -54,6 +55,43 @@ namespace InteractionKit
         public readonly ref Vector3 Pivot => ref transform.entity.GetComponentRef<Pivot>().value;
         public readonly ref Color Color => ref transform.entity.GetComponentRef<BaseColor>().value;
 
+        public readonly Material Material
+        {
+            get
+            {
+                rint materialReference = transform.entity.GetComponent<IsRenderer>().materialReference;
+                uint materialEntity = transform.entity.GetReference(materialReference);
+                return new(transform.GetWorld(), materialEntity);
+            }
+            set
+            {
+                ref IsRenderer renderer = ref transform.entity.GetComponentRef<IsRenderer>();
+                if (renderer.materialReference != default)
+                {
+                    transform.AsEntity().SetReference(renderer.materialReference, value.GetEntityValue());
+                }
+                else
+                {
+                    renderer.materialReference = transform.AsEntity().AddReference(value.GetEntityValue());
+                }
+            }
+        }
+
+        public readonly Texture Texture
+        {
+            get
+            {
+                MaterialTextureBinding binding = Material.GetTextureBindingRef(1, 0);
+                uint textureEntity = binding.TextureEntity;
+                return new(transform.GetWorld(), textureEntity);
+            }
+            set
+            {
+                ref MaterialTextureBinding binding = ref Material.GetTextureBindingRef(1, 0);
+                binding.SetTexture(value);
+            }
+        }
+
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new([RuntimeType.Get<IsTransform>(), RuntimeType.Get<IsRenderer>()], []);
@@ -73,6 +111,7 @@ namespace InteractionKit
         public Box(World world, InteractiveContext context)
         {
             transform = new(world);
+            transform.LocalPosition = new(0f, 0f, 0.1f);
             transform.entity.AddComponent(new Anchor());
             transform.entity.AddComponent(new Pivot());
             transform.entity.AddComponent(new ColorTint(new Vector4(1f)));
@@ -91,7 +130,7 @@ namespace InteractionKit
 
             Renderer renderer = transform.entity.Become<Renderer>();
             renderer.Mesh = context.quadMesh;
-            renderer.Material = context.unlitMaterial;
+            renderer.Material = context.squareMaterial;
             renderer.Camera = context.camera;
         }
     }

@@ -38,7 +38,7 @@ namespace InteractionKit.Systems
         private void Update(InteractionUpdate update)
         {
             //find new entities
-            invokeQuery.Update(world);
+            invokeQuery.Update(world, true);
             foreach (var x in invokeQuery)
             {
                 uint entity = x.entity;

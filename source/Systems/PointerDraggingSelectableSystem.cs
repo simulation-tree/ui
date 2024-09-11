@@ -34,7 +34,7 @@ namespace InteractionKit.Systems
 
         private void Update(InteractionUpdate update)
         {
-            draggableQuery.Update(world);
+            draggableQuery.Update(world, true);
             pointerQuery.Update(world);
             foreach (var p in pointerQuery)
             {

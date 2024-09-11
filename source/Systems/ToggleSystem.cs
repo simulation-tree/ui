@@ -1,8 +1,6 @@
 ﻿using InteractionKit.Components;
 using InteractionKit.Events;
 using Simulation;
-using System;
-using System.Numerics;
 using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
@@ -32,7 +30,7 @@ namespace InteractionKit.Systems
         private void Update(InteractionUpdate update)
         {
             pointerQuery.Update(world);
-            toggleQuery.Update(world);
+            toggleQuery.Update(world, true);
             foreach (var p in pointerQuery)
             {
                 uint pointerEntity = p.entity;

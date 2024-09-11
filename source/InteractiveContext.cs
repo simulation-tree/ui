@@ -21,8 +21,10 @@ namespace InteractionKit
         public readonly Canvas canvas;
         public readonly Mesh quadMesh;
         public readonly Texture squareTexture;
+        public readonly Texture triangleTexture;
         public readonly Font defaultFont;
-        public readonly Material unlitMaterial;
+        public readonly Material squareMaterial;
+        public readonly Material triangleMaterial;
         public readonly Material textMaterial;
         public readonly StateMachine controlStateMachine;
         public readonly Automation idleAutomation;
@@ -86,13 +88,21 @@ namespace InteractionKit
             quadMesh.AddTriangle(0, 1, 2);
             quadMesh.AddTriangle(2, 3, 0);
 
-            //create default coloured unlit material
             squareTexture = new(world, Address.Get<SquareTexture>());
-            unlitMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
-            unlitMaterial.AddPushBinding<Color>();
-            unlitMaterial.AddPushBinding<LocalToWorld>();
-            unlitMaterial.AddComponentBinding<CameraProjection>(0, 0, camera.entity);
-            unlitMaterial.AddTextureBinding(1, 0, squareTexture);
+            triangleTexture = new(world, Address.Get<TriangleTexture>());
+
+            //create default coloured unlit material
+            squareMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            squareMaterial.AddPushBinding<Color>();
+            squareMaterial.AddPushBinding<LocalToWorld>();
+            squareMaterial.AddComponentBinding<CameraProjection>(0, 0, camera.entity);
+            squareMaterial.AddTextureBinding(1, 0, squareTexture);
+
+            triangleMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            triangleMaterial.AddPushBinding<Color>();
+            triangleMaterial.AddPushBinding<LocalToWorld>();
+            triangleMaterial.AddComponentBinding<CameraProjection>(0, 0, camera.entity);
+            triangleMaterial.AddTextureBinding(1, 0, triangleTexture);
 
             textMaterial = new(world, Address.Get<TextMaterial>());
             textMaterial.AddComponentBinding<CameraProjection>(1, 0, camera.entity);
