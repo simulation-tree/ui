@@ -1,7 +1,6 @@
 using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
-using Rendering.Components;
 using Simulation;
 using System;
 using System.Numerics;
@@ -61,44 +60,89 @@ namespace InteractionKit
 
         public readonly ref Color TriangleColor => ref Triangle.Color;
 
-        public readonly uint SelectedOption
+        public readonly Menu Menu
         {
             get
             {
-                uint selectedOption = box.AsEntity().GetComponent<IsDropdown>().selectedOption;
+                rint menuReference = box.AsEntity().GetComponent<IsDropdown>().menuReference;
+                uint menuEntity = box.AsEntity().GetReference(menuReference);
+                return new Entity(box.GetWorld(), menuEntity).As<Menu>();
+            }
+        }
+
+        public readonly FixedString SelectedOption
+        {
+            get
+            {
+                FixedString selectedOption = box.AsEntity().GetComponent<IsDropdown>().selectedOption;
                 return selectedOption;
             }
             set
             {
-                ref IsDropdown dropdown = ref box.AsEntity().GetComponentRef<IsDropdown>();
-                dropdown.selectedOption = value;
+                ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                component.selectedOption = value;
 
-                USpan<DropdownOption> options = box.AsEntity().GetArray<DropdownOption>();
-                if (value < options.length)
+                Menu menu = Menu;
+                USpan<MenuOption> options = menu.Options;
+                FixedString text = default;
+                if (value.Length > 0)
                 {
-                    DropdownOption option = options[value];
-                    rint labelReference = dropdown.labelReference;
-                    uint labelEntity = box.AsEntity().GetReference(labelReference);
-                    Label dropdownLabel = new(box.GetWorld(), labelEntity);
-                    dropdownLabel.SetText(option.text);
+                    if (value.TryIndexOf('/', out uint firstSlash))
+                    {
+
+                    }
+                    else
+                    {
+                        USpan<char> buffer = stackalloc char[(int)value.Length];
+                        value.CopyTo(buffer);
+                        uint index = uint.Parse(buffer.AsSystemSpan());
+                        if (index < options.length)
+                        {
+                            MenuOption option = options[index];
+                            text = option.text;
+                        }
+                    }
                 }
+
+                rint labelReference = component.labelReference;
+                uint labelEntity = box.AsEntity().GetReference(labelReference);
+                Label dropdownLabel = new(box.GetWorld(), labelEntity);
+                dropdownLabel.SetText(text);
             }
         }
 
-        public readonly USpan<DropdownOption> Options => box.AsEntity().GetArray<DropdownOption>();
+        public readonly bool IsExpanded
+        {
+            get
+            {
+                ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                return component.expanded;
+            }
+            set
+            {
+                ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                component.expanded = value;
+
+                Menu menu = Menu;
+                menu.Size = Size;
+                menu.SetEnabled(value);
+            }
+        }
+
+        public readonly USpan<MenuOption> Options => Menu.Options;
 
         public readonly ref DropdownCallbackFunction Callback
         {
             get
             {
-                ref IsDropdown dropdown = ref box.AsEntity().GetComponentRef<IsDropdown>();
-                return ref dropdown.callback;
+                ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                return ref component.callback;
             }
         }
 
         readonly uint IEntity.Value => box.GetEntityValue();
         readonly World IEntity.World => box.GetWorld();
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsTrigger>(), RuntimeType.Get<IsSelectable>()], [RuntimeType.Get<DropdownOption>()]);
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTrigger, IsSelectable>();
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -118,7 +162,6 @@ namespace InteractionKit
             box = new(world, context);
             box.AsEntity().AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
             box.AsEntity().AddComponent(new IsSelectable());
-            box.AsEntity().CreateArray<DropdownOption>();
 
             Label label = new(world, context, "");
             label.Parent = box.AsEntity();
@@ -136,98 +179,63 @@ namespace InteractionKit
             triangle.Pivot = new(0.5f, 0.5f, 0f);
             triangle.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
 
+            Menu menu = new(world, new(&ChosenOption));
+            menu.Parent = box.AsEntity();
+            menu.Anchor = Anchor.BottomLeft;
+            menu.Size = box.Size;
+            menu.Pivot = new(0f, 1f, 0f);
+            menu.SetEnabled(false);
+
             rint labelReference = box.AsEntity().AddReference(label);
             rint triangleReference = box.AsEntity().AddReference(triangle);
-            box.AsEntity().AddComponent(new IsDropdown(labelReference, triangleReference, callback));
-        }
-
-        public unsafe readonly uint AddOption(FixedString label, InteractiveContext context)
-        {
-            uint optionCount = box.AsEntity().GetArrayLength<DropdownOption>();
-            Vector3 dropdownSize = box.AsEntity().GetComponent<Scale>().value;
-
-            Button optionButton = new(box.GetWorld(), new(&ChoseOption), context);
-            optionButton.Parent = box.AsEntity();
-            optionButton.Position = new(0, -dropdownSize.Y * (optionCount + 1));
-            optionButton.Size = new(dropdownSize.X, dropdownSize.Y);
-            optionButton.Anchor = Anchor.TopLeft;
-            optionButton.Pivot = new(0f, 1f, 0f);
-
-            Label optionButtonLabel = new(box.GetWorld(), context, label);
-            optionButtonLabel.Parent = optionButton.AsEntity();
-            optionButtonLabel.Anchor = Anchor.TopLeft;
-            optionButtonLabel.Color = Color.Black;
-            optionButtonLabel.Position = new(4f, -4f);
-            optionButtonLabel.Pivot = new(0f, 1f, 0f);
-
-            optionButton.SetEnabled(false);
-            optionButtonLabel.SetEnabled(false);
-
-            USpan<DropdownOption> options = box.AsEntity().ResizeArray<DropdownOption>(optionCount + 1);
-            rint buttonReference = box.AsEntity().AddReference(optionButton);
-            rint buttonLabelReference = box.AsEntity().AddReference(optionButtonLabel);
-            options[optionCount] = new(label, buttonReference, buttonLabelReference);
-
-            //update the dropdowns label
-            uint selectedOption = box.AsEntity().GetComponent<IsDropdown>().selectedOption;
-            if (optionCount == selectedOption)
-            {
-                rint labelReference = box.AsEntity().GetComponent<IsDropdown>().labelReference;
-                uint labelEntity = box.AsEntity().GetReference(labelReference);
-                Label dropdownLabel = new(box.GetWorld(), labelEntity);
-                dropdownLabel.SetText(label);
-            }
-
-            return optionCount;
+            rint menuReference = box.AsEntity().AddReference(menu);
+            box.AsEntity().AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
         }
 
         [UnmanagedCallersOnly]
-        private unsafe static void ChoseOption(World world, uint optionButtonEntity)
+        private static void ChosenOption(Menu menu, uint chosenOption)
         {
-            uint dropdownEntity = world.GetParent(optionButtonEntity);
-            USpan<uint> dropdownChildren = world.GetChildren(dropdownEntity);
-            uint selectedOption = 0;
-            for (uint i = 0; i < dropdownChildren.length; i++)
+            FixedString path = default;
+            path.Append(chosenOption);
+
+            World world = menu.GetWorld();
+            uint childEntity = menu.GetEntityValue();
+            uint parentEntity = menu.Parent.GetEntityValue();
+            while (parentEntity != default)
             {
-                uint childEntity = dropdownChildren[i];
-                if (childEntity == optionButtonEntity)
+                if (world.ContainsComponent<IsDropdown>(parentEntity))
                 {
                     break;
                 }
-
-                if (world.ContainsComponent<IsTrigger>(childEntity))
+                else if (world.ContainsComponent<IsMenu>(parentEntity))
                 {
-                    selectedOption++;
-                }
-            }
-
-            USpan<uint> buttonChildren = world.GetChildren(optionButtonEntity);
-            for (uint i = 0; i < buttonChildren.length; i++)
-            {
-                uint childEntity = buttonChildren[i];
-                if (world.TryGetComponent(childEntity, out IsTextRenderer textRenderer))
-                {
-                    ref IsDropdown dropdown = ref world.GetComponentRef<IsDropdown>(dropdownEntity);
-                    rint textMeshReference = textRenderer.textMeshReference;
-                    uint textMeshEntity = world.GetReference(childEntity, textMeshReference);
-                    USpan<char> text = world.GetArray<char>(textMeshEntity);
-
-                    if (dropdown.callback != default)
+                    USpan<MenuOption> parentOptions = world.GetArray<MenuOption>(parentEntity);
+                    uint menuIndex = 0;
+                    for (uint i = 0; i < parentOptions.length; i++)
                     {
-                        dropdown.callback.Invoke(new Dropdown(world, dropdownEntity), dropdown.selectedOption, selectedOption);
+                        rint menuReference = parentOptions[i].childMenuReference;
+                        uint menuEntity = world.GetReference(parentEntity, menuReference);
+                        if (menuEntity == childEntity)
+                        {
+                            menuIndex = i;
+                            break;
+                        }
                     }
 
-                    dropdown.selectedOption = selectedOption;
-                    rint dropdownLabelReference = dropdown.labelReference;
-                    uint dropdownLabelEntity = world.GetReference(dropdownEntity, dropdownLabelReference);
-                    Label dropdownLabel = new(world, dropdownLabelEntity);
-                    dropdownLabel.SetText(text);
-
-                    delegate* unmanaged<World, uint, void> functionPointer = &ToggleDropdown;
-                    functionPointer(world, dropdownEntity);
-                    break;
+                    path.Insert(0, '/');
+                    path.Insert(0, menuIndex);
+                    childEntity = parentEntity;
+                    parentEntity = world.GetParent(parentEntity);
+                }
+                else
+                {
+                    throw new Exception();
                 }
             }
+
+            Dropdown dropdown = menu.Parent.As<Dropdown>();
+            dropdown.SelectedOption = path;
+            dropdown.IsExpanded = false;
         }
 
         [UnmanagedCallersOnly]
@@ -248,19 +256,8 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void ToggleDropdown(World world, uint dropdownEntity)
         {
-            ref IsDropdown dropdown = ref world.GetComponentRef<IsDropdown>(dropdownEntity);
-            dropdown.expanded = !dropdown.expanded;
-            USpan<DropdownOption> options = world.GetArray<DropdownOption>(dropdownEntity);
-            for (uint i = 0; i < options.length; i++)
-            {
-                DropdownOption option = options[i];
-                rint buttonReference = option.buttonReference;
-                rint buttonLabelReference = option.buttonLabelReference;
-                uint buttonEntity = world.GetReference(dropdownEntity, buttonReference);
-                uint buttonLabelEntity = world.GetReference(dropdownEntity, buttonLabelReference);
-                world.SetEnabled(buttonEntity, dropdown.expanded);
-                world.SetEnabled(buttonLabelEntity, dropdown.expanded);
-            }
+            Dropdown dropdown = new(world, dropdownEntity);
+            dropdown.IsExpanded = !dropdown.IsExpanded;
         }
     }
 }

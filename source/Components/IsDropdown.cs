@@ -1,5 +1,6 @@
 using InteractionKit.Functions;
 using Simulation;
+using Unmanaged;
 
 namespace InteractionKit.Components
 {
@@ -7,16 +8,18 @@ namespace InteractionKit.Components
     {
         public rint labelReference;
         public rint triangleReference;
+        public rint menuReference;
         public bool expanded;
-        public uint selectedOption;
+        public FixedString selectedOption;
         public DropdownCallbackFunction callback;
 
-        public IsDropdown(rint labelReference, rint triangleReference, DropdownCallbackFunction callback)
+        public IsDropdown(rint labelReference, rint triangleReference, rint menuReference, DropdownCallbackFunction callback)
         {
             this.labelReference = labelReference;
             this.triangleReference = triangleReference;
+            this.menuReference = menuReference;
             this.expanded = false;
-            this.selectedOption = 0;
+            this.selectedOption = default;
             this.callback = callback;
         }
     }
