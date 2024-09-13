@@ -59,13 +59,13 @@ namespace InteractionKit
 
             //automations for each state
             USpan<Keyframe<Vector4>> keyframes = stackalloc Keyframe<Vector4>[1];
-            keyframes[0] = new(0f, new Vector4(0.8f));
+            keyframes[0] = new(0f, new Vector4(0.8f, 0.8f, 0.8f, 1f));
             idleAutomation = new Automation<Vector4>(world, keyframes);
 
-            keyframes[0] = new(0f, new Vector4(1.4f));
+            keyframes[0] = new(0f, new Vector4(1.4f, 1.4f, 1.4f, 1f));
             selectedAutomation = new Automation<Vector4>(world, keyframes);
 
-            keyframes[0] = new(0f, new Vector4(0.6f));
+            keyframes[0] = new(0f, new Vector4(0.6f, 0.6f, 0.6f, 1f));
             pressedAutomation = new Automation<Vector4>(world, keyframes);
 
             //create default quad mesh

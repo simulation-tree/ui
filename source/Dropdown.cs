@@ -3,6 +3,7 @@ using InteractionKit.Components;
 using InteractionKit.Functions;
 using Simulation;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms.Components;
@@ -41,7 +42,7 @@ namespace InteractionKit
             get
             {
                 rint labelReference = box.AsEntity().GetComponent<IsDropdown>().labelReference;
-                uint labelEntity = box.AsEntity().GetReference(labelReference);
+                uint labelEntity = box.GetReference(labelReference);
                 return new(box.GetWorld(), labelEntity);
             }
         }
@@ -53,7 +54,7 @@ namespace InteractionKit
             get
             {
                 rint triangleReference = box.AsEntity().GetComponent<IsDropdown>().triangleReference;
-                uint triangleEntity = box.AsEntity().GetReference(triangleReference);
+                uint triangleEntity = box.GetReference(triangleReference);
                 return new(box.GetWorld(), triangleEntity);
             }
         }
@@ -65,7 +66,7 @@ namespace InteractionKit
             get
             {
                 rint menuReference = box.AsEntity().GetComponent<IsDropdown>().menuReference;
-                uint menuEntity = box.AsEntity().GetReference(menuReference);
+                uint menuEntity = box.GetReference(menuReference);
                 return new Entity(box.GetWorld(), menuEntity).As<Menu>();
             }
         }
@@ -82,31 +83,50 @@ namespace InteractionKit
                 ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
                 component.selectedOption = value;
 
+                World world = box.GetWorld();
                 Menu menu = Menu;
                 USpan<MenuOption> options = menu.Options;
                 FixedString text = default;
-                if (value.Length > 0)
+                USpan<char> buffer = stackalloc char[32];
+                FixedString path = value;
+                while (path.Length > 0)
                 {
-                    if (value.TryIndexOf('/', out uint firstSlash))
+                    path.CopyTo(buffer);
+                    if (path.TryIndexOf('/', out uint firstSlash))
                     {
-
+                        uint index = uint.Parse(buffer.Slice(0, firstSlash).AsSystemSpan());
+                        if (index < options.length)
+                        {
+                            MenuOption option = options[index];
+                            if (option.childMenuReference != default)
+                            {
+                                uint childMenuEntity = menu.GetReference(option.childMenuReference);
+                                options = world.GetArray<MenuOption>(childMenuEntity);
+                                path = path.Slice(firstSlash + 1);
+                                menu = new Entity(world, childMenuEntity).As<Menu>();
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
                     }
                     else
                     {
-                        USpan<char> buffer = stackalloc char[(int)value.Length];
-                        value.CopyTo(buffer);
-                        uint index = uint.Parse(buffer.AsSystemSpan());
+                        uint index = uint.Parse(buffer.Slice(0, path.Length).AsSystemSpan());
                         if (index < options.length)
                         {
                             MenuOption option = options[index];
                             text = option.text;
                         }
+
+                        break;
                     }
                 }
 
                 rint labelReference = component.labelReference;
-                uint labelEntity = box.AsEntity().GetReference(labelReference);
-                Label dropdownLabel = new(box.GetWorld(), labelEntity);
+                uint labelEntity = box.GetReference(labelReference);
+                Label dropdownLabel = new(world, labelEntity);
                 dropdownLabel.SetText(text);
             }
         }
@@ -126,6 +146,18 @@ namespace InteractionKit
                 Menu menu = Menu;
                 menu.Size = Size;
                 menu.SetEnabled(value);
+
+                USpan<MenuOption> options = menu.Options;
+                for (uint i = 0; i < options.length; i++)
+                {
+                    MenuOption option = options[i];
+                    if (option.childMenuReference != default)
+                    {
+                        uint childMenuEntity = menu.GetReference(option.childMenuReference);
+                        Menu childMenu = new Entity(menu.GetWorld(), childMenuEntity).As<Menu>();
+                        childMenu.SetEnabled(false);
+                    }
+                }
             }
         }
 
@@ -186,9 +218,9 @@ namespace InteractionKit
             menu.Pivot = new(0f, 1f, 0f);
             menu.SetEnabled(false);
 
-            rint labelReference = box.AsEntity().AddReference(label);
-            rint triangleReference = box.AsEntity().AddReference(triangle);
-            rint menuReference = box.AsEntity().AddReference(menu);
+            rint labelReference = box.AddReference(label);
+            rint triangleReference = box.AddReference(triangle);
+            rint menuReference = box.AddReference(menu);
             box.AsEntity().AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
         }
 
@@ -210,22 +242,26 @@ namespace InteractionKit
                 else if (world.ContainsComponent<IsMenu>(parentEntity))
                 {
                     USpan<MenuOption> parentOptions = world.GetArray<MenuOption>(parentEntity);
-                    uint menuIndex = 0;
+                    bool found = false;
                     for (uint i = 0; i < parentOptions.length; i++)
                     {
                         rint menuReference = parentOptions[i].childMenuReference;
                         uint menuEntity = world.GetReference(parentEntity, menuReference);
                         if (menuEntity == childEntity)
                         {
-                            menuIndex = i;
+                            path.Insert(0, '/');
+                            path.Insert(0, i);
+                            childEntity = parentEntity;
+                            parentEntity = world.GetParent(parentEntity);
+                            found = true;
                             break;
                         }
                     }
 
-                    path.Insert(0, '/');
-                    path.Insert(0, menuIndex);
-                    childEntity = parentEntity;
-                    parentEntity = world.GetParent(parentEntity);
+                    if (!found)
+                    {
+                        throw new Exception();
+                    }
                 }
                 else
                 {
@@ -233,7 +269,7 @@ namespace InteractionKit
                 }
             }
 
-            Dropdown dropdown = menu.Parent.As<Dropdown>();
+            Dropdown dropdown = new Entity(world, parentEntity).As<Dropdown>();
             dropdown.SelectedOption = path;
             dropdown.IsExpanded = false;
         }
