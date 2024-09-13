@@ -65,8 +65,16 @@ namespace InteractionKit.Systems
             {
                 uint selectableEntity = x.entity;
                 LocalToWorld ltw = x.Component2;
-                Vector3 min = ltw.Position;
-                Vector3 max = ltw.Position + ltw.Scale;
+                Vector3 position = ltw.Position;
+                Vector3 scale = ltw.Scale;
+                if (world.TryGetComponent(selectableEntity, out WorldRotation worldRotationComponent))
+                {
+                    scale = Vector3.Transform(scale, worldRotationComponent.value);
+                }
+
+                Vector3 offset = ltw.Position + scale;
+                Vector3 min = Vector3.Min(position, offset);
+                Vector3 max = Vector3.Max(position, offset);
                 IsSelectable.State state = x.Component1.state;
                 state &= ~IsSelectable.State.WasPrimaryInteractedWith;
                 bool selected = false;

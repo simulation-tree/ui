@@ -71,11 +71,11 @@ namespace InteractionKit
             }
         }
 
-        public readonly MenuOptionPath SelectedOption
+        public readonly OptionPath SelectedOption
         {
             get
             {
-                MenuOptionPath selectedOption = box.AsEntity().GetComponent<IsDropdown>().selectedOption;
+                OptionPath selectedOption = box.AsEntity().GetComponent<IsDropdown>().selectedOption;
                 return selectedOption;
             }
             set
@@ -87,7 +87,7 @@ namespace InteractionKit
                 Menu menu = Menu;
                 USpan<MenuOption> options = menu.Options;
                 FixedString text = default;
-                MenuOptionPath path = value;
+                OptionPath path = value;
                 while (path.Length > 0)
                 {
                     uint index = path[0];
@@ -142,17 +142,22 @@ namespace InteractionKit
 
                 Menu menu = Menu;
                 menu.Size = Size;
-                menu.SetEnabled(value);
+                menu.SetEnabled(component.expanded);
 
                 USpan<MenuOption> options = menu.Options;
                 for (uint i = 0; i < options.length; i++)
                 {
-                    MenuOption option = options[i];
+                    ref MenuOption option = ref options[i];
                     if (option.childMenuReference != default)
                     {
+                        if (!component.expanded)
+                        {
+                            option.expanded = false;
+                        }
+
                         uint childMenuEntity = menu.GetReference(option.childMenuReference);
                         Menu childMenu = new Entity(menu.GetWorld(), childMenuEntity).As<Menu>();
-                        childMenu.SetEnabled(false);
+                        childMenu.SetEnabled(option.expanded);
                     }
                 }
             }
@@ -171,7 +176,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => box.GetEntityValue();
         readonly World IEntity.World => box.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTrigger, IsSelectable>();
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTrigger, IsSelectable, IsDropdown>();
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -201,7 +206,7 @@ namespace InteractionKit
 
             Box triangle = new(world, context);
             triangle.Parent = box.AsEntity();
-            triangle.Material = context.triangleMaterial;
+            triangle.Material = context.TriangleMaterial;
             triangle.Anchor = Anchor.TopRight;
             triangle.Size = new(16f, 16f);
             triangle.Color = Color.Black;
@@ -224,7 +229,7 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void ChosenOption(Menu menu, uint chosenOption)
         {
-            MenuOptionPath path = default;
+            OptionPath path = default;
             path = path.Append(chosenOption);
 
             World world = menu.GetWorld();

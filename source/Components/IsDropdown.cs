@@ -9,7 +9,7 @@ namespace InteractionKit.Components
         public rint triangleReference;
         public rint menuReference;
         public bool expanded;
-        public MenuOptionPath selectedOption;
+        public OptionPath selectedOption;
         public DropdownCallbackFunction callback;
 
         public IsDropdown(rint labelReference, rint triangleReference, rint menuReference, DropdownCallbackFunction callback)

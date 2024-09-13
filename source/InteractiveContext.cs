@@ -16,20 +16,24 @@ namespace InteractionKit
 {
     public readonly struct InteractiveContext : IDisposable
     {
-        public readonly World world;
-        public readonly Camera camera;
-        public readonly Canvas canvas;
-        public readonly Mesh quadMesh;
-        public readonly Texture squareTexture;
-        public readonly Texture triangleTexture;
-        public readonly Font defaultFont;
-        public readonly Material squareMaterial;
-        public readonly Material triangleMaterial;
-        public readonly Material textMaterial;
-        public readonly StateMachine controlStateMachine;
-        public readonly Automation idleAutomation;
-        public readonly Automation selectedAutomation;
-        public readonly Automation pressedAutomation;
+        private readonly Allocation state;
+
+        public ref bool SelectMultiple => ref Value.selectMultiple;
+        public readonly Camera Camera => Value.camera;
+        public readonly Canvas Canvas => Value.canvas;
+        public readonly Mesh QuadMesh => Value.quadMesh;
+        public readonly Texture SquareTexture => Value.squareTexture;
+        public readonly Texture TriangleTexture => Value.triangleTexture;
+        public readonly Font DefaultFont => Value.defaultFont;
+        public readonly Material SquareMaterial => Value.squareMaterial;
+        public readonly Material TriangleMaterial => Value.triangleMaterial;
+        public readonly Material TextMaterial => Value.textMaterial;
+        public readonly StateMachine ControlStateMachine => Value.controlStateMachine;
+        public readonly Automation IdleAutomation => Value.idleAutomation;
+        public readonly Automation SelectedAutomation => Value.selectedAutomation;
+        public readonly Automation PressedAutomation => Value.pressedAutomation;
+
+        private ref State Value => ref state.Read<State>();
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -41,6 +45,9 @@ namespace InteractionKit
 
         public InteractiveContext(Canvas canvas)
         {
+            World world = canvas.GetWorld();
+            State state = new();
+
             USpan<AvailableState> states = stackalloc AvailableState[3];
             states[0] = new("idle");
             states[1] = new("selected");
@@ -52,69 +59,87 @@ namespace InteractionKit
             transitions[2] = new("pressed", "selected", "pressed", Transition.Condition.LessThan, 1f);
             transitions[3] = new("selected", "idle", "selected", Transition.Condition.LessThan, 1f);
 
-            this.canvas = canvas;
-            this.camera = canvas.Camera;
-            world = canvas.transform.entity.world;
-            controlStateMachine = new(world, states, transitions);
+            state.canvas = canvas;
+            state.camera = canvas.Camera;
+            state.controlStateMachine = new(world, states, transitions);
 
             //automations for each state
             USpan<Keyframe<Vector4>> keyframes = stackalloc Keyframe<Vector4>[1];
             keyframes[0] = new(0f, new Vector4(0.8f, 0.8f, 0.8f, 1f));
-            idleAutomation = new Automation<Vector4>(world, keyframes);
+            state.idleAutomation = new Automation<Vector4>(world, keyframes);
 
             keyframes[0] = new(0f, new Vector4(1.4f, 1.4f, 1.4f, 1f));
-            selectedAutomation = new Automation<Vector4>(world, keyframes);
+            state.selectedAutomation = new Automation<Vector4>(world, keyframes);
 
             keyframes[0] = new(0f, new Vector4(0.6f, 0.6f, 0.6f, 1f));
-            pressedAutomation = new Automation<Vector4>(world, keyframes);
+            state.pressedAutomation = new Automation<Vector4>(world, keyframes);
 
             //create default quad mesh
-            quadMesh = new(world);
-            Mesh.Collection<Vector3> positions = quadMesh.CreatePositions();
+            state.quadMesh = new(world);
+            Mesh.Collection<Vector3> positions = state.quadMesh.CreatePositions();
             positions.Add(new(0, 0, 0));
             positions.Add(new(1, 0, 0));
             positions.Add(new(1, 1, 0));
             positions.Add(new(0, 1, 0));
-            Mesh.Collection<Vector2> uvs = quadMesh.CreateUVs();
+            Mesh.Collection<Vector2> uvs = state.quadMesh.CreateUVs();
             uvs.Add(new(0, 0));
             uvs.Add(new(1, 0));
             uvs.Add(new(1, 1));
             uvs.Add(new(0, 1));
-            Mesh.Collection<Vector3> normals = quadMesh.CreateNormals();
+            Mesh.Collection<Vector3> normals = state.quadMesh.CreateNormals();
             normals.Add(new(0, 0, 1));
             normals.Add(new(0, 0, 1));
             normals.Add(new(0, 0, 1));
             normals.Add(new(0, 0, 1));
-            quadMesh.AddTriangle(0, 1, 2);
-            quadMesh.AddTriangle(2, 3, 0);
+            state.quadMesh.AddTriangle(0, 1, 2);
+            state.quadMesh.AddTriangle(2, 3, 0);
 
-            squareTexture = new(world, Address.Get<SquareTexture>());
-            triangleTexture = new(world, Address.Get<TriangleTexture>());
+            state.squareTexture = new(world, Address.Get<SquareTexture>());
+            state.triangleTexture = new(world, Address.Get<TriangleTexture>());
 
             //create default coloured unlit material
-            squareMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
-            squareMaterial.AddPushBinding<Color>();
-            squareMaterial.AddPushBinding<LocalToWorld>();
-            squareMaterial.AddComponentBinding<CameraProjection>(0, 0, camera.entity);
-            squareMaterial.AddTextureBinding(1, 0, squareTexture);
+            state.squareMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            state.squareMaterial.AddPushBinding<Color>();
+            state.squareMaterial.AddPushBinding<LocalToWorld>();
+            state.squareMaterial.AddComponentBinding<CameraProjection>(0, 0, state.camera);
+            state.squareMaterial.AddTextureBinding(1, 0, state.squareTexture);
 
-            triangleMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
-            triangleMaterial.AddPushBinding<Color>();
-            triangleMaterial.AddPushBinding<LocalToWorld>();
-            triangleMaterial.AddComponentBinding<CameraProjection>(0, 0, camera.entity);
-            triangleMaterial.AddTextureBinding(1, 0, triangleTexture);
+            state.triangleMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            state.triangleMaterial.AddPushBinding<Color>();
+            state.triangleMaterial.AddPushBinding<LocalToWorld>();
+            state.triangleMaterial.AddComponentBinding<CameraProjection>(0, 0, state.camera);
+            state.triangleMaterial.AddTextureBinding(1, 0, state.triangleTexture);
 
-            textMaterial = new(world, Address.Get<TextMaterial>());
-            textMaterial.AddComponentBinding<CameraProjection>(1, 0, camera.entity);
-            textMaterial.AddPushBinding<Color>();
-            textMaterial.AddPushBinding<LocalToWorld>();
+            state.textMaterial = new(world, Address.Get<TextMaterial>());
+            state.textMaterial.AddComponentBinding<CameraProjection>(1, 0, state.camera);
+            state.textMaterial.AddPushBinding<Color>();
+            state.textMaterial.AddPushBinding<LocalToWorld>();
 
-            defaultFont = new(world, Address.Get<CascadiaMonoFont>());
+            state.defaultFont = new(world, Address.Get<CascadiaMonoFont>());
+            this.state = Allocation.Create(state);
         }
 
         public readonly void Dispose()
         {
-            controlStateMachine.Destroy();
+            state.Dispose();
+        }
+
+        internal unsafe struct State
+        {
+            public bool selectMultiple;
+            public Camera camera;
+            public Canvas canvas;
+            public Mesh quadMesh;
+            public Texture squareTexture;
+            public Texture triangleTexture;
+            public Font defaultFont;
+            public Material squareMaterial;
+            public Material triangleMaterial;
+            public Material textMaterial;
+            public StateMachine controlStateMachine;
+            public Automation idleAutomation;
+            public Automation selectedAutomation;
+            public Automation pressedAutomation;
         }
     }
 }

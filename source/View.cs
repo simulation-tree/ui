@@ -106,7 +106,7 @@ namespace InteractionKit
         {
             transform = new Transform(world);
             transform.LocalPosition = new(0f, 0f, 0.1f);
-            transform.Parent = context.canvas.AsEntity();
+            transform.Parent = context.Canvas.AsEntity();
             transform.AsEntity().AddComponent(new Anchor());
             transform.AsEntity().AddComponent(new Pivot());
 

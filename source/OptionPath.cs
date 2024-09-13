@@ -6,7 +6,7 @@ using Unmanaged;
 namespace InteractionKit
 {
     [StructLayout(LayoutKind.Sequential, Size = (int)MaxDepth * sizeof(ushort))]
-    public unsafe struct MenuOptionPath
+    public unsafe struct OptionPath
     {
         public const uint MaxDepth = 32;
 
@@ -16,7 +16,7 @@ namespace InteractionKit
         public readonly ushort this[uint index] => path[index];
         public readonly byte Length => length;
 
-        public MenuOptionPath(USpan<ushort> path)
+        public OptionPath(USpan<ushort> path)
         {
             ThrowIfTooDeep((ushort)path.length);
             length = (byte)path.length;
@@ -62,19 +62,19 @@ namespace InteractionKit
             return length;
         }
 
-        public readonly MenuOptionPath Append(uint value)
+        public readonly OptionPath Append(uint value)
         {
             ThrowIfTooDeep(length);
-            MenuOptionPath newPath = this;
+            OptionPath newPath = this;
             newPath.path[length] = (ushort)value;
             newPath.length++;
             return newPath;
         }
 
-        public readonly MenuOptionPath Append(MenuOptionPath path)
+        public readonly OptionPath Append(OptionPath path)
         {
             ThrowIfTooDeep((ushort)(length + path.length));
-            MenuOptionPath newPath = this;
+            OptionPath newPath = this;
             for (uint i = 0; i < path.length; i++)
             {
                 newPath.path[length + i] = path.path[i];
@@ -84,7 +84,7 @@ namespace InteractionKit
             return newPath;
         }
 
-        public readonly MenuOptionPath Insert(uint index, uint value)
+        public readonly OptionPath Insert(uint index, uint value)
         {
             if (index >= length)
             {
@@ -92,7 +92,7 @@ namespace InteractionKit
             }
 
             ThrowIfTooDeep(length);
-            MenuOptionPath newPath = this;
+            OptionPath newPath = this;
             for (uint i = length; i > index; i--)
             {
                 newPath.path[i] = newPath.path[i - 1];
@@ -103,14 +103,14 @@ namespace InteractionKit
             return newPath;
         }
 
-        public readonly MenuOptionPath Slice(uint start)
+        public readonly OptionPath Slice(uint start)
         {
             if (start >= length)
             {
                 return default;
             }
 
-            MenuOptionPath newPath = this;
+            OptionPath newPath = this;
             newPath.length -= (byte)start;
             for (uint i = 0; i < newPath.length; i++)
             {

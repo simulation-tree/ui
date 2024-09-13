@@ -77,7 +77,7 @@ namespace InteractionKit
         }
 
         public Label(World world, InteractiveContext context, FixedString text)
-            : this(world, context, text, context.defaultFont)
+            : this(world, context, text, context.DefaultFont)
         {
         }
 
@@ -92,12 +92,12 @@ namespace InteractionKit
             transform.entity.AddComponent(new BaseColor(new Vector4(1f)));
             transform.entity.AddComponent(new Color(new Vector4(1f)));
             transform.entity.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
-            transform.Parent = context.canvas.AsEntity();
+            transform.Parent = context.Canvas.AsEntity();
 
             textRenderer = transform.entity.Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
-            textRenderer.Material = context.textMaterial;
-            textRenderer.Camera = context.camera;
+            textRenderer.Material = context.TextMaterial;
+            textRenderer.Camera = context.Camera;
 
             rint textMeshReference = textRenderer.AsEntity().AddReference(textMesh);
             textRenderer.AsEntity().AddComponent(new IsLabel(textMeshReference));

@@ -75,5 +75,10 @@ namespace InteractionKit
                 }
             }
         }
+
+        public static implicit operator Entity(Button button)
+        {
+            return button.AsEntity();
+        }
     }
 }

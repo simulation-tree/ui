@@ -118,20 +118,25 @@ namespace InteractionKit
             transform.entity.AddComponent(new BaseColor(new Vector4(1f)));
             transform.entity.AddComponent(new Color(new Vector4(1f)));
             transform.entity.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
-            transform.Parent = context.canvas.AsEntity();
+            transform.Parent = context.Canvas.AsEntity();
 
             StatefulAutomationPlayer stateful = transform.entity.Become<StatefulAutomationPlayer>();
-            stateful.StateMachine = context.controlStateMachine;
+            stateful.StateMachine = context.ControlStateMachine;
             stateful.AddParameter("pressed", 0f);
             stateful.AddParameter("selected", 1f);
-            stateful.AddOrSetLink<ColorTint>("idle", context.idleAutomation);
-            stateful.AddOrSetLink<ColorTint>("selected", context.selectedAutomation);
-            stateful.AddOrSetLink<ColorTint>("pressed", context.pressedAutomation);
+            stateful.AddOrSetLink<ColorTint>("idle", context.IdleAutomation);
+            stateful.AddOrSetLink<ColorTint>("selected", context.SelectedAutomation);
+            stateful.AddOrSetLink<ColorTint>("pressed", context.PressedAutomation);
 
             Renderer renderer = transform.entity.Become<Renderer>();
-            renderer.Mesh = context.quadMesh;
-            renderer.Material = context.squareMaterial;
-            renderer.Camera = context.camera;
+            renderer.Mesh = context.QuadMesh;
+            renderer.Material = context.SquareMaterial;
+            renderer.Camera = context.Camera;
+        }
+
+        public static implicit operator Entity(Box box)
+        {
+            return box.transform.entity;
         }
     }
 }
