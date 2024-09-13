@@ -1,6 +1,5 @@
 using InteractionKit.Functions;
 using Simulation;
-using Unmanaged;
 
 namespace InteractionKit.Components
 {
@@ -10,7 +9,7 @@ namespace InteractionKit.Components
         public rint triangleReference;
         public rint menuReference;
         public bool expanded;
-        public FixedString selectedOption;
+        public MenuOptionPath selectedOption;
         public DropdownCallbackFunction callback;
 
         public IsDropdown(rint labelReference, rint triangleReference, rint menuReference, DropdownCallbackFunction callback)

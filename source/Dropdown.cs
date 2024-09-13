@@ -71,11 +71,11 @@ namespace InteractionKit
             }
         }
 
-        public readonly FixedString SelectedOption
+        public readonly MenuOptionPath SelectedOption
         {
             get
             {
-                FixedString selectedOption = box.AsEntity().GetComponent<IsDropdown>().selectedOption;
+                MenuOptionPath selectedOption = box.AsEntity().GetComponent<IsDropdown>().selectedOption;
                 return selectedOption;
             }
             set
@@ -87,14 +87,12 @@ namespace InteractionKit
                 Menu menu = Menu;
                 USpan<MenuOption> options = menu.Options;
                 FixedString text = default;
-                USpan<char> buffer = stackalloc char[32];
-                FixedString path = value;
+                MenuOptionPath path = value;
                 while (path.Length > 0)
                 {
-                    path.CopyTo(buffer);
-                    if (path.TryIndexOf('/', out uint firstSlash))
+                    uint index = path[0];
+                    if (path.Length > 1)
                     {
-                        uint index = uint.Parse(buffer.Slice(0, firstSlash).AsSystemSpan());
                         if (index < options.length)
                         {
                             MenuOption option = options[index];
@@ -102,7 +100,7 @@ namespace InteractionKit
                             {
                                 uint childMenuEntity = menu.GetReference(option.childMenuReference);
                                 options = world.GetArray<MenuOption>(childMenuEntity);
-                                path = path.Slice(firstSlash + 1);
+                                path = path.Slice(1);
                                 menu = new Entity(world, childMenuEntity).As<Menu>();
                             }
                             else
@@ -113,7 +111,6 @@ namespace InteractionKit
                     }
                     else
                     {
-                        uint index = uint.Parse(buffer.Slice(0, path.Length).AsSystemSpan());
                         if (index < options.length)
                         {
                             MenuOption option = options[index];
@@ -227,8 +224,8 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void ChosenOption(Menu menu, uint chosenOption)
         {
-            FixedString path = default;
-            path.Append(chosenOption);
+            MenuOptionPath path = default;
+            path = path.Append(chosenOption);
 
             World world = menu.GetWorld();
             uint childEntity = menu.GetEntityValue();
@@ -249,8 +246,7 @@ namespace InteractionKit
                         uint menuEntity = world.GetReference(parentEntity, menuReference);
                         if (menuEntity == childEntity)
                         {
-                            path.Insert(0, '/');
-                            path.Insert(0, i);
+                            path = path.Insert(0, i);
                             childEntity = parentEntity;
                             parentEntity = world.GetParent(parentEntity);
                             found = true;

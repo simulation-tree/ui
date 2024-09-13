@@ -100,7 +100,7 @@ namespace InteractionKit
         /// Adds a new option.
         /// </summary>
         /// <returns>Index path towards this specific option.</returns>
-        public unsafe readonly FixedString AddOption(FixedString label, InteractiveContext context)
+        public unsafe readonly MenuOptionPath AddOption(FixedString label, InteractiveContext context)
         {
             Vector2 size = Size;
             Entity entity = transform.AsEntity();
@@ -113,7 +113,7 @@ namespace InteractionKit
             {
                 //try to find existing option with same text
                 USpan<MenuOption> existingOptions = entity.GetArray<MenuOption>();
-                FixedString path = default;
+                MenuOptionPath path = default;
                 for (uint i = 0; i < existingOptions.length; i++)
                 {
                     ref MenuOption existingOption = ref existingOptions[i];
@@ -121,12 +121,11 @@ namespace InteractionKit
                     {
                         if (existingOption.childMenuReference != default)
                         {
-                            path.Append(i);
+                            path = path.Append(i);
                             uint existingChildMenuEntity = entity.GetReference(existingOption.childMenuReference);
                             Menu existingChildMenu = new Entity(world, existingChildMenuEntity).As<Menu>();
-                            FixedString pathInExisting = existingChildMenu.AddOption(remainder, context);
-                            path.Append('/');
-                            path.Append(pathInExisting);
+                            MenuOptionPath pathInExisting = existingChildMenu.AddOption(remainder, context);
+                            path = path.Append(pathInExisting);
                             return path;
                         }
                         else
@@ -136,8 +135,8 @@ namespace InteractionKit
                     }
                 }
 
-                FixedString firstPath = AddOption(label, context);
-                path.Append(firstPath);
+                MenuOptionPath firstPath = AddOption(label, context);
+                path = path.Append(firstPath);
 
                 //todo: for some reason, the buttons in child menus position themselves upwards
                 //while the menus of dropdowns position downwards
@@ -162,9 +161,8 @@ namespace InteractionKit
                 triangle.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
 
                 addedOption.childMenuReference = transform.AddReference(newChildMenu);
-                FixedString pathInNew = newChildMenu.AddOption(remainder, context);
-                path.Append('/');
-                path.Append(pathInNew);
+                MenuOptionPath pathInNew = newChildMenu.AddOption(remainder, context);
+                path = path.Append(pathInNew);
                 return path;
             }
             else
@@ -188,8 +186,8 @@ namespace InteractionKit
                 rint buttonReference = transform.AddReference(optionButton);
                 rint buttonLabelReference = transform.AddReference(optionButtonLabel);
                 options[optionCount] = new(label, buttonReference, buttonLabelReference, childMenuReference);
-                FixedString path = default;
-                path.Append(optionCount);
+                MenuOptionPath path = default;
+                path = path.Append(optionCount);
                 return path;
             }
         }
