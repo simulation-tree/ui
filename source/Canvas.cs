@@ -50,5 +50,15 @@ namespace InteractionKit
             rint cameraReference = transform.entity.AddReference(camera);
             transform.entity.AddComponent(new IsCanvas(cameraReference));
         }
+
+        public static implicit operator Transform(Canvas canvas)
+        {
+            return canvas.transform;
+        }
+
+        public static implicit operator Entity(Canvas canvas)
+        {
+            return canvas.transform.entity;
+        }
     }
 }
