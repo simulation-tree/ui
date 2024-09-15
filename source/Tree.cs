@@ -85,7 +85,7 @@ namespace InteractionKit
         public readonly bool IsSelected(TreeNode node)
         {
             USpan<SelectedLeaf> selected = Selected;
-            for (uint i = 0; i < selected.length; i++)
+            for (uint i = 0; i < selected.Length; i++)
             {
                 rint nodeReference = selected[i].nodeReference;
                 uint nodeEntity = transform.GetReference(nodeReference);
@@ -114,7 +114,7 @@ namespace InteractionKit
                 ThrowIfNotSelected(node);
                 USpan<SelectedLeaf> selected = transform.AsEntity().GetArray<SelectedLeaf>();
                 uint index = 0;
-                for (uint i = 0; i < selected.length; i++)
+                for (uint i = 0; i < selected.Length; i++)
                 {
                     rint nodeReference = selected[i].nodeReference;
                     uint nodeEntity = transform.GetReference(nodeReference);
@@ -125,7 +125,7 @@ namespace InteractionKit
                     }
                 }
 
-                for (uint i = index; i < selected.length - 1; i++)
+                for (uint i = index; i < selected.Length - 1; i++)
                 {
                     selected[i] = selected[i + 1];
                 }

@@ -76,21 +76,21 @@ namespace InteractionKit
 
             //create default quad mesh
             state.quadMesh = new(world);
-            Mesh.Collection<Vector3> positions = state.quadMesh.CreatePositions();
-            positions.Add(new(0, 0, 0));
-            positions.Add(new(1, 0, 0));
-            positions.Add(new(1, 1, 0));
-            positions.Add(new(0, 1, 0));
-            Mesh.Collection<Vector2> uvs = state.quadMesh.CreateUVs();
-            uvs.Add(new(0, 0));
-            uvs.Add(new(1, 0));
-            uvs.Add(new(1, 1));
-            uvs.Add(new(0, 1));
-            Mesh.Collection<Vector3> normals = state.quadMesh.CreateNormals();
-            normals.Add(new(0, 0, 1));
-            normals.Add(new(0, 0, 1));
-            normals.Add(new(0, 0, 1));
-            normals.Add(new(0, 0, 1));
+            USpan<Vector3> positions = state.quadMesh.CreatePositions(4);
+            positions[0] = new(0, 0, 0);
+            positions[1] = new(1, 0, 0);
+            positions[2] = new(1, 1, 0);
+            positions[3] = new(0, 1, 0);
+            USpan<Vector2> uvs = state.quadMesh.CreateUVs(4);
+            uvs[0] = new(0, 0);
+            uvs[1] = new(1, 0);
+            uvs[2] = new(1, 1);
+            uvs[3] = new(0, 1);
+            USpan<Vector3> normals = state.quadMesh.CreateNormals(4);
+            normals[0] = new(0, 0, 1);
+            normals[1] = new(0, 0, 1);
+            normals[2] = new(0, 0, 1);
+            normals[3] = new(0, 0, 1);
             state.quadMesh.AddTriangle(0, 1, 2);
             state.quadMesh.AddTriangle(2, 3, 0);
 

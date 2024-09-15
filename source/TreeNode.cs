@@ -140,7 +140,7 @@ namespace InteractionKit
             if (!selectMultiple)
             {
                 USpan<SelectedLeaf> currentSelection = tree.Selected;
-                for (uint i = 0; i < currentSelection.length; i++)
+                for (uint i = 0; i < currentSelection.Length; i++)
                 {
                     rint nodeReference = currentSelection[i].nodeReference;
                     uint selectedNodeEntity = tree.GetReference(nodeReference);

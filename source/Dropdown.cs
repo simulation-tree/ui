@@ -93,7 +93,7 @@ namespace InteractionKit
                     uint index = path[0];
                     if (path.Length > 1)
                     {
-                        if (index < options.length)
+                        if (index < options.Length)
                         {
                             MenuOption option = options[index];
                             if (option.childMenuReference != default)
@@ -111,7 +111,7 @@ namespace InteractionKit
                     }
                     else
                     {
-                        if (index < options.length)
+                        if (index < options.Length)
                         {
                             MenuOption option = options[index];
                             text = option.text;
@@ -145,7 +145,7 @@ namespace InteractionKit
                 menu.SetEnabled(component.expanded);
 
                 USpan<MenuOption> options = menu.Options;
-                for (uint i = 0; i < options.length; i++)
+                for (uint i = 0; i < options.Length; i++)
                 {
                     ref MenuOption option = ref options[i];
                     if (option.childMenuReference != default)
@@ -245,7 +245,7 @@ namespace InteractionKit
                 {
                     USpan<MenuOption> parentOptions = world.GetArray<MenuOption>(parentEntity);
                     bool found = false;
-                    for (uint i = 0; i < parentOptions.length; i++)
+                    for (uint i = 0; i < parentOptions.Length; i++)
                     {
                         rint menuReference = parentOptions[i].childMenuReference;
                         uint menuEntity = world.GetReference(parentEntity, menuReference);

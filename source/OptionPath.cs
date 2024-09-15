@@ -18,9 +18,9 @@ namespace InteractionKit
 
         public OptionPath(USpan<ushort> path)
         {
-            ThrowIfTooDeep((ushort)path.length);
-            length = (byte)path.length;
-            for (uint i = 0; i < path.length; i++)
+            ThrowIfTooDeep((ushort)path.Length);
+            length = (byte)path.Length;
+            for (uint i = 0; i < path.Length; i++)
             {
                 this.path[i] = path[i];
             }

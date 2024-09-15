@@ -115,7 +115,7 @@ namespace InteractionKit.Systems
 
         private static void UnsignedAdd(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
         {
-            uint partSize = outputPart.length;
+            uint partSize = outputPart.Length;
             unchecked
             {
                 if (partSize == 1)
@@ -148,7 +148,7 @@ namespace InteractionKit.Systems
 
         private static void SignedAdd(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
         {
-            uint partSize = outputPart.length;
+            uint partSize = outputPart.Length;
             unchecked
             {
                 if (partSize == 1)
@@ -181,7 +181,7 @@ namespace InteractionKit.Systems
 
         private static void UnsignedSubtract(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
         {
-            uint partSize = outputPart.length;
+            uint partSize = outputPart.Length;
             unchecked
             {
                 if (partSize == 1)
@@ -214,7 +214,7 @@ namespace InteractionKit.Systems
 
         private static void SignedSubtract(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
         {
-            uint partSize = outputPart.length;
+            uint partSize = outputPart.Length;
             unchecked
             {
                 if (partSize == 1)
@@ -247,7 +247,7 @@ namespace InteractionKit.Systems
 
         private static void UnsignedMultiply(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
         {
-            uint partSize = outputPart.length;
+            uint partSize = outputPart.Length;
             unchecked
             {
                 if (partSize == 1)
@@ -280,7 +280,7 @@ namespace InteractionKit.Systems
 
         private static void SignedMultiply(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
         {
-            uint partSize = outputPart.length;
+            uint partSize = outputPart.Length;
             unchecked
             {
                 if (partSize == 1)
@@ -313,7 +313,7 @@ namespace InteractionKit.Systems
 
         private static void UnsignedDivide(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
         {
-            uint partSize = outputPart.length;
+            uint partSize = outputPart.Length;
             unchecked
             {
                 if (partSize == 1)
@@ -346,7 +346,7 @@ namespace InteractionKit.Systems
 
         private static void SignedDivide(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
         {
-            uint partSize = outputPart.length;
+            uint partSize = outputPart.Length;
             unchecked
             {
                 if (partSize == 1)
@@ -381,7 +381,7 @@ namespace InteractionKit.Systems
         {
             unchecked
             {
-                if (outputPart.length == 4)
+                if (outputPart.Length == 4)
                 {
                     float leftValue = *(float*)leftPart.pointer;
                     float rightValue = *(float*)rightPart.pointer;
@@ -390,7 +390,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{outputPart.length}` is not supported");
+                    throw new System.Exception($"Part size `{outputPart.Length}` is not supported");
                 }
             }
         }
@@ -399,7 +399,7 @@ namespace InteractionKit.Systems
         {
             unchecked
             {
-                if (outputPart.length == 4)
+                if (outputPart.Length == 4)
                 {
                     float leftValue = *(float*)leftPart.pointer;
                     float rightValue = *(float*)rightPart.pointer;
@@ -408,7 +408,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{outputPart.length}` is not supported");
+                    throw new System.Exception($"Part size `{outputPart.Length}` is not supported");
                 }
             }
         }
@@ -417,7 +417,7 @@ namespace InteractionKit.Systems
         {
             unchecked
             {
-                if (outputPart.length == 4)
+                if (outputPart.Length == 4)
                 {
                     float leftValue = *(float*)leftPart.pointer;
                     float rightValue = *(float*)rightPart.pointer;
@@ -426,7 +426,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{outputPart.length}` is not supported");
+                    throw new System.Exception($"Part size `{outputPart.Length}` is not supported");
                 }
             }
         }
@@ -435,7 +435,7 @@ namespace InteractionKit.Systems
         {
             unchecked
             {
-                if (outputPart.length == 4)
+                if (outputPart.Length == 4)
                 {
                     float leftValue = *(float*)leftPart.pointer;
                     float rightValue = *(float*)rightPart.pointer;
@@ -444,7 +444,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{outputPart.length}` is not supported");
+                    throw new System.Exception($"Part size `{outputPart.Length}` is not supported");
                 }
             }
         }

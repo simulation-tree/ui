@@ -50,7 +50,7 @@ namespace InteractionKit.Functions
                 this.world = world;
                 this.identifier = identifier;
                 this.entities = entities.pointer;
-                length = entities.length;
+                length = entities.Length;
             }
         }
     }

@@ -48,7 +48,7 @@ namespace InteractionKit
                 transform.LocalScale = new(value.X, value.Y, scale.Z);
 
                 USpan<MenuOption> options = Options;
-                for (uint i = 0; i < options.length; i++)
+                for (uint i = 0; i < options.Length; i++)
                 {
                     MenuOption option = options[i];
                     rint buttonReference = option.buttonReference;
@@ -114,7 +114,7 @@ namespace InteractionKit
                 //try to find existing option with same text
                 USpan<MenuOption> existingOptions = entity.GetArray<MenuOption>();
                 OptionPath path = default;
-                for (uint i = 0; i < existingOptions.length; i++)
+                for (uint i = 0; i < existingOptions.Length; i++)
                 {
                     ref MenuOption existingOption = ref existingOptions[i];
                     if (existingOption.text == label)
@@ -198,7 +198,7 @@ namespace InteractionKit
             uint menuEntity = world.GetParent(optionButtonEntity);
             USpan<uint> menuChildren = world.GetChildren(menuEntity);
             uint chosenIndex = 0;
-            for (uint i = 0; i < menuChildren.length; i++)
+            for (uint i = 0; i < menuChildren.Length; i++)
             {
                 uint childEntity = menuChildren[i];
                 if (childEntity == optionButtonEntity)
@@ -227,7 +227,7 @@ namespace InteractionKit
                     childMenu.Position = new(size.X, 0);
 
                     USpan<MenuOption> childMenuOptions = childMenu.Options;
-                    for (uint i = 0; i < childMenuOptions.length; i++)
+                    for (uint i = 0; i < childMenuOptions.Length; i++)
                     {
                         ref MenuOption childMenuOption = ref childMenuOptions[i];
                         if (childMenuOption.childMenuReference != default)
