@@ -13,7 +13,7 @@ using Unmanaged;
 
 namespace InteractionKit
 {
-    public readonly struct Box : IEntity
+    public readonly struct Image : IEntity
     {
         public readonly Transform transform;
 
@@ -98,17 +98,17 @@ namespace InteractionKit
 
 #if NET
         [Obsolete("Default constructor not available", true)]
-        public Box()
+        public Image()
         {
             throw new NotSupportedException();
         }
 #endif
-        public Box(World world, uint existingEntity)
+        public Image(World world, uint existingEntity)
         {
             transform = new(world, existingEntity);
         }
 
-        public Box(World world, InteractiveContext context)
+        public Image(World world, InteractiveContext context)
         {
             transform = new(world);
             transform.LocalPosition = new(0f, 0f, 0.1f);
@@ -134,7 +134,7 @@ namespace InteractionKit
             renderer.Camera = context.Camera;
         }
 
-        public static implicit operator Entity(Box box)
+        public static implicit operator Entity(Image box)
         {
             return box.transform.entity;
         }

@@ -9,7 +9,7 @@ namespace InteractionKit
 {
     public readonly struct Toggle : ISelectable
     {
-        public readonly Box box;
+        public readonly Image box;
 
         public readonly Entity Parent
         {
@@ -85,7 +85,7 @@ namespace InteractionKit
         {
             box = new(world, context);
 
-            Box checkmarkBox = new(world, context);
+            Image checkmarkBox = new(world, context);
             checkmarkBox.transform.LocalPosition = new(0f, 0f, 0.1f);
             checkmarkBox.Parent = box.AsEntity();
             checkmarkBox.Anchor = new(new(4, true), new(4, true), default, new(4, true), new(4, true), default);

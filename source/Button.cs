@@ -12,7 +12,7 @@ namespace InteractionKit
 {
     public readonly struct Button : ISelectable
     {
-        public readonly Box box;
+        public readonly Image box;
 
         public readonly Entity Parent
         {

@@ -13,7 +13,7 @@ namespace InteractionKit
 {
     public readonly struct Dropdown : ISelectable
     {
-        public readonly Box box;
+        public readonly Image box;
 
         public readonly Entity Parent
         {
@@ -49,7 +49,7 @@ namespace InteractionKit
 
         public readonly ref Color LabelColor => ref Label.Color;
 
-        public readonly Box Triangle
+        public readonly Image Triangle
         {
             get
             {
@@ -204,7 +204,7 @@ namespace InteractionKit
             label.Position = new(4f, -4f);
             label.Pivot = new(0f, 1f, 0f);
 
-            Box triangle = new(world, context);
+            Image triangle = new(world, context);
             triangle.Parent = box.AsEntity();
             triangle.Material = context.TriangleMaterial;
             triangle.Anchor = Anchor.TopRight;

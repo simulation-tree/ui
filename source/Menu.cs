@@ -151,7 +151,7 @@ namespace InteractionKit
                 newChildMenu.SetEnabled(addedOption.expanded);
 
                 uint buttonEntity = transform.GetReference(addedOption.buttonReference);
-                Box triangle = new(world, context);
+                Image triangle = new(world, context);
                 triangle.Parent = new Entity(world, buttonEntity);
                 triangle.Material = context.TriangleMaterial;
                 triangle.Anchor = Anchor.Right;

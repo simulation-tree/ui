@@ -12,7 +12,7 @@ namespace InteractionKit
 {
     public readonly struct VirtualWindow : IEntity
     {
-        public readonly Box box;
+        public readonly Image box;
 
         public readonly Vector2 Position
         {
@@ -66,7 +66,7 @@ namespace InteractionKit
         {
             box = new(world, context);
 
-            Box header = new(world, context);
+            Image header = new(world, context);
             header.Anchor = new(new(0f, false), new(1f, false), default, new(1f, false), new(1f, false), default);
             header.Pivot = new(0f, 1f, 0f);
             header.Size = new(1f, 26f);

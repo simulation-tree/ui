@@ -10,7 +10,7 @@ namespace InteractionKit
 {
     public readonly struct ScrollBar : ISelectable
     {
-        public readonly Box box;
+        public readonly Image box;
 
         public readonly Entity Parent
         {
@@ -41,7 +41,7 @@ namespace InteractionKit
             {
                 rint scrollHandleReference = box.AsEntity().GetComponent<IsScrollBar>().scrollHandleReference;
                 uint scrollHandleEntity = box.AsEntity().GetReference(scrollHandleReference);
-                Box scrollHandle = new(box.AsEntity().GetWorld(), scrollHandleEntity);
+                Image scrollHandle = new(box.AsEntity().GetWorld(), scrollHandleEntity);
                 return ref scrollHandle.Color;
             }
         }
@@ -54,14 +54,14 @@ namespace InteractionKit
 
         public ScrollBar(World world, InteractiveContext context, Vector2 axis, float handlePercentageSize)
         {
-            box = new Box(world, context);
+            box = new Image(world, context);
             box.transform.LocalPosition = new(0f, 0f, 0.1f);
 
             Transform scrollRegion = new(world);
             scrollRegion.Parent = box.AsEntity();
             scrollRegion.AsEntity().AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
 
-            Box scrollHandle = new(world, context);
+            Image scrollHandle = new(world, context);
             scrollHandle.Parent = scrollRegion.AsEntity();
             scrollHandle.Color = Color.Black;
             if (axis.Y > axis.X)
