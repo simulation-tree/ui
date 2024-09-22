@@ -72,7 +72,7 @@ namespace InteractionKit.Systems
                     scale = Vector3.Transform(scale, worldRotationComponent.value);
                 }
 
-                Vector3 offset = ltw.Position + scale;
+                Vector3 offset = position + scale;
                 Vector3 min = Vector3.Min(position, offset);
                 Vector3 max = Vector3.Max(position, offset);
                 IsSelectable.State state = x.Component1.state;

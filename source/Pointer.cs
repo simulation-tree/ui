@@ -53,6 +53,8 @@ namespace InteractionKit
             }
         }
 
+        public readonly ref Vector2 Scroll => ref entity.GetComponentRef<IsPointer>().scroll;
+
         readonly uint IEntity.Value => entity.value;
         readonly World IEntity.World => entity.world;
         readonly Definition IEntity.Definition => new([RuntimeType.Get<IsPointer>()], []);

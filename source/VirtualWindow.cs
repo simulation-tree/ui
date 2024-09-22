@@ -4,7 +4,6 @@ using InteractionKit.Functions;
 using Simulation;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Transforms;
 using Transforms.Components;
 using Unmanaged;
 
@@ -34,9 +33,10 @@ namespace InteractionKit
             get
             {
                 IsVirtualWindow component = box.AsEntity().GetComponent<IsVirtualWindow>();
-                rint containerReference = component.containerReference;
-                uint containerEntity = box.AsEntity().GetReference(containerReference);
-                return new(box.GetWorld(), containerEntity);
+                rint viewReference = component.viewReference;
+                uint viewEntity = box.GetReference(viewReference);
+                View view = new Entity(box.GetWorld(), viewEntity).As<View>();
+                return view.Content;
             }
         }
 
@@ -46,7 +46,7 @@ namespace InteractionKit
             {
                 IsVirtualWindow component = box.AsEntity().GetComponent<IsVirtualWindow>();
                 rint headerReference = component.headerReference;
-                uint headerEntity = box.AsEntity().GetReference(headerReference);
+                uint headerEntity = box.GetReference(headerReference);
                 return new(box.GetWorld(), headerEntity);
             }
         }
@@ -75,13 +75,8 @@ namespace InteractionKit
             header.Parent = box.AsEntity();
             header.AsEntity().AddComponent<IsSelectable>();
 
-            rint targetReference = header.AsEntity().AddReference(box);
+            rint targetReference = header.AddReference(box);
             header.AsEntity().AddComponent(new IsDraggable(targetReference));
-
-            Transform container = new(world);
-            container.entity.AddComponent(new Anchor(new(0f, false), new(0f, false), default, new(1f, false), new(26f, true), default));
-            container.LocalPosition = new(0f, 0f, 0.1f);
-            container.Parent = box.AsEntity();
 
             Label title = new(world, context, titleText);
             title.Parent = header.AsEntity();
@@ -98,11 +93,27 @@ namespace InteractionKit
             closeButton.Size = new(18f, 18f);
             closeButton.Pivot = new(1f, 1f, 0f);
 
-            rint headerReference = box.AsEntity().AddReference(header.AsEntity());
-            rint containerReference = box.AsEntity().AddReference(container.AsEntity());
-            rint titleLabelReference = box.AsEntity().AddReference(title.AsEntity());
-            rint closeButtonReference = box.AsEntity().AddReference(closeButton.AsEntity());
-            box.AsEntity().AddComponent(new IsVirtualWindow(headerReference, containerReference, titleLabelReference, closeButtonReference, closeCallback));
+            ScrollBar scrollBar = new(world, context, Vector2.UnitY, 0.5f);
+            scrollBar.Parent = box;
+            scrollBar.Size = new(24f, 1f);
+            scrollBar.Anchor = new(new(1f, false), new(0f, false), default, new(1f, false), new(26f, true), default);
+            scrollBar.Pivot = new(1f, 0f, 0f);
+            scrollBar.BackgroundColor = new(0.2f, 0.2f, 0.2f);
+            scrollBar.ScrollHandleColor = Color.White;
+
+            View view = new(world, context);
+            view.Parent = box;
+            view.ViewPosition = new(0f, 0f);
+            view.Anchor = new(new(0f, false), new(0, false), default, new(1f, false), new(26f, true), default);
+            view.ContentSize = new(100f, 100f);
+            view.SetScrollBar(scrollBar);
+
+            rint headerReference = box.AddReference(header);
+            rint titleLabelReference = box.AddReference(title);
+            rint closeButtonReference = box.AddReference(closeButton);
+            rint scrollBarReference = box.AddReference(scrollBar);
+            rint viewReference = box.AddReference(view);
+            box.AsEntity().AddComponent(new IsVirtualWindow(headerReference, titleLabelReference, closeButtonReference, scrollBarReference, viewReference, closeCallback));
         }
 
         [UnmanagedCallersOnly]

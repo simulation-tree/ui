@@ -8,6 +8,7 @@ namespace InteractionKit.Components
         public Vector2 position;
         public rint selectedReference;
         public PointerAction action;
+        public Vector2 scroll;
 
         public bool HasPrimaryIntent
         {

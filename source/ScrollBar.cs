@@ -40,13 +40,63 @@ namespace InteractionKit
             get
             {
                 rint scrollHandleReference = box.AsEntity().GetComponent<IsScrollBar>().scrollHandleReference;
-                uint scrollHandleEntity = box.AsEntity().GetReference(scrollHandleReference);
-                Image scrollHandle = new(box.AsEntity().GetWorld(), scrollHandleEntity);
+                uint scrollHandleEntity = box.GetReference(scrollHandleReference);
+                Image scrollHandle = new(box.GetWorld(), scrollHandleEntity);
                 return ref scrollHandle.Color;
             }
         }
 
         public readonly ref Vector2 Axis => ref box.AsEntity().GetComponentRef<IsScrollBar>().axis;
+
+        public readonly Vector2 Value
+        {
+            get
+            {
+                return box.AsEntity().GetComponent<IsScrollBar>().value;
+            }
+        }
+
+        public readonly float HandlePercentageSize
+        {
+            get
+            {
+                IsScrollBar component = box.AsEntity().GetComponent<IsScrollBar>();
+                rint scrollHandleReference = component.scrollHandleReference;
+                uint scrollHandleEntity = box.GetReference(scrollHandleReference);
+                Image scrollHandle = new(box.GetWorld(), scrollHandleEntity);
+                if (component.axis.Y > component.axis.X)
+                {
+                    return scrollHandle.Size.Y;
+                }
+                else if (component.axis.X > component.axis.Y)
+                {
+                    return scrollHandle.Size.X;
+                }
+                else
+                {
+                    return scrollHandle.Size.X;
+                }
+            }
+            set
+            {
+                IsScrollBar component = box.AsEntity().GetComponent<IsScrollBar>();
+                rint scrollHandleReference = component.scrollHandleReference;
+                uint scrollHandleEntity = box.GetReference(scrollHandleReference);
+                Image scrollHandle = new(box.GetWorld(), scrollHandleEntity);
+                if (component.axis.Y > component.axis.X)
+                {
+                    scrollHandle.Size = new(1, value);
+                }
+                else if (component.axis.X > component.axis.Y)
+                {
+                    scrollHandle.Size = new(value, 1);
+                }
+                else
+                {
+                    scrollHandle.Size = new(value);
+                }
+            }
+        }
 
         readonly uint IEntity.Value => box.GetEntityValue();
         readonly World IEntity.World => box.GetWorld();
@@ -58,11 +108,11 @@ namespace InteractionKit
             box.transform.LocalPosition = new(0f, 0f, 0.1f);
 
             Transform scrollRegion = new(world);
-            scrollRegion.Parent = box.AsEntity();
+            scrollRegion.Parent = box;
             scrollRegion.AsEntity().AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
 
             Image scrollHandle = new(world, context);
-            scrollHandle.Parent = scrollRegion.AsEntity();
+            scrollHandle.Parent = scrollRegion;
             scrollHandle.Color = Color.Black;
             if (axis.Y > axis.X)
             {
@@ -82,7 +132,7 @@ namespace InteractionKit
 
             scrollHandle.AsEntity().AddComponent(new IsSelectable());
 
-            rint scrollHandleReference = box.AsEntity().AddReference(scrollHandle);
+            rint scrollHandleReference = box.AddReference(scrollHandle);
             box.transform.entity.AddComponent(new IsScrollBar(scrollHandleReference, axis));
         }
     }

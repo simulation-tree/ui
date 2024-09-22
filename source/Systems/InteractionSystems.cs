@@ -6,6 +6,7 @@ namespace InteractionKit.Systems
     {
         public readonly CanvasSystem canvases;
         public readonly SelectionSystem selections;
+        public readonly VirtualWindowsScrollViewSystem virtualWindowsScrollViews;
         public readonly InvokeTriggersSystem triggers;
         public readonly AutomationParameterSystem automationParameters;
         public readonly ComponentMixingSystem componentMixing;
@@ -18,6 +19,7 @@ namespace InteractionKit.Systems
         {
             canvases = new(world);
             selections = new(world);
+            virtualWindowsScrollViews = new(world);
             triggers = new(world);
             automationParameters = new(world);
             componentMixing = new(world);
@@ -36,6 +38,7 @@ namespace InteractionKit.Systems
             componentMixing.Dispose();
             automationParameters.Dispose();
             triggers.Dispose();
+            virtualWindowsScrollViews.Dispose();
             selections.Dispose();
             canvases.Dispose();
             base.Dispose();

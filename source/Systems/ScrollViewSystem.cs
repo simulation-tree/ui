@@ -5,8 +5,10 @@ using Rendering.Components;
 using Simulation;
 using System;
 using System.Numerics;
+using System.Reflection;
 using Transforms.Components;
 using Unmanaged;
+using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
@@ -14,16 +16,19 @@ namespace InteractionKit.Systems
     {
         private readonly ComponentQuery<IsView, LocalToWorld> scrollViewQuery;
         private readonly ComponentQuery<IsView, ViewScrollBarLink> scrollBarQuery;
+        private readonly ComponentQuery<IsPointer> pointers;
 
         public ScrollViewSystem(World world) : base(world)
         {
             scrollViewQuery = new();
             scrollBarQuery = new();
+            pointers = new();
             Subscribe<InteractionUpdate>(Update);
         }
 
         public override void Dispose()
         {
+            pointers.Dispose();
             scrollBarQuery.Dispose();
             scrollViewQuery.Dispose();
             base.Dispose();
@@ -31,6 +36,7 @@ namespace InteractionKit.Systems
 
         private void Update(InteractionUpdate update)
         {
+            pointers.Update(world);
             scrollBarQuery.Update(world);
             scrollViewQuery.Update(world);
             foreach (var s in scrollViewQuery)
@@ -51,7 +57,24 @@ namespace InteractionKit.Systems
                     ViewScrollBarLink scrollBarLink = scrollBarQuery[scrollBarIndex].Component2;
                     rint scrollBarReference = scrollBarLink.scrollBarReference;
                     uint scrollBarEntity = world.GetReference(scrollViewEntity, scrollBarReference);
-                    IsScrollBar scrollBar = world.GetComponent<IsScrollBar>(scrollBarEntity);
+                    ref IsScrollBar scrollBar = ref world.GetComponentRef<IsScrollBar>(scrollBarEntity);
+
+                    //get scroll
+                    Vector3 ltwPosition = ltw.Position;
+                    Vector3 ltwOffset = ltwPosition + ltw.Scale;
+                    Vector3 min = Vector3.Min(ltwPosition, ltwOffset);
+                    Vector3 max = Vector3.Max(ltwPosition, ltwOffset);
+                    foreach (var p in pointers)
+                    {
+                        Vector2 pointerPosition = p.Component1.position;
+                        bool contains = pointerPosition.X >= min.X && pointerPosition.X <= max.X && pointerPosition.Y >= min.Y && pointerPosition.Y <= max.Y;
+                        if (contains)
+                        {
+                            Vector2 pointerScroll = p.Component1.scroll;
+                            scrollBar.value += pointerScroll;
+                        }
+                    }
+
                     Vector2 value = scrollBar.value;
                     value.X *= (contentScale.X - scrollViewScale.X);
                     value.Y *= (contentScale.Y - scrollViewScale.Y);
