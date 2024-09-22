@@ -1,6 +1,7 @@
 ﻿using Data;
 using InteractionKit.Components;
 using Simulation;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Numerics;
 using Transforms;
@@ -82,6 +83,29 @@ namespace InteractionKit
             return node;
         }
 
+        public readonly void UpdatePositions()
+        {
+            Vector2 size = Size;
+            USpan<TreeNodeOption> nodes = Nodes;
+            float y = 0;
+            for (uint i = 0; i < nodes.Length; i++)
+            {
+                rint nodeReference = nodes[i].childNodeReference;
+                uint nodeEntity = transform.GetReference(nodeReference);
+                TreeNode node = new(transform.GetWorld(), nodeEntity);
+                node.Position = new(0, -y);
+                node.Size = size;
+                if (node.IsExpanded)
+                {
+                    y += node.UpdatePositions();
+                }
+                else
+                {
+                    y += size.Y;
+                }
+            }
+        }
+
         public readonly bool IsSelected(TreeNode node)
         {
             USpan<SelectedLeaf> selected = Selected;
@@ -107,7 +131,7 @@ namespace InteractionKit
                 rint nodeReference = transform.AddReference(node);
                 USpan<SelectedLeaf> selected = transform.AsEntity().ResizeArray<SelectedLeaf>(selectedCount + 1);
                 selected[selectedCount] = new(nodeReference);
-                node.box.Color = Color.Red;
+                node.BackgroundColor = Color.Red;
             }
             else
             {
@@ -131,7 +155,7 @@ namespace InteractionKit
                 }
 
                 transform.AsEntity().ResizeArray<SelectedLeaf>(selectedCount - 1);
-                node.box.Color = Color.White;
+                node.BackgroundColor = Color.White;
             }
         }
 

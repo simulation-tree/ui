@@ -4,7 +4,6 @@ using Rendering;
 using Rendering.Components;
 using Simulation;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Transforms.Components;
 using Unmanaged;
@@ -138,6 +137,8 @@ namespace InteractionKit.Systems
                         scissor.region = region;
                     }
                 }
+
+                UpdateScissors(child, region);
             }
         }
     }

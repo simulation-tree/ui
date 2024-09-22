@@ -4,11 +4,11 @@ namespace InteractionKit.Components
 {
     public struct TreeNodeOption
     {
-        public rint nodeReference;
+        public rint childNodeReference;
 
-        public TreeNodeOption(rint nodeReference)
+        public TreeNodeOption(rint childNodeReference)
         {
-            this.nodeReference = nodeReference;
+            this.childNodeReference = childNodeReference;
         }
     }
 }
