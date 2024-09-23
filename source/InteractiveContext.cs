@@ -7,6 +7,7 @@ using Meshes;
 using Rendering;
 using Simulation;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Textures;
 using Transforms.Components;
@@ -14,26 +15,72 @@ using Unmanaged;
 
 namespace InteractionKit
 {
-    public readonly struct InteractiveContext : IDisposable
+    public readonly struct InteractiveContext : IDisposable, IEquatable<InteractiveContext>
     {
-        private readonly Allocation state;
+        public const char SelectMultipleCharacter = (char)16;
 
-        public ref bool SelectMultiple => ref Value.selectMultiple;
-        public readonly Camera Camera => Value.camera;
-        public readonly Canvas Canvas => Value.canvas;
-        public readonly Mesh QuadMesh => Value.quadMesh;
-        public readonly Texture SquareTexture => Value.squareTexture;
-        public readonly Texture TriangleTexture => Value.triangleTexture;
-        public readonly Font DefaultFont => Value.defaultFont;
-        public readonly Material SquareMaterial => Value.squareMaterial;
-        public readonly Material TriangleMaterial => Value.triangleMaterial;
-        public readonly Material TextMaterial => Value.textMaterial;
-        public readonly StateMachine ControlStateMachine => Value.controlStateMachine;
-        public readonly Automation IdleAutomation => Value.idleAutomation;
-        public readonly Automation SelectedAutomation => Value.selectedAutomation;
-        public readonly Automation PressedAutomation => Value.pressedAutomation;
+        public readonly Allocation allocation;
 
-        private ref State Value => ref state.Read<State>();
+        public unsafe readonly bool SelectMultiple
+        {
+            get
+            {
+                ref State state = ref StateValue;
+                byte pressedCount = state.pressedCount;
+                for (byte i = 0; i < pressedCount; i++)
+                {
+                    if (state.pressedCharacters[i] == SelectMultipleCharacter)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            set
+            {
+                ref State state = ref StateValue;
+                byte pressedCount = state.pressedCount;
+                for (byte i = 0; i < pressedCount; i++)
+                {
+                    if (state.pressedCharacters[i] == SelectMultipleCharacter)
+                    {
+                        if (value)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            state.pressedCharacters[i] = state.pressedCharacters[pressedCount - 1];
+                            state.pressedCount--;
+                            return;
+                        }
+                    }
+                }
+
+                if (value)
+                {
+                    state.pressedCharacters[pressedCount] = (byte)SelectMultipleCharacter;
+                    state.pressedCount++;
+                }
+            }
+        }
+
+        public readonly Camera Camera => StateValue.camera;
+        public readonly Canvas Canvas => StateValue.canvas;
+        public readonly Mesh QuadMesh => StateValue.quadMesh;
+        public readonly Texture SquareTexture => StateValue.squareTexture;
+        public readonly Texture TriangleTexture => StateValue.triangleTexture;
+        public readonly Font DefaultFont => StateValue.defaultFont;
+        public readonly Material SquareMaterial => StateValue.squareMaterial;
+        public readonly Material TriangleMaterial => StateValue.triangleMaterial;
+        public readonly Material TextMaterial => StateValue.textMaterial;
+        public readonly StateMachine ControlStateMachine => StateValue.controlStateMachine;
+        public readonly Automation IdleAutomation => StateValue.idleAutomation;
+        public readonly Automation SelectedAutomation => StateValue.selectedAutomation;
+        public readonly Automation PressedAutomation => StateValue.pressedAutomation;
+
+        private ref State StateValue => ref allocation.Read<State>();
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -116,17 +163,85 @@ namespace InteractionKit
             state.textMaterial.AddPushBinding<LocalToWorld>();
 
             state.defaultFont = new(world, Address.Get<CascadiaMonoFont>());
-            this.state = Allocation.Create(state);
+            this.allocation = Allocation.Create(state);
         }
 
         public readonly void Dispose()
         {
-            state.Dispose();
+            allocation.Dispose();
+        }
+
+        public unsafe readonly uint GetPressedChars(USpan<char> characterBuffer)
+        {
+            State state = StateValue;
+            byte count = state.pressedCount;
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            uint length = 0;
+            for (byte i = 0; i < count; i++)
+            {
+                byte pressedCharacter = state.pressedCharacters[i];
+                if (pressedCharacter == SelectMultipleCharacter)
+                {
+                    continue;
+                }
+
+                characterBuffer[length++] = (char)pressedCharacter;
+            }
+
+            return length;
+        }
+
+        public unsafe readonly void SetPressedChars(USpan<char> characters)
+        {
+            ThrowIfPressedCharCountExceedsMax(characters.Length);
+            bool selectMultiple = SelectMultiple;
+            ref State state = ref StateValue;
+            byte count = (byte)characters.Length;
+            state.pressedCount = count;
+            for (byte i = 0; i < count; i++)
+            {
+                state.pressedCharacters[i] = (byte)characters[i];
+            }
+
+            if (selectMultiple)
+            {
+                state.pressedCharacters[count] = (byte)SelectMultipleCharacter;
+                state.pressedCount++;
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private readonly void ThrowIfPressedCharCountExceedsMax(uint length)
+        {
+            if (length > FixedString.MaxLength)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "The length of the pressed keys must be less than or equal to 32.");
+            }
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is InteractiveContext context && Equals(context);
+        }
+
+        public readonly bool Equals(InteractiveContext other)
+        {
+            return allocation.Equals(other.allocation);
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(allocation);
         }
 
         internal unsafe struct State
         {
-            public bool selectMultiple;
+            public fixed byte pressedCharacters[(int)FixedString.MaxLength];
+            public byte pressedCount;
             public Camera camera;
             public Canvas canvas;
             public Mesh quadMesh;
@@ -140,6 +255,16 @@ namespace InteractionKit
             public Automation idleAutomation;
             public Automation selectedAutomation;
             public Automation pressedAutomation;
+        }
+
+        public static bool operator ==(InteractiveContext left, InteractiveContext right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(InteractiveContext left, InteractiveContext right)
+        {
+            return !(left == right);
         }
     }
 }

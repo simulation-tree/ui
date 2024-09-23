@@ -14,6 +14,7 @@ namespace InteractionKit.Systems
         public readonly ToggleSystem toggles;
         public readonly ScrollHandleMovingSystem scrollHandles;
         public readonly ScrollViewSystem scrollViews;
+        public readonly TextFieldEditingSystem textFieldEditing;
 
         public InteractionSystems(World world) : base(world)
         {
@@ -27,10 +28,12 @@ namespace InteractionKit.Systems
             toggles = new(world);
             scrollHandles = new(world);
             scrollViews = new(world);
+            textFieldEditing = new(world);
         }
 
         public override void Dispose()
         {
+            textFieldEditing.Dispose();
             scrollViews.Dispose();
             scrollHandles.Dispose();
             toggles.Dispose();

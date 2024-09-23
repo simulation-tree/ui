@@ -13,37 +13,37 @@ namespace InteractionKit
 {
     public readonly struct Dropdown : ISelectable
     {
-        public readonly Image box;
+        public readonly Image background;
 
         public readonly Entity Parent
         {
-            get => box.Parent;
-            set => box.Parent = value;
+            get => background.Parent;
+            set => background.Parent = value;
         }
 
         public readonly Vector2 Position
         {
-            get => box.Position;
-            set => box.Position = value;
+            get => background.Position;
+            set => background.Position = value;
         }
 
         public readonly Vector2 Size
         {
-            get => box.Size;
-            set => box.Size = value;
+            get => background.Size;
+            set => background.Size = value;
         }
 
-        public readonly ref Anchor Anchor => ref box.Anchor;
-        public readonly ref Vector3 Pivot => ref box.Pivot;
-        public readonly ref Color BackgroundColor => ref box.Color;
+        public readonly ref Anchor Anchor => ref background.Anchor;
+        public readonly ref Vector3 Pivot => ref background.Pivot;
+        public readonly ref Color BackgroundColor => ref background.Color;
 
         public readonly Label Label
         {
             get
             {
-                rint labelReference = box.AsEntity().GetComponent<IsDropdown>().labelReference;
-                uint labelEntity = box.GetReference(labelReference);
-                return new(box.GetWorld(), labelEntity);
+                rint labelReference = background.AsEntity().GetComponent<IsDropdown>().labelReference;
+                uint labelEntity = background.GetReference(labelReference);
+                return new(background.GetWorld(), labelEntity);
             }
         }
 
@@ -53,9 +53,9 @@ namespace InteractionKit
         {
             get
             {
-                rint triangleReference = box.AsEntity().GetComponent<IsDropdown>().triangleReference;
-                uint triangleEntity = box.GetReference(triangleReference);
-                return new(box.GetWorld(), triangleEntity);
+                rint triangleReference = background.AsEntity().GetComponent<IsDropdown>().triangleReference;
+                uint triangleEntity = background.GetReference(triangleReference);
+                return new(background.GetWorld(), triangleEntity);
             }
         }
 
@@ -65,9 +65,9 @@ namespace InteractionKit
         {
             get
             {
-                rint menuReference = box.AsEntity().GetComponent<IsDropdown>().menuReference;
-                uint menuEntity = box.GetReference(menuReference);
-                return new Entity(box.GetWorld(), menuEntity).As<Menu>();
+                rint menuReference = background.AsEntity().GetComponent<IsDropdown>().menuReference;
+                uint menuEntity = background.GetReference(menuReference);
+                return new Entity(background.GetWorld(), menuEntity).As<Menu>();
             }
         }
 
@@ -75,15 +75,15 @@ namespace InteractionKit
         {
             get
             {
-                OptionPath selectedOption = box.AsEntity().GetComponent<IsDropdown>().selectedOption;
+                OptionPath selectedOption = background.AsEntity().GetComponent<IsDropdown>().selectedOption;
                 return selectedOption;
             }
             set
             {
-                ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                ref IsDropdown component = ref background.AsEntity().GetComponentRef<IsDropdown>();
                 component.selectedOption = value;
 
-                World world = box.GetWorld();
+                World world = background.GetWorld();
                 Menu menu = Menu;
                 USpan<MenuOption> options = menu.Options;
                 FixedString text = default;
@@ -122,7 +122,7 @@ namespace InteractionKit
                 }
 
                 rint labelReference = component.labelReference;
-                uint labelEntity = box.GetReference(labelReference);
+                uint labelEntity = background.GetReference(labelReference);
                 Label dropdownLabel = new(world, labelEntity);
                 dropdownLabel.SetText(text);
             }
@@ -132,12 +132,12 @@ namespace InteractionKit
         {
             get
             {
-                ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                ref IsDropdown component = ref background.AsEntity().GetComponentRef<IsDropdown>();
                 return component.expanded;
             }
             set
             {
-                ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                ref IsDropdown component = ref background.AsEntity().GetComponentRef<IsDropdown>();
                 component.expanded = value;
 
                 Menu menu = Menu;
@@ -169,13 +169,13 @@ namespace InteractionKit
         {
             get
             {
-                ref IsDropdown component = ref box.AsEntity().GetComponentRef<IsDropdown>();
+                ref IsDropdown component = ref background.AsEntity().GetComponentRef<IsDropdown>();
                 return ref component.callback;
             }
         }
 
-        readonly uint IEntity.Value => box.GetEntityValue();
-        readonly World IEntity.World => box.GetWorld();
+        readonly uint IEntity.Value => background.GetEntityValue();
+        readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTrigger, IsSelectable, IsDropdown>();
 
 #if NET
@@ -188,24 +188,24 @@ namespace InteractionKit
 
         public Dropdown(World world, uint existingEntity)
         {
-            box = new(world, existingEntity);
+            background = new(world, existingEntity);
         }
 
         public unsafe Dropdown(World world, InteractiveContext context, DropdownCallbackFunction callback = default)
         {
-            box = new(world, context);
-            box.AsEntity().AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
-            box.AsEntity().AddComponent(new IsSelectable());
+            background = new(world, context);
+            background.AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
+            background.AddComponent(new IsSelectable());
 
             Label label = new(world, context, "");
-            label.Parent = box.AsEntity();
+            label.Parent = background;
             label.Anchor = Anchor.TopLeft;
             label.Color = Color.Black;
             label.Position = new(4f, -4f);
             label.Pivot = new(0f, 1f, 0f);
 
             Image triangle = new(world, context);
-            triangle.Parent = box.AsEntity();
+            triangle.Parent = background;
             triangle.Material = context.TriangleMaterial;
             triangle.Anchor = Anchor.TopRight;
             triangle.Size = new(16f, 16f);
@@ -214,16 +214,16 @@ namespace InteractionKit
             triangle.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
 
             Menu menu = new(world, new(&ChosenOption));
-            menu.Parent = box.AsEntity();
+            menu.Parent = background;
             menu.Anchor = Anchor.BottomLeft;
-            menu.Size = box.Size;
+            menu.Size = background.Size;
             menu.Pivot = new(0f, 1f, 0f);
             menu.SetEnabled(false);
 
-            rint labelReference = box.AddReference(label);
-            rint triangleReference = box.AddReference(triangle);
-            rint menuReference = box.AddReference(menu);
-            box.AsEntity().AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
+            rint labelReference = background.AddReference(label);
+            rint triangleReference = background.AddReference(triangle);
+            rint menuReference = background.AddReference(menu);
+            background.AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
         }
 
         [UnmanagedCallersOnly]

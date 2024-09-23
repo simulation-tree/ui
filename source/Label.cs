@@ -67,6 +67,24 @@ namespace InteractionKit
             }
         }
 
+        public readonly Font Font
+        {
+            get
+            {
+                rint textMeshReference = textRenderer.AsEntity().GetComponent<IsLabel>().textMeshReference;
+                uint textMeshEntity = textRenderer.AsEntity().GetReference(textMeshReference);
+                TextMesh textMesh = new(textRenderer.GetWorld(), textMeshEntity);
+                return textMesh.Font;
+            }
+            set
+            {
+                rint textMeshReference = textRenderer.AsEntity().GetComponent<IsLabel>().textMeshReference;
+                uint textMeshEntity = textRenderer.AsEntity().GetReference(textMeshReference);
+                TextMesh textMesh = new(textRenderer.GetWorld(), textMeshEntity);
+                textMesh.Font = value;
+            }
+        }
+
         readonly uint IEntity.Value => textRenderer.GetEntityValue();
         readonly World IEntity.World => textRenderer.GetWorld();
         readonly Definition IEntity.Definition => new([RuntimeType.Get<TextRenderer>(), RuntimeType.Get<IsSelectable>()], []);
