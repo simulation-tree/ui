@@ -12,32 +12,32 @@ namespace InteractionKit
 {
     public readonly struct Button : ISelectable
     {
-        public readonly Image box;
+        public readonly Image image;
 
         public readonly Entity Parent
         {
-            get => box.Parent;
-            set => box.Parent = value;
+            get => image.Parent;
+            set => image.Parent = value;
         }
 
         public readonly Vector2 Position
         {
-            get => box.Position;
-            set => box.Position = value;
+            get => image.Position;
+            set => image.Position = value;
         }
 
         public readonly Vector2 Size
         {
-            get => box.Size;
-            set => box.Size = value;
+            get => image.Size;
+            set => image.Size = value;
         }
 
-        public readonly ref Anchor Anchor => ref box.Anchor;
-        public readonly ref Vector3 Pivot => ref box.Pivot;
-        public readonly ref Color Color => ref box.Color;
+        public readonly ref Anchor Anchor => ref image.Anchor;
+        public readonly ref Vector3 Pivot => ref image.Pivot;
+        public readonly ref Color Color => ref image.Color;
 
-        readonly uint IEntity.Value => box.GetEntityValue();
-        readonly World IEntity.World => box.GetWorld();
+        readonly uint IEntity.Value => image.GetEntityValue();
+        readonly World IEntity.World => image.GetWorld();
         readonly Definition IEntity.Definition => new([RuntimeType.Get<IsTrigger>(), RuntimeType.Get<IsSelectable>()], []);
 
 #if NET
@@ -50,36 +50,20 @@ namespace InteractionKit
 
         public unsafe Button(World world, CallbackFunction callback, InteractiveContext context)
         {
-            box = new(world, context);
-            box.AsEntity().AddComponent(new IsTrigger(new(&Filter), callback));
-            box.AsEntity().AddComponent(new IsSelectable());
-        }
-
-        public readonly Entity AsEntity()
-        {
-            return box.AsEntity();
+            image = new(world, context);
+            image.AddComponent(new IsTrigger(new(&Filter), callback));
+            image.AddComponent(new IsSelectable());
         }
 
         [UnmanagedCallersOnly]
         private static void Filter(FilterFunction.Input input)
         {
             World world = input.world;
-            bool selected = false;
             foreach (ref uint entity in input.Entities)
             {
                 //todo: efficiency: doing individual calls within a filter function
                 IsSelectable component = world.GetComponent<IsSelectable>(entity);
-                if (!selected && component.IsSelected)
-                {
-                    bool pressed = (component.state & IsSelectable.State.WasPrimaryInteractedWith) != 0;
-                    if (!pressed)
-                    {
-                        entity = default;
-                    }
-
-                    selected = true;
-                }
-                else
+                if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;
                 }

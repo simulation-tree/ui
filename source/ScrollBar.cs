@@ -54,6 +54,10 @@ namespace InteractionKit
             {
                 return box.AsEntity().GetComponent<IsScrollBar>().value;
             }
+            set
+            {
+                box.AsEntity().GetComponentRef<IsScrollBar>().value = value;
+            }
         }
 
         public readonly float HandlePercentageSize
@@ -105,11 +109,11 @@ namespace InteractionKit
         public ScrollBar(World world, InteractiveContext context, Vector2 axis, float handlePercentageSize)
         {
             box = new Image(world, context);
-            box.transform.LocalPosition = new(0f, 0f, 0.1f);
 
             Transform scrollRegion = new(world);
             scrollRegion.Parent = box;
-            scrollRegion.AsEntity().AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
+            scrollRegion.AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
+            scrollRegion.AddComponent(new IsSelectable());
 
             Image scrollHandle = new(world, context);
             scrollHandle.Parent = scrollRegion;
@@ -130,10 +134,10 @@ namespace InteractionKit
                 scrollHandle.Size = new(handlePercentageSize);
             }
 
-            scrollHandle.AsEntity().AddComponent(new IsSelectable());
+            scrollHandle.AddComponent(new IsSelectable());
 
             rint scrollHandleReference = box.AddReference(scrollHandle);
-            box.transform.entity.AddComponent(new IsScrollBar(scrollHandleReference, axis));
+            box.AddComponent(new IsScrollBar(scrollHandleReference, axis));
         }
     }
 }

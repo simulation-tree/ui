@@ -71,25 +71,25 @@ namespace InteractionKit
             header.Pivot = new(0f, 1f, 0f);
             header.Size = new(1f, 26f);
             header.Color = new Color(0.2f, 0.2f, 0.2f);
-            header.transform.LocalPosition = new(0f, 0f, 0.1f);
-            header.Parent = box.AsEntity();
-            header.AsEntity().AddComponent<IsSelectable>();
+            header.transform.LocalPosition = new(0f, 0f, 1f);
+            header.Parent = box;
+            header.AddComponent(new IsSelectable());
 
             rint targetReference = header.AddReference(box);
-            header.AsEntity().AddComponent(new IsDraggable(targetReference));
+            header.AddComponent(new IsDraggable(targetReference));
 
             Label title = new(world, context, titleText);
-            title.Parent = header.AsEntity();
+            title.Parent = header;
             title.Anchor = Anchor.TopLeft;
             title.Color = Color.White;
             title.Position = new(4f, -4f);
             title.Pivot = new(0f, 1f, 0f);
 
             Button closeButton = new(world, new(&PressedWindowCloseButton), context);
-            closeButton.Parent = header.AsEntity();
+            closeButton.Parent = header;
             closeButton.Color = Color.Red;
             closeButton.Anchor = Anchor.TopRight;
-            closeButton.box.transform.LocalPosition = new(-4f, -4f, 0.1f);
+            closeButton.image.transform.LocalPosition = new(-4f, -4f, 0.1f);
             closeButton.Size = new(18f, 18f);
             closeButton.Pivot = new(1f, 1f, 0f);
 
@@ -100,11 +100,12 @@ namespace InteractionKit
             scrollBar.Pivot = new(1f, 0f, 0f);
             scrollBar.BackgroundColor = new(0.2f, 0.2f, 0.2f);
             scrollBar.ScrollHandleColor = Color.White;
+            scrollBar.Value = new(0f, 1f);
 
             View view = new(world, context);
             view.Parent = box;
             view.ViewPosition = new(0f, 0f);
-            view.Anchor = new(new(0f, false), new(0, false), default, new(1f, false), new(26f, true), default);
+            view.Anchor = new(new(0f, false), new(0, false), default, new(24f, true), new(26f, true), default);
             view.ContentSize = new(100f, 100f);
             view.SetScrollBar(scrollBar);
 
@@ -113,7 +114,7 @@ namespace InteractionKit
             rint closeButtonReference = box.AddReference(closeButton);
             rint scrollBarReference = box.AddReference(scrollBar);
             rint viewReference = box.AddReference(view);
-            box.AsEntity().AddComponent(new IsVirtualWindow(headerReference, titleLabelReference, closeButtonReference, scrollBarReference, viewReference, closeCallback));
+            box.AddComponent(new IsVirtualWindow(headerReference, titleLabelReference, closeButtonReference, scrollBarReference, viewReference, closeCallback));
         }
 
         [UnmanagedCallersOnly]

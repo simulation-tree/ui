@@ -6,7 +6,7 @@ namespace InteractionKit.Components
     public struct IsPointer
     {
         public Vector2 position;
-        public rint selectedReference;
+        public rint hoveringOverReference;
         public PointerAction action;
         public Vector2 scroll;
 
@@ -22,10 +22,10 @@ namespace InteractionKit.Components
             set => action = value ? action | PointerAction.Secondary : action & ~PointerAction.Secondary;
         }
 
-        public IsPointer(Vector2 position, rint selectedReference)
+        public IsPointer(Vector2 position, rint hoveringOverReference)
         {
             this.position = position;
-            this.selectedReference = selectedReference;
+            this.hoveringOverReference = hoveringOverReference;
         }
     }
 }

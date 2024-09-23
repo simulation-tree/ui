@@ -12,7 +12,7 @@ namespace InteractionKit.Systems
         public readonly ComponentMixingSystem componentMixing;
         public readonly PointerDraggingSelectableSystem pointerDragging;
         public readonly ToggleSystem toggles;
-        public readonly ScrollHandleDragSystem scrollHandles;
+        public readonly ScrollHandleMovingSystem scrollHandles;
         public readonly ScrollViewSystem scrollViews;
 
         public InteractionSystems(World world) : base(world)

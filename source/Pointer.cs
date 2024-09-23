@@ -28,27 +28,27 @@ namespace InteractionKit
         }
 
         /// <summary>
-        /// The currently selected entity.
-        /// <para>Can be <c>default</c>.</para>
+        /// The currently hovered over entity.
+        /// <para>May be <c>default</c>.</para>
         /// </summary>
-        public readonly Entity Selected
+        public readonly Entity HoveringOver
         {
             get
             {
-                rint selectedReference = entity.GetComponent<IsPointer>().selectedReference;
-                uint selectedEntity = entity.GetReference(selectedReference);
-                return new Entity(entity.world, selectedEntity);
+                rint hoveringOverReference = entity.GetComponent<IsPointer>().hoveringOverReference;
+                uint hoveringOverEntity = entity.GetReference(hoveringOverReference);
+                return new Entity(entity.world, hoveringOverEntity);
             }
             set
             {
                 ref IsPointer pointer = ref entity.GetComponentRef<IsPointer>();
-                if (pointer.selectedReference == default)
+                if (pointer.hoveringOverReference == default)
                 {
-                    pointer.selectedReference = entity.AddReference(value);
+                    pointer.hoveringOverReference = entity.AddReference(value);
                 }
                 else
                 {
-                    entity.SetReference(pointer.selectedReference, value);
+                    entity.SetReference(pointer.hoveringOverReference, value);
                 }
             }
         }

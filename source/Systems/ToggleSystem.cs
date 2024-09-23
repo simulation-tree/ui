@@ -40,8 +40,8 @@ namespace InteractionKit.Systems
                 {
                     if (pressed)
                     {
-                        rint selectedReference = p.Component1.selectedReference;
-                        uint selectedEntity = world.GetReference(pointerEntity, selectedReference);
+                        rint hoveringOverReference = p.Component1.hoveringOverReference;
+                        uint selectedEntity = world.GetReference(pointerEntity, hoveringOverReference);
                         if (selectedEntity != default && toggleQuery.TryIndexOf(selectedEntity, out uint index))
                         {
                             ref IsToggle toggle = ref toggleQuery[index].Component1;

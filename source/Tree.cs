@@ -131,7 +131,8 @@ namespace InteractionKit
                 rint nodeReference = transform.AddReference(node);
                 USpan<SelectedLeaf> selected = transform.AsEntity().ResizeArray<SelectedLeaf>(selectedCount + 1);
                 selected[selectedCount] = new(nodeReference);
-                node.BackgroundColor = Color.Red;
+                node.BackgroundColor = Color.SkyBlue;
+                node.Label.Color = Color.White;
             }
             else
             {
@@ -156,6 +157,7 @@ namespace InteractionKit
 
                 transform.AsEntity().ResizeArray<SelectedLeaf>(selectedCount - 1);
                 node.BackgroundColor = Color.White;
+                node.Label.Color = Color.Black;
             }
         }
 

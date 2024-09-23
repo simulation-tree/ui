@@ -42,10 +42,10 @@ namespace InteractionKit.Systems
             foreach (var p in pointerQuery)
             {
                 ref IsPointer pointer = ref p.Component1;
-                if (pointer.selectedReference != default)
+                if (pointer.hoveringOverReference != default)
                 {
-                    uint selectedEntity = world.GetReference(p.entity, pointer.selectedReference);
-                    selectedEntities.Add(selectedEntity);
+                    uint hoveringOverEntity = world.GetReference(p.entity, pointer.hoveringOverReference);
+                    selectedEntities.Add(hoveringOverEntity);
                 }
             }
         }

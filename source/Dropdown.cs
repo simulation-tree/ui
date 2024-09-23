@@ -279,21 +279,10 @@ namespace InteractionKit
         private static void Filter(FilterFunction.Input input)
         {
             World world = input.world;
-            bool selected = false;
             foreach (ref uint entity in input.Entities)
             {
                 IsSelectable component = world.GetComponent<IsSelectable>(entity);
-                if (!selected && component.IsSelected)
-                {
-                    bool pressed = (component.state & IsSelectable.State.WasPrimaryInteractedWith) != 0;
-                    if (!pressed)
-                    {
-                        entity = default;
-                    }
-
-                    selected = true;
-                }
-                else
+                if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;
                 }

@@ -75,7 +75,7 @@ namespace InteractionKit.Systems
                 for (uint i = 0; i < currentEntities.Length; i++)
                 {
                     uint entity = currentEntities[i];
-                    if (entity != default)
+                    if (entity != default && trigger.callback != default)
                     {
                         trigger.callback.Invoke(world, entity);
                     }

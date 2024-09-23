@@ -135,12 +135,12 @@ namespace InteractionKit
                 float triangleButtonSize = 16f;
                 Button triangle = new(world, new(&ToggleExpanded), context);
                 triangle.Parent = transform.AsEntity();
-                triangle.box.Material = context.TriangleMaterial;
+                triangle.image.Material = context.TriangleMaterial;
                 triangle.Anchor = Anchor.TopLeft;
                 triangle.Size = new(triangleButtonSize, triangleButtonSize);
                 triangle.Color = Color.Black;
                 triangle.Position = new(4f, -4f);
-                triangle.box.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
+                triangle.image.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
             }
 
             TreeNode node = new(world, text, context);
@@ -200,21 +200,10 @@ namespace InteractionKit
         private static void Filter(FilterFunction.Input input)
         {
             World world = input.world;
-            bool selected = false;
             foreach (ref uint entity in input.Entities)
             {
                 IsSelectable component = world.GetComponent<IsSelectable>(entity);
-                if (!selected && component.IsSelected)
-                {
-                    bool pressed = (component.state & IsSelectable.State.WasPrimaryInteractedWith) != 0;
-                    if (!pressed)
-                    {
-                        entity = default;
-                    }
-
-                    selected = true;
-                }
-                else
+                if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;
                 }
@@ -254,6 +243,7 @@ namespace InteractionKit
                     uint selectedNodeEntity = tree.GetReference(nodeReference);
                     TreeNode selectedNode = new Entity(world, selectedNodeEntity).As<TreeNode>();
                     selectedNode.BackgroundColor = Color.White;
+                    selectedNode.Label.Color = Color.Black;
                 }
 
                 tree.AsEntity().ResizeArray<SelectedLeaf>(0);

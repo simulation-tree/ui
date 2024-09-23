@@ -5,88 +5,102 @@ using Rendering.Components;
 using Simulation;
 using System;
 using System.Numerics;
-using System.Reflection;
 using Transforms.Components;
 using Unmanaged;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
     public class ScrollViewSystem : SystemBase
     {
-        private readonly ComponentQuery<IsView, LocalToWorld> scrollViewQuery;
-        private readonly ComponentQuery<IsView, ViewScrollBarLink> scrollBarQuery;
-        private readonly ComponentQuery<IsPointer> pointers;
+        private readonly ComponentQuery<IsView, LocalToWorld> viewQuery;
+        private readonly ComponentQuery<IsView, ViewScrollBarLink> scrollBarLinkQuery;
+        private readonly ComponentQuery<IsPointer> pointerQuery;
 
         public ScrollViewSystem(World world) : base(world)
         {
-            scrollViewQuery = new();
-            scrollBarQuery = new();
-            pointers = new();
+            viewQuery = new();
+            scrollBarLinkQuery = new();
+            pointerQuery = new();
             Subscribe<InteractionUpdate>(Update);
         }
 
         public override void Dispose()
         {
-            pointers.Dispose();
-            scrollBarQuery.Dispose();
-            scrollViewQuery.Dispose();
+            pointerQuery.Dispose();
+            scrollBarLinkQuery.Dispose();
+            viewQuery.Dispose();
             base.Dispose();
         }
 
         private void Update(InteractionUpdate update)
         {
-            pointers.Update(world);
-            scrollBarQuery.Update(world);
-            scrollViewQuery.Update(world);
-            foreach (var s in scrollViewQuery)
+            pointerQuery.Update(world);
+            scrollBarLinkQuery.Update(world);
+            viewQuery.Update(world);
+            foreach (var v in viewQuery)
             {
-                uint scrollViewEntity = s.entity;
-                LocalToWorld ltw = s.Component2;
-                rint contentReference = s.Component1.contentReference;
+                uint scrollViewEntity = v.entity;
+                LocalToWorld ltw = v.Component2;
+                rint contentReference = v.Component1.contentReference;
                 uint contentEntity = world.GetReference(scrollViewEntity, contentReference);
-                Vector3 scrollViewPosition = ltw.Position;
-                Vector3 scrollViewScale = ltw.Scale;
+                Vector3 viewPosition = ltw.Position;
+                Vector3 viewScale = ltw.Scale;
                 Destination destination = GetCanvas(scrollViewEntity).Camera.Destination;
                 if (destination == default || destination.IsDestroyed()) continue;
 
                 LocalToWorld contentLtw = world.GetComponent<LocalToWorld>(contentEntity);
                 Vector3 contentScale = contentLtw.Scale;
-                if (scrollBarQuery.TryIndexOf(scrollViewEntity, out uint scrollBarIndex))
+                if (scrollBarLinkQuery.TryIndexOf(scrollViewEntity, out uint scrollBarIndex))
                 {
-                    ViewScrollBarLink scrollBarLink = scrollBarQuery[scrollBarIndex].Component2;
+                    ViewScrollBarLink scrollBarLink = scrollBarLinkQuery[scrollBarIndex].Component2;
                     rint scrollBarReference = scrollBarLink.scrollBarReference;
                     uint scrollBarEntity = world.GetReference(scrollViewEntity, scrollBarReference);
                     ref IsScrollBar scrollBar = ref world.GetComponentRef<IsScrollBar>(scrollBarEntity);
 
-                    //get scroll
-                    Vector3 ltwPosition = ltw.Position;
-                    Vector3 ltwOffset = ltwPosition + ltw.Scale;
-                    Vector3 min = Vector3.Min(ltwPosition, ltwOffset);
-                    Vector3 max = Vector3.Max(ltwPosition, ltwOffset);
-                    foreach (var p in pointers)
+                    //let points scroll the bar
+                    foreach (var p in pointerQuery)
                     {
+                        uint pointerEntity = p.entity;
                         Vector2 pointerPosition = p.Component1.position;
-                        bool contains = pointerPosition.X >= min.X && pointerPosition.X <= max.X && pointerPosition.Y >= min.Y && pointerPosition.Y <= max.Y;
-                        if (contains)
+                        bool hoveredOver = pointerPosition.X >= viewPosition.X && pointerPosition.X <= viewPosition.X + viewScale.X &&
+                                           pointerPosition.Y >= viewPosition.Y && pointerPosition.Y <= viewPosition.Y + viewScale.Y;
+                        if (hoveredOver)
                         {
-                            Vector2 pointerScroll = p.Component1.scroll;
-                            scrollBar.value += pointerScroll;
+                            scrollBar.value += p.Component1.scroll * scrollBar.axis;
+                            if (scrollBar.value.X < 0)
+                            {
+                                scrollBar.value.X = 0;
+                            }
+
+                            if (scrollBar.value.Y < 0)
+                            {
+                                scrollBar.value.Y = 0;
+                            }
+
+                            if (scrollBar.value.X > 1)
+                            {
+                                scrollBar.value.X = 1;
+                            }
+
+                            if (scrollBar.value.Y > 1)
+                            {
+                                scrollBar.value.Y = 1;
+                            }
                         }
                     }
 
                     Vector2 value = scrollBar.value;
-                    value.X *= (contentScale.X - scrollViewScale.X);
-                    value.Y *= (contentScale.Y - scrollViewScale.Y);
-                    s.Component1.value = value;
+                    value.X *= (contentScale.X - viewScale.X);
+                    value.Y *= (contentScale.Y - viewScale.Y);
+                    v.Component1.value = value;
                 }
 
                 (uint width, uint height) destinationSize = destination.Size;
                 Vector4 region = new(0, 0, 1, 1);
-                region.X = scrollViewPosition.X;
-                region.Y = destinationSize.height - (scrollViewPosition.Y + scrollViewScale.Y);
-                region.Z = scrollViewScale.X;
-                region.W = scrollViewScale.Y;
+                region.X = viewPosition.X;
+                region.Y = destinationSize.height - (viewPosition.Y + viewScale.Y);
+                region.Z = viewScale.X;
+                region.W = viewScale.Y;
                 if (region.X < 0)
                 {
                     region.X = 0;
@@ -109,7 +123,7 @@ namespace InteractionKit.Systems
 
                 UpdateScissors(contentEntity, region);
 
-                Vector2 scrollValue = s.Component1.value;
+                Vector2 scrollValue = v.Component1.value;
                 if (float.IsNaN(scrollValue.X))
                 {
                     scrollValue.X = 0f;
@@ -120,11 +134,9 @@ namespace InteractionKit.Systems
                     scrollValue.Y = 0f;
                 }
 
-                Vector2 viewPosition = scrollValue;
-                viewPosition.X = 1 - viewPosition.X;
-                viewPosition.Y = 1 - viewPosition.Y;
                 ref Position position = ref world.GetComponentRef<Position>(contentEntity);
-                position.value = new(viewPosition, position.value.Z);
+                position.value.X = 1 - scrollValue.X;
+                position.value.Y = 1 - scrollValue.Y;
             }
         }
 

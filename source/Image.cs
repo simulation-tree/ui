@@ -60,7 +60,7 @@ namespace InteractionKit
             get
             {
                 rint materialReference = transform.entity.GetComponent<IsRenderer>().materialReference;
-                uint materialEntity = transform.entity.GetReference(materialReference);
+                uint materialEntity = transform.GetReference(materialReference);
                 return new(transform.GetWorld(), materialEntity);
             }
             set
@@ -68,11 +68,11 @@ namespace InteractionKit
                 ref IsRenderer renderer = ref transform.entity.GetComponentRef<IsRenderer>();
                 if (renderer.materialReference != default)
                 {
-                    transform.AsEntity().SetReference(renderer.materialReference, value.GetEntityValue());
+                    transform.SetReference(renderer.materialReference, value.GetEntityValue());
                 }
                 else
                 {
-                    renderer.materialReference = transform.AsEntity().AddReference(value.GetEntityValue());
+                    renderer.materialReference = transform.AddReference(value.GetEntityValue());
                 }
             }
         }
@@ -112,13 +112,13 @@ namespace InteractionKit
         {
             transform = new(world);
             transform.LocalPosition = new(0f, 0f, 0.1f);
-            transform.entity.AddComponent(new Anchor());
-            transform.entity.AddComponent(new Pivot());
-            transform.entity.AddComponent(new ColorTint(new Vector4(1f)));
-            transform.entity.AddComponent(new BaseColor(new Vector4(1f)));
-            transform.entity.AddComponent(new Color(new Vector4(1f)));
-            transform.entity.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
-            transform.Parent = context.Canvas.AsEntity();
+            transform.AddComponent(new Anchor());
+            transform.AddComponent(new Pivot());
+            transform.AddComponent(new ColorTint(new Vector4(1f)));
+            transform.AddComponent(new BaseColor(new Vector4(1f)));
+            transform.AddComponent(new Color(new Vector4(1f)));
+            transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
+            transform.Parent = context.Canvas;
 
             StatefulAutomationPlayer stateful = transform.entity.Become<StatefulAutomationPlayer>();
             stateful.StateMachine = context.ControlStateMachine;
