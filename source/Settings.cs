@@ -116,6 +116,14 @@ namespace InteractionKit
         readonly World IEntity.World => entity.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentTypes<MeshSettings, FontSettings, AutomationSettings, TextEditRange>().AddArrayTypes<char, MaterialSettings>();
 
+#if NET
+        [Obsolete("Default constructor not supported", true)]
+        public Settings()
+        {
+            throw new NotSupportedException();
+        }
+#endif
+
         public Settings(World world)
         {
             ThrowIfSettingsAlreadyExists(world);
