@@ -18,7 +18,14 @@ namespace InteractionKit
 {
     public readonly struct Settings : IEntity
     {
-        public const char ShiftCharacter = (char)16;
+        public const char ShiftCharacter = (char)14;
+        public const char MoveLeftCharacter = (char)17;
+        public const char MoveRightCharacter = (char)18;
+        public const char MoveUpCharacter = (char)19;
+        public const char MoveDownCharacter = (char)20;
+        public const char StartOfTextCharacter = (char)2;
+        public const char EndOfTextCharacter = (char)3;
+        public const char GroupSeparatorCharacter = (char)29;
 
         public readonly Entity entity;
 
@@ -90,9 +97,24 @@ namespace InteractionKit
             }
         }
 
+        public readonly (uint start, uint length) EditRange
+        {
+            get
+            {
+                TextEditRange component = entity.GetComponent<TextEditRange>();
+                return (component.start, component.length);
+            }
+            set
+            {
+                ref TextEditRange component = ref entity.GetComponentRef<TextEditRange>();
+                component.start = value.start;
+                component.length = value.length;
+            }
+        }
+
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<MeshSettings, FontSettings, AutomationSettings>().AddArrayTypes<char, MaterialSettings>();
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<MeshSettings, FontSettings, AutomationSettings, TextEditRange>().AddArrayTypes<char, MaterialSettings>();
 
         public Settings(World world)
         {
@@ -184,6 +206,7 @@ namespace InteractionKit
             entity.AddComponent(meshSettings);
             entity.AddComponent(fontSettings);
             entity.AddComponent(automationSettings);
+            entity.AddComponent(new TextEditRange());
             entity.CreateArray<char>();
             entity.CreateArray<MaterialSettings>(1)[0] = materialSettings;
         }

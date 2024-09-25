@@ -1,9 +1,9 @@
 ﻿using Fonts;
-using Fonts.Components;
 using InteractionKit.Components;
 using InteractionKit.Events;
 using Simulation;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Transforms.Components;
 using Unmanaged;
@@ -56,9 +56,9 @@ namespace InteractionKit.Systems
                     if (lastPressedCharacters != pressedCharacters)
                     {
                         currentCharacters = default;
-                        for (uint i = 0; i < lastPressedCharacters.Length; i++)
+                        for (uint i = 0; i < pressedCharacters.Length; i++)
                         {
-                            char c = lastPressedCharacters[i];
+                            char c = pressedCharacters[i];
                             if (!lastPressedCharacters.Contains(c))
                             {
                                 currentCharacters.Append(c);
@@ -69,21 +69,13 @@ namespace InteractionKit.Systems
                         charactersChanged = true;
                     }
 
-                    bool holdingShift = pressedCharacters.Contains(Settings.ShiftCharacter);
                     if (currentCharacters != default && (now >= nextPress || charactersChanged))
                     {
                         nextPress = now + TimeSpan.FromMilliseconds(60);
                         for (uint i = 0; i < currentCharacters.Length; i++)
                         {
                             char c = currentCharacters[i];
-                            if (c == '\b')
-                            {
-                                Backspace(world, textLabel);
-                            }
-                            else
-                            {
-                                AppendCharacter(world, textLabel, c, holdingShift);
-                            }
+                            HandleCharacter(world, textLabel, c, settings);
                         }
                     }
 
@@ -93,7 +85,7 @@ namespace InteractionKit.Systems
                     }
 
                     //update cursor to match position
-                    UpdateCursorToMatchPosition(world, t.entity);
+                    UpdateCursorToMatchPosition(world, t.entity, settings);
                 }
                 else
                 {
@@ -102,152 +94,247 @@ namespace InteractionKit.Systems
             }
         }
 
-        private static void UpdateCursorToMatchPosition(World world, uint textFieldEntity)
+        private static void UpdateCursorToMatchPosition(World world, uint textFieldEntity, Settings settings)
         {
-            int pixelSize = 32;
-            int penX = 0;
-            int penY = 0;
+            uint pixelSize = 32;
             rint textLabelReference = world.GetComponent<IsTextField>(textFieldEntity).textLabelReference;
             uint textLabelEntity = world.GetReference(textFieldEntity, textLabelReference);
             Label textLabel = new(world, textLabelEntity);
-            USpan<char> text = textLabel.Text;
             Font font = textLabel.Font;
-            Vector2 lastPosition = default;
-            for (uint i = 0; i < text.Length; i++)
-            {
-                char c = text[i];
-                Glyph glyph = font[c];
-                IsGlyph component = world.GetComponent<IsGlyph>(glyph.GetEntityValue());
-                (int x, int y) glyphAdvance = component.advance;
-                (int x, int y) glyphOffset = component.offset;
-                (int x, int y) glyphSize = component.size;
-                (int x, int y) glyphBearing = component.bearing;
-                float glyphWidth = glyphSize.x / pixelSize;
-                float glyphHeight = glyphSize.y / pixelSize;
-                Vector3 origin = new(penX + (glyphOffset.x / pixelSize), penY + (glyphOffset.y / pixelSize), 0);
-                origin.Y -= (glyphSize.y - glyphBearing.y) / pixelSize;
-                Vector2 size = new(glyphWidth, glyphHeight);
-                origin /= 64f;
-                size /= 64f;
-                lastPosition = new Vector2(origin.X, 0) + size;
-                penX += glyphAdvance.x / pixelSize;
-            }
+            USpan<char> text = textLabel.Text;
+
+            (uint start, uint length) range = settings.EditRange;
+            USpan<char> textToCursor = text.Slice(0, range.start);
+            USpan<char> tempText = stackalloc char[(int)textToCursor.Length + 1];
+            textToCursor.CopyTo(tempText);
+            tempText[tempText.Length - 1] = ' ';
+            Vector2 totalSize = font.CalulcateSize(tempText, pixelSize);
 
             rint cursorReference = world.GetComponent<IsTextField>(textFieldEntity).cursorReference;
             uint cursorEntity = world.GetReference(textFieldEntity, cursorReference);
             ref Position cursorPosition = ref world.GetComponentRef<Position>(cursorEntity);
-            cursorPosition.value = new Vector3((lastPosition.X * 16) + 4, 0, cursorPosition.value.Z);
+            LocalToWorld ltw = world.GetComponent<LocalToWorld>(cursorEntity);
+            Vector3 worldPosition = ltw.Position + new Vector3(totalSize.X, 0, 0);
+            Matrix4x4.Invert(ltw.value, out Matrix4x4 inverseLtw);
+            Vector3 localPosition = Vector3.Transform(worldPosition, inverseLtw);
+            localPosition.Z = cursorPosition.value.Z;
+            cursorPosition.value = localPosition;
         }
 
-        private static void AppendCharacter(World world, Label textLabel, char character, bool shift)
+        private static void HandleCharacter(World world, Label textLabel, char character, Settings settings)
         {
             USpan<char> text = textLabel.Text;
-            USpan<char> newText = stackalloc char[(int)(text.Length + 1)];
-            text.CopyTo(newText);
-            if (shift)
+            (uint start, uint length) range = settings.EditRange;
+            if (character == Settings.GroupSeparatorCharacter)
             {
-                if (character == '1')
+                //skip
+            }
+            else if (character == Settings.MoveLeftCharacter)
+            {
+                if (range.start > 0)
                 {
-                    character = '!';
+                    bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
+                    if (groupSeparator)
+                    {
+                        //todo: handle characters other than alphanumeric too, and multiples of the same in a row
+                        if (text.Slice(0, range.start - 1).TryLastIndexOf(' ', out uint lastIndex))
+                        {
+                            range.start = lastIndex + 1;
+                        }
+                        else
+                        {
+                            range.start = 0;
+                        }
+                    }
+                    else
+                    {
+                        range.start--;
+                    }
+
+                    settings.EditRange = range;
                 }
-                else if (character == '2')
+            }
+            else if (character == Settings.MoveRightCharacter)
+            {
+                if (range.start < text.Length)
                 {
-                    character = '@';
+                    bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
+                    if (groupSeparator)
+                    {
+                        if (text.Slice(range.start + 1).TryIndexOf(' ', out uint index))
+                        {
+                            range.start += index + 1;
+                        }
+                        else
+                        {
+                            range.start = text.Length;
+                        }
+                    }
+                    else
+                    {
+                        range.start++;
+                    }
+
+                    settings.EditRange = range;
                 }
-                else if (character == '3')
+            }
+            else if (character == Settings.StartOfTextCharacter)
+            {
+                //move cursor to start
+                bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
+                settings.EditRange = (0, 0);
+            }
+            else if (character == Settings.EndOfTextCharacter)
+            {
+                //move cursor to end
+                bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
+                settings.EditRange = (text.Length, 0);
+            }
+            else if (character == Settings.ShiftCharacter)
+            {
+                //do nothing
+            }
+            else if (character == '\b')
+            {
+                if (text.Length == 0 || range.start == 0)
                 {
-                    character = '#';
+                    return;
                 }
-                else if (character == '4')
+
+                if (range.start == text.Length)
                 {
-                    character = '$';
+                    //remove last char
+                    USpan<char> newText = stackalloc char[(int)(text.Length - 1)];
+                    text.Slice(0, text.Length - 1).CopyTo(newText);
+                    textLabel.SetText(newText);
                 }
-                else if (character == '5')
+                else if (text.Length == 1)
                 {
-                    character = '%';
-                }
-                else if (character == '6')
-                {
-                    character = '^';
-                }
-                else if (character == '7')
-                {
-                    character = '&';
-                }
-                else if (character == '8')
-                {
-                    character = '*';
-                }
-                else if (character == '9')
-                {
-                    character = '(';
-                }
-                else if (character == '0')
-                {
-                    character = ')';
-                }
-                else if (character == '-')
-                {
-                    character = '_';
-                }
-                else if (character == '=')
-                {
-                    character = '+';
-                }
-                else if (character == '[')
-                {
-                    character = '{';
-                }
-                else if (character == ']')
-                {
-                    character = '}';
-                }
-                else if (character == '\\')
-                {
-                    character = '|';
-                }
-                else if (character == ';')
-                {
-                    character = ':';
-                }
-                else if (character == '\'')
-                {
-                    character = '"';
-                }
-                else if (character == ',')
-                {
-                    character = '<';
-                }
-                else if (character == '.')
-                {
-                    character = '>';
-                }
-                else if (character == '/')
-                {
-                    character = '?';
+                    textLabel.SetText(default(FixedString));
                 }
                 else
                 {
-                    character = char.ToUpperInvariant(character);
+                    //remove char at cursor
+                    USpan<char> newText = stackalloc char[(int)(text.Length - 1)];
+                    //copy first part
+                    text.Slice(0, range.start - 1).CopyTo(newText);
+                    //copy remaining
+                    text.Slice(range.start).CopyTo(newText.Slice(range.start - 1));
+                    textLabel.SetText(newText);
                 }
+
+                settings.EditRange = (range.start - 1, range.length);
             }
-
-            newText[text.Length] = character;
-            textLabel.SetText(newText);
-        }
-
-        private static void Backspace(World world, Label textLabel)
-        {
-            //remove last char
-            USpan<char> text = textLabel.Text;
-            if (text.Length == 0)
+            else
             {
-                return;
-            }
+                //write char
+                bool holdingShift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
+                if (holdingShift)
+                {
+                    if (character == '1')
+                    {
+                        character = '!';
+                    }
+                    else if (character == '2')
+                    {
+                        character = '@';
+                    }
+                    else if (character == '3')
+                    {
+                        character = '#';
+                    }
+                    else if (character == '4')
+                    {
+                        character = '$';
+                    }
+                    else if (character == '5')
+                    {
+                        character = '%';
+                    }
+                    else if (character == '6')
+                    {
+                        character = '^';
+                    }
+                    else if (character == '7')
+                    {
+                        character = '&';
+                    }
+                    else if (character == '8')
+                    {
+                        character = '*';
+                    }
+                    else if (character == '9')
+                    {
+                        character = '(';
+                    }
+                    else if (character == '0')
+                    {
+                        character = ')';
+                    }
+                    else if (character == '-')
+                    {
+                        character = '_';
+                    }
+                    else if (character == '=')
+                    {
+                        character = '+';
+                    }
+                    else if (character == '[')
+                    {
+                        character = '{';
+                    }
+                    else if (character == ']')
+                    {
+                        character = '}';
+                    }
+                    else if (character == '\\')
+                    {
+                        character = '|';
+                    }
+                    else if (character == ';')
+                    {
+                        character = ':';
+                    }
+                    else if (character == '\'')
+                    {
+                        character = '"';
+                    }
+                    else if (character == ',')
+                    {
+                        character = '<';
+                    }
+                    else if (character == '.')
+                    {
+                        character = '>';
+                    }
+                    else if (character == '/')
+                    {
+                        character = '?';
+                    }
+                    else if (character == '`')
+                    {
+                        character = '~';
+                    }
+                    else
+                    {
+                        character = char.ToUpperInvariant(character);
+                    }
+                }
 
-            USpan<char> newText = stackalloc char[(int)(text.Length - 1)];
-            text.Slice(0, text.Length - 1).CopyTo(newText);
-            textLabel.SetText(newText);
+                //insert character into cursor position
+                USpan<char> newText = stackalloc char[(int)(text.Length + 1)];
+                USpan<char> firstPart = text.Slice(0, range.start);
+                firstPart.CopyTo(newText);
+                newText[range.start] = character;
+                if (range.start + 1 < newText.Length)
+                {
+                    USpan<char> secondPart = text.Slice(range.start);
+                    secondPart.CopyTo(newText.Slice(range.start + 1));
+                }
+
+                textLabel.SetText(newText);
+                settings.EditRange = (range.start + 1, range.length);
+            }
         }
     }
 }
