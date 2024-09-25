@@ -1,6 +1,7 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
+using Rendering;
 using Simulation;
 using System;
 using System.Numerics;
@@ -100,7 +101,7 @@ namespace InteractionKit
         /// Adds a new option.
         /// </summary>
         /// <returns>Index path towards this specific option.</returns>
-        public unsafe readonly OptionPath AddOption(FixedString label, InteractiveContext context)
+        public unsafe readonly OptionPath AddOption(FixedString label, Canvas canvas)
         {
             Vector2 size = Size;
             Entity entity = transform.AsEntity();
@@ -124,7 +125,7 @@ namespace InteractionKit
                             path = path.Append(i);
                             uint existingChildMenuEntity = entity.GetReference(existingOption.childMenuReference);
                             Menu existingChildMenu = new Entity(world, existingChildMenuEntity).As<Menu>();
-                            OptionPath pathInExisting = existingChildMenu.AddOption(remainder, context);
+                            OptionPath pathInExisting = existingChildMenu.AddOption(remainder, canvas);
                             path = path.Append(pathInExisting);
                             return path;
                         }
@@ -135,7 +136,7 @@ namespace InteractionKit
                     }
                 }
 
-                OptionPath firstPath = AddOption(label, context);
+                OptionPath firstPath = AddOption(label, canvas);
                 path = path.Append(firstPath);
 
                 //todo: for some reason, the buttons in child menus position themselves upwards
@@ -151,9 +152,9 @@ namespace InteractionKit
                 newChildMenu.SetEnabled(addedOption.expanded);
 
                 uint buttonEntity = transform.GetReference(addedOption.buttonReference);
-                Image triangle = new(world, context);
+                Image triangle = new(world, canvas);
                 triangle.Parent = new Entity(world, buttonEntity);
-                triangle.Material = context.TriangleMaterial;
+                triangle.Material = GetTriangleMaterialFromSettings(world, canvas.Camera);
                 triangle.Anchor = Anchor.Right;
                 triangle.Size = new(16f, 16f);
                 triangle.Color = Color.Black;
@@ -161,20 +162,20 @@ namespace InteractionKit
                 triangle.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
 
                 addedOption.childMenuReference = transform.AddReference(newChildMenu);
-                OptionPath pathInNew = newChildMenu.AddOption(remainder, context);
+                OptionPath pathInNew = newChildMenu.AddOption(remainder, canvas);
                 path = path.Append(pathInNew);
                 return path;
             }
             else
             {
-                Button optionButton = new(world, new(&OptionChosen), context);
+                Button optionButton = new(world, new(&OptionChosen), canvas);
                 optionButton.Parent = transform;
                 optionButton.Position = new(0, -size.Y * optionCount);
                 optionButton.Size = size;
                 optionButton.Anchor = Anchor.TopLeft;
                 optionButton.Pivot = new(0f, 1f, 0f);
 
-                Label optionButtonLabel = new(world, context, label);
+                Label optionButtonLabel = new(world, canvas, label);
                 optionButtonLabel.Parent = optionButton.AsEntity();
                 optionButtonLabel.Anchor = Anchor.TopLeft;
                 optionButtonLabel.Color = Color.Black;
@@ -246,6 +247,12 @@ namespace InteractionKit
                     component.callback.Invoke(menu, chosenIndex);
                 }
             }
+        }
+
+        private static Material GetTriangleMaterialFromSettings(World world, Camera camera)
+        {
+            Settings settings = world.GetFirst<Settings>();
+            return settings.GetTriangleMaterial(camera);
         }
     }
 }

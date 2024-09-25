@@ -1,9 +1,9 @@
 using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
+using Rendering;
 using Simulation;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms.Components;
@@ -191,22 +191,22 @@ namespace InteractionKit
             background = new(world, existingEntity);
         }
 
-        public unsafe Dropdown(World world, InteractiveContext context, DropdownCallbackFunction callback = default)
+        public unsafe Dropdown(World world, Canvas canvas, DropdownCallbackFunction callback = default)
         {
-            background = new(world, context);
+            background = new(world, canvas);
             background.AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
             background.AddComponent(new IsSelectable());
 
-            Label label = new(world, context, "");
+            Label label = new(world, canvas, "");
             label.Parent = background;
             label.Anchor = Anchor.TopLeft;
             label.Color = Color.Black;
             label.Position = new(4f, -4f);
             label.Pivot = new(0f, 1f, 0f);
 
-            Image triangle = new(world, context);
+            Image triangle = new(world, canvas);
             triangle.Parent = background;
-            triangle.Material = context.TriangleMaterial;
+            triangle.Material = GetTriangleMaterialFromSettings(world, canvas.Camera);
             triangle.Anchor = Anchor.TopRight;
             triangle.Size = new(16f, 16f);
             triangle.Color = Color.Black;
@@ -294,6 +294,12 @@ namespace InteractionKit
         {
             Dropdown dropdown = new(world, dropdownEntity);
             dropdown.IsExpanded = !dropdown.IsExpanded;
+        }
+
+        private static Material GetTriangleMaterialFromSettings(World world, Camera camera)
+        {
+            Settings settings = world.GetFirst<Settings>();
+            return settings.GetTriangleMaterial(camera);
         }
     }
 }

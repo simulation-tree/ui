@@ -1,7 +1,6 @@
 ﻿using Data;
 using InteractionKit.Components;
 using Simulation;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Numerics;
 using Transforms;
@@ -10,7 +9,7 @@ using Unmanaged;
 
 namespace InteractionKit
 {
-    public readonly struct Tree : IEntity
+    public readonly struct Tree : IEntity, ICanvasDescendant
     {
         public readonly Transform transform;
 
@@ -52,19 +51,19 @@ namespace InteractionKit
         public readonly ref Vector3 Pivot => ref transform.entity.GetComponentRef<Pivot>().value;
         public readonly USpan<SelectedLeaf> Selected => transform.AsEntity().GetArray<SelectedLeaf>();
         public readonly USpan<TreeNodeOption> Nodes => transform.AsEntity().GetArray<TreeNodeOption>();
-        public readonly InteractiveContext Context => transform.AsEntity().GetComponent<IsTree>().context;
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentType<IsTree>().AddArrayTypes<SelectedLeaf, TreeNodeOption>();
 
-        public Tree(World world, InteractiveContext context)
+        public Tree(World world, Canvas canvas)
         {
             transform = new(world);
+            transform.Parent = canvas;
             transform.LocalPosition = new(0, 0, 0.1f);
-            transform.AsEntity().AddComponent(new Anchor());
-            transform.AsEntity().AddComponent(new Pivot());
-            transform.AsEntity().AddComponent(new IsTree(context));
+            transform.AddComponent(new Anchor());
+            transform.AddComponent(new Pivot());
+            transform.AddComponent(new IsTree());
             transform.AsEntity().CreateArray<SelectedLeaf>();
             transform.AsEntity().CreateArray<TreeNodeOption>();
         }
@@ -73,7 +72,7 @@ namespace InteractionKit
         {
             Vector2 size = Size;
             uint nodeCount = transform.AsEntity().GetArrayLength<TreeNodeOption>();
-            TreeNode node = new(transform.GetWorld(), text, Context);
+            TreeNode node = new(transform.GetWorld(), text, this.GetCanvas());
             node.Parent = transform;
             node.Position = new(0, -nodeCount * size.Y);
             node.Size = size;
@@ -85,6 +84,7 @@ namespace InteractionKit
 
         public readonly void UpdatePositions()
         {
+            World world = transform.GetWorld();
             Vector2 size = Size;
             USpan<TreeNodeOption> nodes = Nodes;
             float y = 0;
@@ -92,7 +92,7 @@ namespace InteractionKit
             {
                 rint nodeReference = nodes[i].childNodeReference;
                 uint nodeEntity = transform.GetReference(nodeReference);
-                TreeNode node = new(transform.GetWorld(), nodeEntity);
+                TreeNode node = new(world, nodeEntity);
                 node.Position = new(0, -y);
                 node.Size = size;
                 if (node.IsExpanded)

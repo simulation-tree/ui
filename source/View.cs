@@ -54,7 +54,7 @@ namespace InteractionKit
             get
             {
                 rint contentReference = transform.AsEntity().GetComponent<IsView>().contentReference;
-                uint contentEntity = transform.AsEntity().GetReference(contentReference);
+                uint contentEntity = transform.GetReference(contentReference);
                 return new(transform.GetWorld(), contentEntity);
             }
         }
@@ -102,19 +102,19 @@ namespace InteractionKit
         readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new([RuntimeType.Get<IsView>()], []);
 
-        public View(World world, InteractiveContext context)
+        public View(World world, Canvas canvas)
         {
             transform = new Transform(world);
             transform.LocalPosition = new(0f, 0f, 0.1f);
-            transform.Parent = context.Canvas.AsEntity();
-            transform.AsEntity().AddComponent(new Anchor());
-            transform.AsEntity().AddComponent(new Pivot());
+            transform.Parent = canvas;
+            transform.AddComponent(new Anchor());
+            transform.AddComponent(new Pivot());
 
             Transform content = new(world);
-            content.Parent = transform.AsEntity();
-            content.AsEntity().AddComponent(new Anchor());
-            rint contentReference = transform.AsEntity().AddReference(content);
-            transform.AsEntity().AddComponent(new IsView(contentReference));
+            content.Parent = transform;
+            content.AddComponent(new Anchor());
+            rint contentReference = transform.AddReference(content);
+            transform.AddComponent(new IsView(contentReference));
         }
 
         public readonly void SetScrollBar(ScrollBar scrollBar)
@@ -122,18 +122,18 @@ namespace InteractionKit
             ref ViewScrollBarLink link = ref transform.AsEntity().TryGetComponentRef<ViewScrollBarLink>(out bool contains);
             if (!contains)
             {
-                rint scrollBarReference = transform.AsEntity().AddReference(scrollBar);
-                transform.AsEntity().AddComponent(new ViewScrollBarLink(scrollBarReference));
+                rint scrollBarReference = transform.AddReference(scrollBar);
+                transform.AddComponent(new ViewScrollBarLink(scrollBarReference));
             }
             else
             {
                 if (link.scrollBarReference != default)
                 {
-                    transform.AsEntity().SetReference(link.scrollBarReference, scrollBar); 
+                    transform.SetReference(link.scrollBarReference, scrollBar); 
                 }
                 else
                 {
-                    rint scrollBarReference = transform.AsEntity().AddReference(scrollBar);
+                    rint scrollBarReference = transform.AddReference(scrollBar);
                     link.scrollBarReference = scrollBarReference;
                 }
             }

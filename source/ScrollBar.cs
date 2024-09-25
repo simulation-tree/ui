@@ -10,53 +10,53 @@ namespace InteractionKit
 {
     public readonly struct ScrollBar : ISelectable
     {
-        public readonly Image box;
+        public readonly Image background;
 
         public readonly Entity Parent
         {
-            get => box.Parent;
-            set => box.Parent = value;
+            get => background.Parent;
+            set => background.Parent = value;
         }
 
         public readonly Vector2 Position
         {
-            get => box.Position;
-            set => box.Position = value;
+            get => background.Position;
+            set => background.Position = value;
         }
 
         public readonly Vector2 Size
         {
-            get => box.Size;
-            set => box.Size = value;
+            get => background.Size;
+            set => background.Size = value;
         }
 
-        public readonly ref Anchor Anchor => ref box.Anchor;
-        public readonly ref Vector3 Pivot => ref box.Pivot;
+        public readonly ref Anchor Anchor => ref background.Anchor;
+        public readonly ref Vector3 Pivot => ref background.Pivot;
 
-        public readonly ref Color BackgroundColor => ref box.Color;
+        public readonly ref Color BackgroundColor => ref background.Color;
 
         public readonly ref Color ScrollHandleColor
         {
             get
             {
-                rint scrollHandleReference = box.AsEntity().GetComponent<IsScrollBar>().scrollHandleReference;
-                uint scrollHandleEntity = box.GetReference(scrollHandleReference);
-                Image scrollHandle = new(box.GetWorld(), scrollHandleEntity);
+                rint scrollHandleReference = background.AsEntity().GetComponent<IsScrollBar>().scrollHandleReference;
+                uint scrollHandleEntity = background.GetReference(scrollHandleReference);
+                Image scrollHandle = new(background.GetWorld(), scrollHandleEntity);
                 return ref scrollHandle.Color;
             }
         }
 
-        public readonly ref Vector2 Axis => ref box.AsEntity().GetComponentRef<IsScrollBar>().axis;
+        public readonly ref Vector2 Axis => ref background.AsEntity().GetComponentRef<IsScrollBar>().axis;
 
         public readonly Vector2 Value
         {
             get
             {
-                return box.AsEntity().GetComponent<IsScrollBar>().value;
+                return background.AsEntity().GetComponent<IsScrollBar>().value;
             }
             set
             {
-                box.AsEntity().GetComponentRef<IsScrollBar>().value = value;
+                background.AsEntity().GetComponentRef<IsScrollBar>().value = value;
             }
         }
 
@@ -64,10 +64,10 @@ namespace InteractionKit
         {
             get
             {
-                IsScrollBar component = box.AsEntity().GetComponent<IsScrollBar>();
+                IsScrollBar component = background.AsEntity().GetComponent<IsScrollBar>();
                 rint scrollHandleReference = component.scrollHandleReference;
-                uint scrollHandleEntity = box.GetReference(scrollHandleReference);
-                Image scrollHandle = new(box.GetWorld(), scrollHandleEntity);
+                uint scrollHandleEntity = background.GetReference(scrollHandleReference);
+                Image scrollHandle = new(background.GetWorld(), scrollHandleEntity);
                 if (component.axis.Y > component.axis.X)
                 {
                     return scrollHandle.Size.Y;
@@ -83,10 +83,10 @@ namespace InteractionKit
             }
             set
             {
-                IsScrollBar component = box.AsEntity().GetComponent<IsScrollBar>();
+                IsScrollBar component = background.AsEntity().GetComponent<IsScrollBar>();
                 rint scrollHandleReference = component.scrollHandleReference;
-                uint scrollHandleEntity = box.GetReference(scrollHandleReference);
-                Image scrollHandle = new(box.GetWorld(), scrollHandleEntity);
+                uint scrollHandleEntity = background.GetReference(scrollHandleReference);
+                Image scrollHandle = new(background.GetWorld(), scrollHandleEntity);
                 if (component.axis.Y > component.axis.X)
                 {
                     scrollHandle.Size = new(1, value);
@@ -102,20 +102,20 @@ namespace InteractionKit
             }
         }
 
-        readonly uint IEntity.Value => box.GetEntityValue();
-        readonly World IEntity.World => box.GetWorld();
+        readonly uint IEntity.Value => background.GetEntityValue();
+        readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new([RuntimeType.Get<IsSelectable>(), RuntimeType.Get<IsScrollBar>()], []);
 
-        public ScrollBar(World world, InteractiveContext context, Vector2 axis, float handlePercentageSize)
+        public ScrollBar(World world, Canvas canvas, Vector2 axis, float handlePercentageSize)
         {
-            box = new Image(world, context);
+            background = new Image(world, canvas);
 
             Transform scrollRegion = new(world);
-            scrollRegion.Parent = box;
+            scrollRegion.Parent = background;
             scrollRegion.AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
             scrollRegion.AddComponent(new IsSelectable());
 
-            Image scrollHandle = new(world, context);
+            Image scrollHandle = new(world, canvas);
             scrollHandle.Parent = scrollRegion;
             scrollHandle.Color = Color.Black;
             if (axis.Y > axis.X)
@@ -136,8 +136,8 @@ namespace InteractionKit
 
             scrollHandle.AddComponent(new IsSelectable());
 
-            rint scrollHandleReference = box.AddReference(scrollHandle);
-            box.AddComponent(new IsScrollBar(scrollHandleReference, axis));
+            rint scrollHandleReference = background.AddReference(scrollHandle);
+            background.AddComponent(new IsScrollBar(scrollHandleReference, axis));
         }
     }
 }

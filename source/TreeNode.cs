@@ -11,7 +11,7 @@ using Unmanaged;
 
 namespace InteractionKit
 {
-    public readonly struct TreeNode : IEntity
+    public readonly struct TreeNode : IEntity, ICanvasDescendant
     {
         public readonly Transform transform;
 
@@ -74,8 +74,6 @@ namespace InteractionKit
 
         public readonly bool IsExpanded => transform.AsEntity().GetComponent<IsTreeNode>().expanded;
 
-        public readonly InteractiveContext Context => transform.AsEntity().GetComponent<IsTreeNode>().context;
-
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentType<IsTreeNode>().AddArrayType<TreeNodeOption>();
@@ -85,19 +83,19 @@ namespace InteractionKit
             transform = new(world, existingEntity);
         }
 
-        public unsafe TreeNode(World world, FixedString text, InteractiveContext context)
+        public unsafe TreeNode(World world, FixedString text, Canvas canvas)
         {
             transform = new(world);
             transform.AsEntity().AddComponent(new Anchor());
 
-            Image box = new(world, context);
+            Image box = new(world, canvas);
             box.Parent = transform;
             box.Color = Color.White;
             box.Anchor = new(new(24f, true), new(0f, false), default, new(1f, false), new(1f, false), default);
             box.AsEntity().AddComponent(new IsTrigger(new(&Filter), new(&ToggleSelected)));
             box.AsEntity().AddComponent(new IsSelectable());
 
-            Label label = new(world, context, text);
+            Label label = new(world, canvas, text);
             label.Parent = box;
             label.Anchor = Anchor.TopLeft;
             label.Color = Color.Black;
@@ -107,7 +105,7 @@ namespace InteractionKit
             rint boxReference = transform.AddReference(box);
             rint labelReference = transform.AddReference(label);
 
-            transform.AsEntity().AddComponent(new IsTreeNode(text, boxReference, labelReference, context));
+            transform.AsEntity().AddComponent(new IsTreeNode(text, boxReference, labelReference));
             transform.AsEntity().CreateArray<TreeNodeOption>();
         }
 
@@ -125,17 +123,18 @@ namespace InteractionKit
 
         public unsafe readonly TreeNode AddLeaf(FixedString text)
         {
-            Vector2 size = Size;
-            InteractiveContext context = Context;
             World world = transform.GetWorld();
+            Vector2 size = Size;
+            Canvas canvas = this.GetCanvas();
+            Settings settings = world.GetFirst<Settings>();
             uint nodeCount = transform.AsEntity().GetArrayLength<TreeNodeOption>();
             if (nodeCount == 0)
             {
                 //the button that toggles expanded state
                 float triangleButtonSize = 16f;
-                Button triangle = new(world, new(&ToggleExpanded), context);
+                Button triangle = new(world, new(&ToggleExpanded), canvas);
                 triangle.Parent = transform.AsEntity();
-                triangle.image.Material = context.TriangleMaterial;
+                triangle.image.Material = settings.GetTriangleMaterial(canvas.Camera);
                 triangle.Anchor = Anchor.TopLeft;
                 triangle.Size = new(triangleButtonSize, triangleButtonSize);
                 triangle.Color = Color.Black;
@@ -143,7 +142,7 @@ namespace InteractionKit
                 triangle.image.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
             }
 
-            TreeNode node = new(world, text, context);
+            TreeNode node = new(world, text, canvas);
             node.Parent = transform;
             node.Position = new(30, -(nodeCount + 1) * size.Y);
             node.Size = size;
@@ -232,7 +231,8 @@ namespace InteractionKit
             }
 
             Tree tree = new Entity(world, parentEntity).As<Tree>();
-            bool selectMultiple = tree.Context.SelectMultiple;
+            Settings settings = world.GetFirst<Settings>();
+            bool selectMultiple = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
             if (!selectMultiple)
             {
                 //deselect all

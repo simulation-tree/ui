@@ -108,8 +108,10 @@ namespace InteractionKit
             transform = new(world, existingEntity);
         }
 
-        public Image(World world, InteractiveContext context)
+        public Image(World world, Canvas canvas)
         {
+            Settings settings = world.GetFirst<Settings>();
+
             transform = new(world);
             transform.LocalPosition = new(0f, 0f, 0.1f);
             transform.AddComponent(new Anchor());
@@ -118,25 +120,25 @@ namespace InteractionKit
             transform.AddComponent(new BaseColor(new Vector4(1f)));
             transform.AddComponent(new Color(new Vector4(1f)));
             transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
-            transform.Parent = context.Canvas;
+            transform.Parent = canvas;
 
             StatefulAutomationPlayer stateful = transform.entity.Become<StatefulAutomationPlayer>();
-            stateful.StateMachine = context.ControlStateMachine;
+            stateful.StateMachine = settings.ControlStateMachine;
             stateful.AddParameter("pressed", 0f);
             stateful.AddParameter("selected", 1f);
-            stateful.AddOrSetLink<ColorTint>("idle", context.IdleAutomation);
-            stateful.AddOrSetLink<ColorTint>("selected", context.SelectedAutomation);
-            stateful.AddOrSetLink<ColorTint>("pressed", context.PressedAutomation);
+            stateful.AddOrSetLink<ColorTint>("idle", settings.IdleAutomation);
+            stateful.AddOrSetLink<ColorTint>("selected", settings.SelectedAutomation);
+            stateful.AddOrSetLink<ColorTint>("pressed", settings.PressedAutomation);
 
             Renderer renderer = transform.entity.Become<Renderer>();
-            renderer.Mesh = context.QuadMesh;
-            renderer.Material = context.SquareMaterial;
-            renderer.Camera = context.Camera;
+            renderer.Mesh = settings.QuadMesh;
+            renderer.Material = settings.GetSquareMaterial(canvas.Camera);
+            renderer.Camera = canvas.Camera;
         }
 
         public static implicit operator Entity(Image box)
         {
-            return box.transform.entity;
+            return box.AsEntity();
         }
     }
 }

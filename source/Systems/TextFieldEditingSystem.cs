@@ -2,42 +2,40 @@
 using Fonts.Components;
 using InteractionKit.Components;
 using InteractionKit.Events;
-using Meshes;
 using Simulation;
 using System;
 using System.Numerics;
 using Transforms.Components;
 using Unmanaged;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
     public class TextFieldEditingSystem : SystemBase
     {
-        private readonly ComponentQuery<IsTextField, InteractiveContext> query;
-        private readonly UnmanagedDictionary<InteractiveContext, FixedString> lastPressedCharacters;
-        private readonly UnmanagedDictionary<InteractiveContext, FixedString> pressedCharacters;
+        private readonly ComponentQuery<IsTextField> query;
+        private FixedString lastPressedCharacters;
+        private FixedString currentCharacters;
         private DateTime nextPress;
 
         public TextFieldEditingSystem(World world) : base(world)
         {
             query = new();
-            lastPressedCharacters = new();
-            pressedCharacters = new();
             Subscribe<InteractionUpdate>(Update);
         }
 
         public override void Dispose()
         {
             Unsubscribe<InteractionUpdate>();
-            pressedCharacters.Dispose();
-            lastPressedCharacters.Dispose();
             query.Dispose();
             base.Dispose();
         }
 
         private void Update(InteractionUpdate update)
         {
+            Settings settings = world.GetFirst<Settings>();
+            FixedString pressedCharacters = default;
+            pressedCharacters.CopyFrom(settings.PressedCharacters);
+
             DateTime now = DateTime.UtcNow;
             USpan<char> pressedBuffer = stackalloc char[(int)FixedString.MaxLength];
             ulong ticks = (ulong)((now - DateTime.UnixEpoch).TotalSeconds * 3f);
@@ -51,52 +49,40 @@ namespace InteractionKit.Systems
                 {
                     bool enableCursor = (ticks + t.entity) % 2 == 0;
                     world.SetEnabled(cursorEntity, enableCursor);
-                    InteractiveContext context = t.Component2;
-                    uint pressedCharCount = context.GetPressedChars(pressedBuffer);
-                    FixedString currentPressedChars = new(pressedBuffer.Slice(0, pressedCharCount));
-                    if (!this.lastPressedCharacters.ContainsKey(context))
-                    {
-                        this.lastPressedCharacters.Add(context, default);
-                        this.pressedCharacters.Add(context, default);
-                    }
-
                     rint textLabelReference = component.textLabelReference;
                     uint textLabelEntity = world.GetReference(t.entity, textLabelReference);
                     Label textLabel = new(world, textLabelEntity);
-                    ref FixedString lastPressedCharacters = ref this.lastPressedCharacters[context];
-                    FixedString previousPressedCharacters = lastPressedCharacters;
-                    ref FixedString pressedCharacters = ref this.pressedCharacters[context];
                     bool charactersChanged = false;
-                    if (lastPressedCharacters != currentPressedChars)
+                    if (lastPressedCharacters != pressedCharacters)
                     {
-                        pressedCharacters.Clear();
-                        for (uint i = 0; i < currentPressedChars.Length; i++)
+                        currentCharacters = default;
+                        for (uint i = 0; i < lastPressedCharacters.Length; i++)
                         {
-                            char c = currentPressedChars[i];
-                            if (!previousPressedCharacters.Contains(c))
+                            char c = lastPressedCharacters[i];
+                            if (!lastPressedCharacters.Contains(c))
                             {
-                                pressedCharacters.Append(c);
+                                currentCharacters.Append(c);
                             }
                         }
 
-                        lastPressedCharacters = currentPressedChars;
+                        lastPressedCharacters = pressedCharacters;
                         charactersChanged = true;
                     }
 
-                    if (pressedCharacters != default && (now >= nextPress || charactersChanged))
+                    bool holdingShift = pressedCharacters.Contains(Settings.ShiftCharacter);
+                    if (currentCharacters != default && (now >= nextPress || charactersChanged))
                     {
-                        bool select = context.SelectMultiple;
                         nextPress = now + TimeSpan.FromMilliseconds(60);
-                        for (uint i = 0; i < pressedCharacters.Length; i++)
+                        for (uint i = 0; i < currentCharacters.Length; i++)
                         {
-                            char c = pressedCharacters[i];
+                            char c = currentCharacters[i];
                             if (c == '\b')
                             {
                                 Backspace(world, textLabel);
                             }
                             else
                             {
-                                AppendCharacter(world, textLabel, c, select);
+                                AppendCharacter(world, textLabel, c, holdingShift);
                             }
                         }
                     }

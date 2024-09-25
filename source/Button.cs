@@ -48,9 +48,9 @@ namespace InteractionKit
         }
 #endif
 
-        public unsafe Button(World world, CallbackFunction callback, InteractiveContext context)
+        public unsafe Button(World world, CallbackFunction callback, Canvas canvas)
         {
-            image = new(world, context);
+            image = new(world, canvas);
             image.AddComponent(new IsTrigger(new(&Filter), callback));
             image.AddComponent(new IsSelectable());
         }

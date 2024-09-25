@@ -9,7 +9,7 @@ using Unmanaged;
 
 namespace InteractionKit
 {
-    public readonly struct TextField : IEntity, ISelectable
+    public readonly struct TextField : IEntity, ISelectable, ICanvasDescendant
     {
         public readonly Image background;
 
@@ -52,27 +52,27 @@ namespace InteractionKit
         readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTextField, IsSelectable>();
 
-        public unsafe TextField(World world, InteractiveContext context, FixedString defaultValue = default)
+        public unsafe TextField(World world, Canvas canvas, FixedString defaultValue = default)
         {
-            background = new(world, context);
+            background = new(world, canvas);
             background.AddComponent(new IsTrigger(new(&Filter), new(&StartEditing)));
             background.AddComponent(new IsSelectable());
 
-            Label text = new(world, context, defaultValue);
+            Label text = new(world, canvas, defaultValue);
             text.Parent = background;
             text.Anchor = Anchor.TopLeft;
             text.Color = Color.Black;
             text.Position = new(4f, -4f);
             text.Pivot = new(0f, 1f, 0f);
 
-            Image cursor = new(world, context);
+            Image cursor = new(world, canvas);
             cursor.Parent = background;
             cursor.Color = Color.Black;
             cursor.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
             cursor.Size = new(2f, 1f);
             cursor.Position = new(16f, 0f);
 
-            Image highlight = new(world, context);
+            Image highlight = new(world, canvas);
             highlight.transform.LocalPosition = new(0f, 0f, 0.2f);
             highlight.Parent = background;
             highlight.Color = Color.SkyBlue * new Color(1f, 1f, 1f, 0.5f);
@@ -84,7 +84,6 @@ namespace InteractionKit
             rint cursorReference = background.AddReference(cursor);
             rint highlightReference = background.AddReference(highlight);
             background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference));
-            background.AddComponent(context);
         }
 
         public readonly void SetText(USpan<char> text)

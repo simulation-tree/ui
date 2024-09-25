@@ -9,25 +9,25 @@ namespace InteractionKit
 {
     public readonly struct Toggle : ISelectable
     {
-        public readonly Image box;
+        public readonly Image background;
 
         public readonly Entity Parent
         {
-            get => box.Parent;
-            set => box.Parent = value;
+            get => background.Parent;
+            set => background.Parent = value;
         }
 
         public readonly Vector2 Position
         {
             get
             {
-                Vector3 position = box.transform.LocalPosition;
+                Vector3 position = background.transform.LocalPosition;
                 return new(position.X, position.Y);
             }
             set
             {
-                Vector3 position = box.transform.LocalPosition;
-                box.transform.LocalPosition = new(value.X, value.Y, position.Z);
+                Vector3 position = background.transform.LocalPosition;
+                background.transform.LocalPosition = new(value.X, value.Y, position.Z);
             }
         }
 
@@ -35,65 +35,65 @@ namespace InteractionKit
         {
             get
             {
-                Vector3 scale = box.transform.LocalScale;
+                Vector3 scale = background.transform.LocalScale;
                 return new(scale.X, scale.Y);
             }
             set
             {
-                Vector3 scale = box.transform.LocalScale;
-                box.transform.LocalScale = new(value.X, value.Y, scale.Z);
+                Vector3 scale = background.transform.LocalScale;
+                background.transform.LocalScale = new(value.X, value.Y, scale.Z);
             }
         }
 
-        public readonly ref Anchor Anchor => ref box.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref box.AsEntity().GetComponentRef<Pivot>().value;
-        public readonly ref Color BackgroundColor => ref box.AsEntity().GetComponentRef<BaseColor>().value;
+        public readonly ref Anchor Anchor => ref background.AsEntity().GetComponentRef<Anchor>();
+        public readonly ref Vector3 Pivot => ref background.AsEntity().GetComponentRef<Pivot>().value;
+        public readonly ref Color BackgroundColor => ref background.AsEntity().GetComponentRef<BaseColor>().value;
         public readonly ref Color CheckmarkColor
         {
             get
             {
-                rint checkmarkReference = box.AsEntity().GetComponent<IsToggle>().checkmarkReference;
-                uint checkmarkEntity = box.AsEntity().GetReference(checkmarkReference);
-                return ref box.GetWorld().GetComponentRef<BaseColor>(checkmarkEntity).value;
+                rint checkmarkReference = background.AsEntity().GetComponent<IsToggle>().checkmarkReference;
+                uint checkmarkEntity = background.GetReference(checkmarkReference);
+                return ref background.GetWorld().GetComponentRef<BaseColor>(checkmarkEntity).value;
             }
         }
 
         public readonly bool Value
         {
-            get => box.AsEntity().GetComponentRef<IsToggle>().value;
+            get => background.AsEntity().GetComponentRef<IsToggle>().value;
             set
             {
-                ref IsToggle toggle = ref box.AsEntity().GetComponentRef<IsToggle>();
+                ref IsToggle toggle = ref background.AsEntity().GetComponentRef<IsToggle>();
                 toggle.value = value;
 
                 rint checkmarkReference = toggle.checkmarkReference;
-                uint checkmarkEntity = box.AsEntity().GetReference(checkmarkReference);
-                box.GetWorld().SetEnabled(checkmarkEntity, value);  
+                uint checkmarkEntity = background.GetReference(checkmarkReference);
+                background.GetWorld().SetEnabled(checkmarkEntity, value);
             }
         }
 
-        readonly uint IEntity.Value => box.GetEntityValue();
-        readonly World IEntity.World => box.GetWorld();
+        readonly uint IEntity.Value => background.GetEntityValue();
+        readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new([RuntimeType.Get<IsToggle>(), RuntimeType.Get<IsSelectable>()], []);
 
         public Toggle(World world, uint existingEntity)
         {
-            box = new(world, existingEntity);
+            background = new(world, existingEntity);
         }
 
-        public Toggle(World world, InteractiveContext context, bool initialValue = false)
+        public Toggle(World world, Canvas canvas, bool initialValue = false)
         {
-            box = new(world, context);
+            background = new(world, canvas);
 
-            Image checkmarkBox = new(world, context);
+            Image checkmarkBox = new(world, canvas);
             checkmarkBox.transform.LocalPosition = new(0f, 0f, 0.1f);
-            checkmarkBox.Parent = box.AsEntity();
+            checkmarkBox.Parent = background;
             checkmarkBox.Anchor = new(new(4, true), new(4, true), default, new(4, true), new(4, true), default);
             checkmarkBox.Color = Color.Black;
 
-            rint checkmarkReference = box.AsEntity().AddReference(checkmarkBox);
-            box.AsEntity().AddComponent(new IsToggle(checkmarkReference, initialValue));
-            box.AsEntity().AddComponent(new IsSelectable());
+            rint checkmarkReference = background.AddReference(checkmarkBox);
+            background.AddComponent(new IsToggle(checkmarkReference, initialValue));
+            background.AddComponent(new IsSelectable());
             checkmarkBox.SetEnabled(initialValue);
         }
     }

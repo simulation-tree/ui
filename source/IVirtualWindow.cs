@@ -8,6 +8,6 @@ namespace InteractionKit
         FixedString Title { get; }
         VirtualWindowCloseFunction CloseCallback { get; }
 
-        void OnCreated(VirtualWindow window, InteractiveContext context);
+        void OnCreated(VirtualWindow window, Canvas canvas);
     }
 }

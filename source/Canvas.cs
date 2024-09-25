@@ -11,6 +11,9 @@ namespace InteractionKit
     {
         public readonly Transform transform;
 
+        /// <summary>
+        /// The camera that all elements in the canvas will be rendered to.
+        /// </summary>
         public readonly Camera Camera
         {
             get
@@ -47,8 +50,9 @@ namespace InteractionKit
         public Canvas(World world, Camera camera)
         {
             transform = new(world);
-            rint cameraReference = transform.entity.AddReference(camera);
-            transform.entity.AddComponent(new IsCanvas(cameraReference));
+
+            rint cameraReference = transform.AddReference(camera);
+            transform.AddComponent(new IsCanvas(cameraReference));
         }
 
         public static implicit operator Transform(Canvas canvas)
@@ -58,7 +62,7 @@ namespace InteractionKit
 
         public static implicit operator Entity(Canvas canvas)
         {
-            return canvas.transform.entity;
+            return canvas.AsEntity();
         }
     }
 }
