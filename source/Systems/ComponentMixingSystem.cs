@@ -2,6 +2,7 @@
 using InteractionKit.Events;
 using Simulation;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Unmanaged;
 using Unmanaged.Collections;
 
@@ -11,16 +12,32 @@ namespace InteractionKit.Systems
     {
         private readonly ComponentQuery<ComponentMix> query;
         private readonly UnmanagedList<Request> requests;
+        private readonly UnmanagedArray<MixFunction> functions;
 
-        public ComponentMixingSystem(World world) : base(world)
+        public unsafe ComponentMixingSystem(World world) : base(world)
         {
             query = new();
             requests = new();
+            functions = new(13);
+            functions[(byte)ComponentMix.Operation.UnsignedAdd] = new(&UnsignedAdd);
+            functions[(byte)ComponentMix.Operation.UnsignedSubtract] = new(&UnsignedSubtract);
+            functions[(byte)ComponentMix.Operation.UnsignedMultiply] = new(&UnsignedMultiply);
+            functions[(byte)ComponentMix.Operation.UnsignedDivide] = new(&UnsignedDivide);
+            functions[(byte)ComponentMix.Operation.SignedAdd] = new(&SignedAdd);
+            functions[(byte)ComponentMix.Operation.SignedSubtract] = new(&SignedSubtract);
+            functions[(byte)ComponentMix.Operation.SignedMultiply] = new(&SignedMultiply);
+            functions[(byte)ComponentMix.Operation.SignedDivide] = new(&SignedDivide);
+            functions[(byte)ComponentMix.Operation.FloatingAdd] = new(&FloatingAdd);
+            functions[(byte)ComponentMix.Operation.FloatingSubtract] = new(&FloatingSubtract);
+            functions[(byte)ComponentMix.Operation.FloatingMultiply] = new(&FloatingMultiply);
+            functions[(byte)ComponentMix.Operation.FloatingDivide] = new(&FloatingDivide);
             Subscribe<MixingUpdate>(Update);
         }
 
         public override void Dispose()
         {
+            Unsubscribe<MixingUpdate>();
+            functions.Dispose();
             requests.Dispose();
             query.Dispose();
             base.Dispose();
@@ -61,390 +78,355 @@ namespace InteractionKit.Systems
                 USpan<byte> leftBytes = world.GetComponentBytes(entity, leftType);
                 USpan<byte> rightBytes = world.GetComponentBytes(entity, rightType);
                 USpan<byte> outputBytes = world.GetComponentBytes(entity, outputType);
-                byte partCount = mix.partCount;
+                byte partCount = mix.vectorLength;
                 uint partSize = (uint)(leftType.Size / partCount);
                 for (uint i = 0; i < partCount; i++)
                 {
                     USpan<byte> leftPart = leftBytes.Slice(i * partSize, partSize);
                     USpan<byte> rightPart = rightBytes.Slice(i * partSize, partSize);
                     USpan<byte> outputPart = outputBytes.Slice(i * partSize, partSize);
-                    switch (mix.operation)
-                    {
-                        case ComponentMix.Operation.UnsignedAdd:
-                            UnsignedAdd(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.UnsignedSubtract:
-                            UnsignedSubtract(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.UnsignedMultiply:
-                            UnsignedMultiply(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.UnsignedDivide:
-                            UnsignedDivide(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.SignedAdd:
-                            SignedAdd(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.SignedSubtract:
-                            SignedSubtract(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.SignedMultiply:
-                            SignedMultiply(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.SignedDivide:
-                            SignedDivide(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.FloatingAdd:
-                            FloatingAdd(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.FloatingSubtract:
-                            FloatingSubtract(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.FloatingMultiply:
-                            FloatingMultiply(leftPart, rightPart, outputPart);
-                            break;
-                        case ComponentMix.Operation.FloatingDivide:
-                            FloatingDivide(leftPart, rightPart, outputPart);
-                            break;
-                        default:
-                            throw new System.Exception($"Operation `{mix.operation}` is not supported");
-                    }
+                    MixFunction function = functions[(byte)mix.operation];
+                    function.Invoke(leftPart, rightPart, outputPart);
                 }
             }
         }
 
-        private static void UnsignedAdd(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void UnsignedAdd(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
-            uint partSize = outputPart.Length;
             unchecked
             {
-                if (partSize == 1)
+                if (length == 1)
                 {
                     byte leftValue = leftPart[0];
                     byte rightValue = rightPart[0];
                     byte outputValue = (byte)(leftValue + rightValue);
                     outputPart[0] = outputValue;
                 }
-                else if (partSize == 2)
+                else if (length == 2)
                 {
-                    ushort leftValue = *(ushort*)leftPart.pointer;
-                    ushort rightValue = *(ushort*)rightPart.pointer;
+                    ushort leftValue = *(ushort*)leftPart;
+                    ushort rightValue = *(ushort*)rightPart;
                     ushort outputValue = (ushort)(leftValue + rightValue);
-                    *(ushort*)outputPart.pointer = outputValue;
+                    *(ushort*)outputPart = outputValue;
                 }
-                else if (partSize == 4)
+                else if (length == 4)
                 {
-                    uint leftValue = *(uint*)leftPart.pointer;
-                    uint rightValue = *(uint*)rightPart.pointer;
+                    uint leftValue = *(uint*)leftPart;
+                    uint rightValue = *(uint*)rightPart;
                     uint outputValue = leftValue + rightValue;
-                    *(uint*)outputPart.pointer = outputValue;
+                    *(uint*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{partSize}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void SignedAdd(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void SignedAdd(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
-            uint partSize = outputPart.Length;
             unchecked
             {
-                if (partSize == 1)
+                if (length == 1)
                 {
                     sbyte leftValue = (sbyte)leftPart[0];
                     sbyte rightValue = (sbyte)rightPart[0];
                     sbyte outputValue = (sbyte)(leftValue + rightValue);
                     outputPart[0] = (byte)outputValue;
                 }
-                else if (partSize == 2)
+                else if (length == 2)
                 {
-                    short leftValue = *(short*)leftPart.pointer;
-                    short rightValue = *(short*)rightPart.pointer;
+                    short leftValue = *(short*)leftPart;
+                    short rightValue = *(short*)rightPart;
                     short outputValue = (short)(leftValue + rightValue);
-                    *(short*)outputPart.pointer = outputValue;
+                    *(short*)outputPart = outputValue;
                 }
-                else if (partSize == 4)
+                else if (length == 4)
                 {
-                    int leftValue = *(int*)leftPart.pointer;
-                    int rightValue = *(int*)rightPart.pointer;
+                    int leftValue = *(int*)leftPart;
+                    int rightValue = *(int*)rightPart;
                     int outputValue = leftValue + rightValue;
-                    *(int*)outputPart.pointer = outputValue;
+                    *(int*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{partSize}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void UnsignedSubtract(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void UnsignedSubtract(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
-            uint partSize = outputPart.Length;
             unchecked
             {
-                if (partSize == 1)
+                if (length == 1)
                 {
                     byte leftValue = leftPart[0];
                     byte rightValue = rightPart[0];
                     byte outputValue = (byte)(leftValue - rightValue);
                     outputPart[0] = outputValue;
                 }
-                else if (partSize == 2)
+                else if (length == 2)
                 {
-                    ushort leftValue = *(ushort*)leftPart.pointer;
-                    ushort rightValue = *(ushort*)rightPart.pointer;
+                    ushort leftValue = *(ushort*)leftPart;
+                    ushort rightValue = *(ushort*)rightPart;
                     ushort outputValue = (ushort)(leftValue - rightValue);
-                    *(ushort*)outputPart.pointer = outputValue;
+                    *(ushort*)outputPart = outputValue;
                 }
-                else if (partSize == 4)
+                else if (length == 4)
                 {
-                    uint leftValue = *(uint*)leftPart.pointer;
-                    uint rightValue = *(uint*)rightPart.pointer;
+                    uint leftValue = *(uint*)leftPart;
+                    uint rightValue = *(uint*)rightPart;
                     uint outputValue = leftValue - rightValue;
-                    *(uint*)outputPart.pointer = outputValue;
+                    *(uint*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{partSize}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void SignedSubtract(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void SignedSubtract(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
-            uint partSize = outputPart.Length;
             unchecked
             {
-                if (partSize == 1)
+                if (length == 1)
                 {
                     sbyte leftValue = (sbyte)leftPart[0];
                     sbyte rightValue = (sbyte)rightPart[0];
                     sbyte outputValue = (sbyte)(leftValue - rightValue);
                     outputPart[0] = (byte)outputValue;
                 }
-                else if (partSize == 2)
+                else if (length == 2)
                 {
-                    short leftValue = *(short*)leftPart.pointer;
-                    short rightValue = *(short*)rightPart.pointer;
+                    short leftValue = *(short*)leftPart;
+                    short rightValue = *(short*)rightPart;
                     short outputValue = (short)(leftValue - rightValue);
-                    *(short*)outputPart.pointer = outputValue;
+                    *(short*)outputPart = outputValue;
                 }
-                else if (partSize == 4)
+                else if (length == 4)
                 {
-                    int leftValue = *(int*)leftPart.pointer;
-                    int rightValue = *(int*)rightPart.pointer;
+                    int leftValue = *(int*)leftPart;
+                    int rightValue = *(int*)rightPart;
                     int outputValue = leftValue - rightValue;
-                    *(int*)outputPart.pointer = outputValue;
+                    *(int*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{partSize}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void UnsignedMultiply(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void UnsignedMultiply(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
-            uint partSize = outputPart.Length;
             unchecked
             {
-                if (partSize == 1)
+                if (length == 1)
                 {
                     byte leftValue = leftPart[0];
                     byte rightValue = rightPart[0];
                     byte outputValue = (byte)(leftValue * rightValue);
                     outputPart[0] = outputValue;
                 }
-                else if (partSize == 2)
+                else if (length == 2)
                 {
-                    ushort leftValue = *(ushort*)leftPart.pointer;
-                    ushort rightValue = *(ushort*)rightPart.pointer;
+                    ushort leftValue = *(ushort*)leftPart;
+                    ushort rightValue = *(ushort*)rightPart;
                     ushort outputValue = (ushort)(leftValue * rightValue);
-                    *(ushort*)outputPart.pointer = outputValue;
+                    *(ushort*)outputPart = outputValue;
                 }
-                else if (partSize == 4)
+                else if (length == 4)
                 {
-                    uint leftValue = *(uint*)leftPart.pointer;
-                    uint rightValue = *(uint*)rightPart.pointer;
+                    uint leftValue = *(uint*)leftPart;
+                    uint rightValue = *(uint*)rightPart;
                     uint outputValue = leftValue * rightValue;
-                    *(uint*)outputPart.pointer = outputValue;
+                    *(uint*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{partSize}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void SignedMultiply(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void SignedMultiply(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
-            uint partSize = outputPart.Length;
             unchecked
             {
-                if (partSize == 1)
+                if (length == 1)
                 {
                     sbyte leftValue = (sbyte)leftPart[0];
                     sbyte rightValue = (sbyte)rightPart[0];
                     sbyte outputValue = (sbyte)(leftValue * rightValue);
                     outputPart[0] = (byte)outputValue;
                 }
-                else if (partSize == 2)
+                else if (length == 2)
                 {
-                    short leftValue = *(short*)leftPart.pointer;
-                    short rightValue = *(short*)rightPart.pointer;
+                    short leftValue = *(short*)leftPart;
+                    short rightValue = *(short*)rightPart;
                     short outputValue = (short)(leftValue * rightValue);
-                    *(short*)outputPart.pointer = outputValue;
+                    *(short*)outputPart = outputValue;
                 }
-                else if (partSize == 4)
+                else if (length == 4)
                 {
-                    int leftValue = *(int*)leftPart.pointer;
-                    int rightValue = *(int*)rightPart.pointer;
+                    int leftValue = *(int*)leftPart;
+                    int rightValue = *(int*)rightPart;
                     int outputValue = leftValue * rightValue;
-                    *(int*)outputPart.pointer = outputValue;
+                    *(int*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{partSize}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void UnsignedDivide(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void UnsignedDivide(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
-            uint partSize = outputPart.Length;
             unchecked
             {
-                if (partSize == 1)
+                if (length == 1)
                 {
                     byte leftValue = leftPart[0];
                     byte rightValue = rightPart[0];
                     byte outputValue = (byte)(leftValue / rightValue);
                     outputPart[0] = outputValue;
                 }
-                else if (partSize == 2)
+                else if (length == 2)
                 {
-                    ushort leftValue = *(ushort*)leftPart.pointer;
-                    ushort rightValue = *(ushort*)rightPart.pointer;
+                    ushort leftValue = *(ushort*)leftPart;
+                    ushort rightValue = *(ushort*)rightPart;
                     ushort outputValue = (ushort)(leftValue / rightValue);
-                    *(ushort*)outputPart.pointer = outputValue;
+                    *(ushort*)outputPart = outputValue;
                 }
-                else if (partSize == 4)
+                else if (length == 4)
                 {
-                    uint leftValue = *(uint*)leftPart.pointer;
-                    uint rightValue = *(uint*)rightPart.pointer;
+                    uint leftValue = *(uint*)leftPart;
+                    uint rightValue = *(uint*)rightPart;
                     uint outputValue = leftValue / rightValue;
-                    *(uint*)outputPart.pointer = outputValue;
+                    *(uint*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{partSize}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void SignedDivide(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void SignedDivide(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
-            uint partSize = outputPart.Length;
             unchecked
             {
-                if (partSize == 1)
+                if (length == 1)
                 {
                     sbyte leftValue = (sbyte)leftPart[0];
                     sbyte rightValue = (sbyte)rightPart[0];
                     sbyte outputValue = (sbyte)(leftValue / rightValue);
                     outputPart[0] = (byte)outputValue;
                 }
-                else if (partSize == 2)
+                else if (length == 2)
                 {
-                    short leftValue = *(short*)leftPart.pointer;
-                    short rightValue = *(short*)rightPart.pointer;
+                    short leftValue = *(short*)leftPart;
+                    short rightValue = *(short*)rightPart;
                     short outputValue = (short)(leftValue / rightValue);
-                    *(short*)outputPart.pointer = outputValue;
+                    *(short*)outputPart = outputValue;
                 }
-                else if (partSize == 4)
+                else if (length == 4)
                 {
-                    int leftValue = *(int*)leftPart.pointer;
-                    int rightValue = *(int*)rightPart.pointer;
+                    int leftValue = *(int*)leftPart;
+                    int rightValue = *(int*)rightPart;
                     int outputValue = leftValue / rightValue;
-                    *(int*)outputPart.pointer = outputValue;
+                    *(int*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{partSize}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void FloatingAdd(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void FloatingAdd(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
             unchecked
             {
-                if (outputPart.Length == 4)
+                if (length == 4)
                 {
-                    float leftValue = *(float*)leftPart.pointer;
-                    float rightValue = *(float*)rightPart.pointer;
+                    float leftValue = *(float*)leftPart;
+                    float rightValue = *(float*)rightPart;
                     float outputValue = leftValue + rightValue;
-                    *(float*)outputPart.pointer = outputValue;
+                    *(float*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{outputPart.Length}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void FloatingSubtract(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void FloatingSubtract(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
             unchecked
             {
-                if (outputPart.Length == 4)
+                if (length == 4)
                 {
-                    float leftValue = *(float*)leftPart.pointer;
-                    float rightValue = *(float*)rightPart.pointer;
+                    float leftValue = *(float*)leftPart;
+                    float rightValue = *(float*)rightPart;
                     float outputValue = leftValue - rightValue;
-                    *(float*)outputPart.pointer = outputValue;
+                    *(float*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{outputPart.Length}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void FloatingMultiply(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void FloatingMultiply(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
             unchecked
             {
-                if (outputPart.Length == 4)
+                if (length == 4)
                 {
-                    float leftValue = *(float*)leftPart.pointer;
-                    float rightValue = *(float*)rightPart.pointer;
+                    float leftValue = *(float*)leftPart;
+                    float rightValue = *(float*)rightPart;
                     float outputValue = leftValue * rightValue;
-                    *(float*)outputPart.pointer = outputValue;
+                    *(float*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{outputPart.Length}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
-        private static void FloatingDivide(USpan<byte> leftPart, USpan<byte> rightPart, USpan<byte> outputPart)
+        [UnmanagedCallersOnly]
+        private static void FloatingDivide(byte* leftPart, byte* rightPart, byte* outputPart, byte length)
         {
             unchecked
             {
-                if (outputPart.Length == 4)
+                if (length == 4)
                 {
-                    float leftValue = *(float*)leftPart.pointer;
-                    float rightValue = *(float*)rightPart.pointer;
+                    float leftValue = *(float*)leftPart;
+                    float rightValue = *(float*)rightPart;
                     float outputValue = leftValue / rightValue;
-                    *(float*)outputPart.pointer = outputValue;
+                    *(float*)outputPart = outputValue;
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{outputPart.Length}` is not supported");
+                    throw new System.Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -477,6 +459,21 @@ namespace InteractionKit.Systems
                 this.entity = entity;
                 this.mix = mix;
             }
+        }
+    }
+
+    public readonly unsafe struct MixFunction
+    {
+        private readonly delegate* unmanaged<byte*, byte*, byte*, byte, void> function;
+
+        public MixFunction(delegate* unmanaged<byte*, byte*, byte*, byte, void> function)
+        {
+            this.function = function;
+        }
+
+        public readonly void Invoke(USpan<byte> left, USpan<byte> right, USpan<byte> output)
+        {
+            function(left.pointer, right.pointer, output.pointer, (byte)output.Length);
         }
     }
 }

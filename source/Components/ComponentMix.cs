@@ -7,25 +7,26 @@ namespace InteractionKit.Components
         public RuntimeType left;
         public RuntimeType right;
         public RuntimeType output;
-        public byte partCount;
+        public byte vectorLength;
         public Operation operation;
 
-        public ComponentMix(RuntimeType left, RuntimeType right, RuntimeType output, Operation operation, byte partCount = 1)
+        public ComponentMix(RuntimeType left, RuntimeType right, RuntimeType output, Operation operation, byte vectorLength = 1)
         {
             this.left = left;
             this.right = right;
             this.output = output;
             this.operation = operation;
-            this.partCount = partCount;
+            this.vectorLength = vectorLength;
         }
 
-        public static ComponentMix Create<L, R, O>(Operation operation, byte partCount = 1) where L : unmanaged where R : unmanaged where O : unmanaged
+        public static ComponentMix Create<L, R, O>(Operation operation, byte vectorLength = 1) where L : unmanaged where R : unmanaged where O : unmanaged
         {
-            return new ComponentMix(RuntimeType.Get<L>(), RuntimeType.Get<R>(), RuntimeType.Get<O>(), operation, partCount);
+            return new ComponentMix(RuntimeType.Get<L>(), RuntimeType.Get<R>(), RuntimeType.Get<O>(), operation, vectorLength);
         }
 
         public enum Operation : byte
         {
+            Unknown,
             UnsignedAdd,
             UnsignedSubtract,
             UnsignedMultiply,
