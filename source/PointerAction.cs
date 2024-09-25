@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace InteractionKit.Components
+namespace InteractionKit
 {
     [Flags]
     public enum PointerAction : byte
