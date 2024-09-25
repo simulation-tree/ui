@@ -60,9 +60,7 @@ namespace InteractionKit
         {
             get
             {
-                rint textMeshReference = textRenderer.AsEntity().GetComponent<IsLabel>().textMeshReference;
-                uint textMeshEntity = textRenderer.GetReference(textMeshReference);
-                TextMesh textMesh = new(textRenderer.GetWorld(), textMeshEntity);
+                TextMesh textMesh = textRenderer.TextMesh;
                 return textMesh.Text;
             }
         }
@@ -71,16 +69,12 @@ namespace InteractionKit
         {
             get
             {
-                rint textMeshReference = textRenderer.AsEntity().GetComponent<IsLabel>().textMeshReference;
-                uint textMeshEntity = textRenderer.GetReference(textMeshReference);
-                TextMesh textMesh = new(textRenderer.GetWorld(), textMeshEntity);
+                TextMesh textMesh = textRenderer.TextMesh;
                 return textMesh.Font;
             }
             set
             {
-                rint textMeshReference = textRenderer.AsEntity().GetComponent<IsLabel>().textMeshReference;
-                uint textMeshEntity = textRenderer.GetReference(textMeshReference);
-                TextMesh textMesh = new(textRenderer.GetWorld(), textMeshEntity);
+                TextMesh textMesh = textRenderer.TextMesh;
                 textMesh.Font = value;
             }
         }
@@ -94,13 +88,14 @@ namespace InteractionKit
             textRenderer = new(world, existingEntity);
         }
 
-        public Label(World world, Canvas canvas, FixedString text)
-            : this(world, canvas, text, GetFontFromSettings(world))
+        public Label(World world, Canvas canvas, FixedString text, Font font = default)
         {
-        }
+            Settings settings = world.GetFirst<Settings>();
+            if (font == default)
+            {
+                font = settings.Font;
+            }
 
-        public Label(World world, Canvas canvas, FixedString text, Font font)
-        {
             TextMesh textMesh = new(world, text, font);
 
             Transform transform = new(world);
@@ -115,11 +110,10 @@ namespace InteractionKit
             Camera camera = canvas.Camera;
             textRenderer = transform.entity.Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
-            textRenderer.Material = GetTextMaterialFromSettings(world, camera);
+            textRenderer.Material = settings.GetTextMaterial(camera);
             textRenderer.Camera = camera;
 
-            rint textMeshReference = textRenderer.AddReference(textMesh);
-            textRenderer.AddComponent(new IsLabel(textMeshReference));
+            textRenderer.AddComponent(new IsLabel());
 
             transform.LocalScale = Vector3.One * 16f;
             transform.LocalPosition = new(0f, 0f, 0.1f);
@@ -127,9 +121,7 @@ namespace InteractionKit
 
         public readonly void SetText(USpan<char> text)
         {
-            rint textMeshReference = textRenderer.AsEntity().GetComponent<IsLabel>().textMeshReference;
-            uint textMeshEntity = textRenderer.GetReference(textMeshReference);
-            TextMesh textMesh = new(textRenderer.GetWorld(), textMeshEntity);
+            TextMesh textMesh = textRenderer.TextMesh;
             textMesh.SetText(text);
         }
 
@@ -138,18 +130,6 @@ namespace InteractionKit
             USpan<char> buffer = stackalloc char[(int)text.Length];
             uint length = text.CopyTo(buffer);
             SetText(buffer.Slice(0, length));
-        }
-
-        private static Font GetFontFromSettings(World world)
-        {
-            Settings settings = world.GetFirst<Settings>();
-            return settings.Font;
-        }
-
-        private static Material GetTextMaterialFromSettings(World world, Camera camera)
-        {
-            Settings settings = world.GetFirst<Settings>();
-            return settings.GetTextMaterial(camera);
         }
     }
 }
