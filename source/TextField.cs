@@ -3,7 +3,6 @@ using InteractionKit.Components;
 using InteractionKit.Functions;
 using Simulation;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
@@ -81,7 +80,6 @@ namespace InteractionKit
         public unsafe TextField(World world, Canvas canvas, FixedString defaultValue = default)
         {
             background = new(world, canvas);
-            background.AddComponent(new IsTrigger(new(&Filter), new(&StartEditing)));
             background.AddComponent(new IsSelectable());
 
             Label text = new(world, canvas, defaultValue);
@@ -135,58 +133,6 @@ namespace InteractionKit
                     entity = default;
                 }
             }
-        }
-
-        [UnmanagedCallersOnly]
-        private static void StartEditing(World world, uint textFieldEntity)
-        {
-            //stop editing other text fields
-            foreach (uint entity in world.GetAll<IsTextField>())
-            {
-                ref IsTextField otherComponent = ref world.GetComponentRef<IsTextField>(entity);
-                otherComponent.editing = false;
-            }
-
-            Pointer pointer = world.GetFirst<Pointer>();
-            TextField textField = new Entity(world, textFieldEntity).As<TextField>();
-            textField.Editing = true;
-            Vector3 worldPosition = textField.AsEntity().As<Transform>().WorldPosition;
-            Vector2 pointerPosition = pointer.Position;
-            pointerPosition.X -= worldPosition.X;
-            pointerPosition.Y -= worldPosition.Y;
-
-            Label textLabel = textField.TextLabel;
-            USpan<char> text = textLabel.Text;
-            Settings settings = world.GetFirst<Settings>();
-            (uint start, uint end, uint index) range = settings.EditRange;
-            USpan<char> tempText = stackalloc char[(int)(text.Length + 1)];
-            text.CopyTo(tempText);
-            tempText[text.Length] = ' ';
-            if (textLabel.Font.TryIndexOf(tempText, 32, pointerPosition / 16f, out uint newIndex))
-            {
-                bool holdingShift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
-                if (holdingShift)
-                {
-                    uint start = Math.Min(range.start, range.end);
-                    uint end = Math.Max(range.start, range.end);
-                    uint length = end - start;
-                    if (length == 0)
-                    {
-                        range.start = range.index;
-                    }
-
-                    range.end = newIndex;
-                }
-                else
-                {
-                    range.start = 0;
-                    range.end = 0;
-                }
-
-                range.index = newIndex;
-            }
-
-            settings.EditRange = range;
         }
     }
 }

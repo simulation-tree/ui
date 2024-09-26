@@ -4,6 +4,7 @@ using InteractionKit.Events;
 using Simulation;
 using System;
 using System.Numerics;
+using Transforms;
 using Transforms.Components;
 using Unmanaged;
 
@@ -13,21 +14,25 @@ namespace InteractionKit.Systems
     {
         private static readonly char[] controlCharacters = { ' ', '.', ',', '_', '-', '+', '*', '/' };
 
-        private readonly ComponentQuery<IsTextField> query;
+        private readonly ComponentQuery<IsPointer> pointerQuery;
+        private readonly ComponentQuery<IsTextField, IsSelectable> textFieldQuery;
         private FixedString lastPressedCharacters;
         private FixedString currentCharacters;
         private DateTime nextPress;
+        private bool lastAnyPointerPressed;
 
         public TextFieldEditingSystem(World world) : base(world)
         {
-            query = new();
+            pointerQuery = new();
+            textFieldQuery = new();
             Subscribe<InteractionUpdate>(Update);
         }
 
         public override void Dispose()
         {
             Unsubscribe<InteractionUpdate>();
-            query.Dispose();
+            textFieldQuery.Dispose();
+            pointerQuery.Dispose();
             base.Dispose();
         }
 
@@ -35,26 +40,54 @@ namespace InteractionKit.Systems
         {
             if (world.TryGetFirst(out Settings settings))
             {
+                pointerQuery.Update(world);
+                bool currentAnyPointerPressed = false;
+                foreach (var p in pointerQuery)
+                {
+                    currentAnyPointerPressed |= p.Component1.HasPrimaryIntent;
+                }
+
+                bool anyPointerPressed = false;
+                if (currentAnyPointerPressed != lastAnyPointerPressed)
+                {
+                    lastAnyPointerPressed = currentAnyPointerPressed;
+                    anyPointerPressed = currentAnyPointerPressed;
+                }
+
                 FixedString pressedCharacters = default;
                 pressedCharacters.CopyFrom(settings.PressedCharacters);
                 bool editingAny = false;
-
+                bool startedEditing = false;
                 DateTime now = DateTime.UtcNow;
                 USpan<char> pressedBuffer = stackalloc char[(int)FixedString.MaxLength];
                 ulong ticks = (ulong)((now - DateTime.UnixEpoch).TotalSeconds * 3f);
-                query.Update(world, true);
-                foreach (var t in query)
+                textFieldQuery.Update(world, true);
+                foreach (var t in textFieldQuery)
                 {
+                    uint textFieldEntity = t.entity;
                     IsTextField component = t.Component1;
+                    bool startEditing = t.Component2.WasPrimaryInteractedWith;
+                    if (startEditing && !startedEditing)
+                    {
+                        foreach (var otherT in textFieldQuery)
+                        {
+                            ref IsTextField otherComponent = ref otherT.Component1;
+                            otherComponent.editing = false;
+                        }
+
+                        StartEditing(world, textFieldEntity);
+                        startedEditing = true;
+                    }
+
                     rint cursorReference = component.cursorReference;
-                    uint cursorEntity = world.GetReference(t.entity, cursorReference);
+                    uint cursorEntity = world.GetReference(textFieldEntity, cursorReference);
                     rint textLabelReference = component.textLabelReference;
-                    uint textLabelEntity = world.GetReference(t.entity, textLabelReference);
+                    uint textLabelEntity = world.GetReference(textFieldEntity, textLabelReference);
                     Label textLabel = new(world, textLabelEntity);
                     if (component.editing)
                     {
                         editingAny = true;
-                        bool enableCursor = (ticks + t.entity) % 2 == 0;
+                        bool enableCursor = (ticks + textFieldEntity) % 2 == 0;
                         world.SetEnabled(cursorEntity, enableCursor);
                         bool charactersChanged = false;
                         if (lastPressedCharacters != pressedCharacters)
@@ -97,7 +130,7 @@ namespace InteractionKit.Systems
                     }
 
                     rint highlightReference = component.highlightReference;
-                    uint highlightEntity = world.GetReference(t.entity, highlightReference);
+                    uint highlightEntity = world.GetReference(textFieldEntity, highlightReference);
                     UpdateHighlightToMatchPosition(world, textLabel, highlightEntity, settings);
                 }
 
@@ -105,7 +138,62 @@ namespace InteractionKit.Systems
                 {
                     settings.EditRange = default;
                 }
+
+                if (anyPointerPressed && !startedEditing)
+                {
+                    //stop editing because we didnt press a text field
+                    settings.EditRange = default;
+                    foreach (var t in textFieldQuery)
+                    {
+                        ref IsTextField component = ref t.Component1;
+                        component.editing = false;
+                    }
+                }
             }
+        }
+
+        private static void StartEditing(World world, uint textFieldEntity)
+        {
+            Pointer pointer = world.GetFirst<Pointer>();
+            TextField textField = new Entity(world, textFieldEntity).As<TextField>();
+            textField.Editing = true;
+            Vector3 worldPosition = textField.AsEntity().As<Transform>().WorldPosition;
+            Vector2 pointerPosition = pointer.Position;
+            pointerPosition.X -= worldPosition.X;
+            pointerPosition.Y -= worldPosition.Y;
+
+            Label textLabel = textField.TextLabel;
+            USpan<char> text = textLabel.Text;
+            Settings settings = world.GetFirst<Settings>();
+            (uint start, uint end, uint index) range = settings.EditRange;
+            USpan<char> tempText = stackalloc char[(int)(text.Length + 1)];
+            text.CopyTo(tempText);
+            tempText[text.Length] = ' ';
+            if (textLabel.Font.TryIndexOf(tempText, 32, pointerPosition / 16f, out uint newIndex))
+            {
+                bool holdingShift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
+                if (holdingShift)
+                {
+                    uint start = Math.Min(range.start, range.end);
+                    uint end = Math.Max(range.start, range.end);
+                    uint length = end - start;
+                    if (length == 0)
+                    {
+                        range.start = range.index;
+                    }
+
+                    range.end = newIndex;
+                }
+                else
+                {
+                    range.start = 0;
+                    range.end = 0;
+                }
+
+                range.index = newIndex;
+            }
+
+            settings.EditRange = range;
         }
 
         private static void UpdateCursorToMatchPosition(World world, Label textLabel, uint cursorEntity, Settings settings)
