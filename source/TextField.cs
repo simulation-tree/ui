@@ -2,8 +2,11 @@
 using InteractionKit.Components;
 using InteractionKit.Functions;
 using Simulation;
+using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Transforms;
 using Transforms.Components;
 using Unmanaged;
 
@@ -31,6 +34,7 @@ namespace InteractionKit
             set => background.Size = value;
         }
 
+        public readonly ref bool Editing => ref background.AsEntity().GetComponentRef<IsTextField>().editing;
         public readonly ref Color BackgroundColor => ref background.Color;
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;
@@ -45,7 +49,29 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Color TextColor => ref TextLabel.Color;
+        public readonly Image Cursor
+        {
+            get
+            {
+                rint cursorReference = background.AsEntity().GetComponent<IsTextField>().cursorReference;
+                uint cursorEntity = background.GetReference(cursorReference);
+                return new Entity(background.GetWorld(), cursorEntity).As<Image>();
+            }
+        }
+
+        public readonly Color TextColor
+        {
+            get
+            {
+                return TextLabel.Color;
+            }
+            set
+            {
+                TextLabel.Color = value;
+                Cursor.Color = value;
+            }
+        }
+
         public readonly USpan<char> Value => TextLabel.Text;
 
         readonly uint IEntity.Value => background.GetEntityValue();
@@ -75,10 +101,10 @@ namespace InteractionKit
             Image highlight = new(world, canvas);
             highlight.transform.LocalPosition = new(0f, 0f, 0.05f);
             highlight.Parent = background;
-            highlight.Color = Color.SkyBlue * new Color(1f, 1f, 1f, 0.4f);
-            highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(0.5f, false), default);
-            highlight.Size = new(32, 1f);
-            //highlight.SetEnabled(false);
+            highlight.Color = new Color(0.3f, 0.3f, 0.3f, 1f);
+            highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
+            highlight.Size = new(0f, 1f);
+            highlight.SetEnabled(false);
 
             rint textReference = background.AddReference(text);
             rint cursorReference = background.AddReference(cursor);
@@ -114,18 +140,53 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void StartEditing(World world, uint textFieldEntity)
         {
-            ref IsTextField component = ref world.GetComponentRef<IsTextField>(textFieldEntity);
-            component.editing = true;
-
             //stop editing other text fields
             foreach (uint entity in world.GetAll<IsTextField>())
             {
-                if (entity != textFieldEntity)
-                {
-                    ref IsTextField otherComponent = ref world.GetComponentRef<IsTextField>(entity);
-                    otherComponent.editing = false;
-                }
+                ref IsTextField otherComponent = ref world.GetComponentRef<IsTextField>(entity);
+                otherComponent.editing = false;
             }
+
+            Pointer pointer = world.GetFirst<Pointer>();
+            TextField textField = new Entity(world, textFieldEntity).As<TextField>();
+            textField.Editing = true;
+            Vector3 worldPosition = textField.AsEntity().As<Transform>().WorldPosition;
+            Vector2 pointerPosition = pointer.Position;
+            pointerPosition.X -= worldPosition.X;
+            pointerPosition.Y -= worldPosition.Y;
+
+            Label textLabel = textField.TextLabel;
+            USpan<char> text = textLabel.Text;
+            Settings settings = world.GetFirst<Settings>();
+            (uint start, uint end, uint index) range = settings.EditRange;
+            USpan<char> tempText = stackalloc char[(int)(text.Length + 1)];
+            text.CopyTo(tempText);
+            tempText[text.Length] = ' ';
+            if (textLabel.Font.TryIndexOf(tempText, 32, pointerPosition / 16f, out uint newIndex))
+            {
+                bool holdingShift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
+                if (holdingShift)
+                {
+                    uint start = Math.Min(range.start, range.end);
+                    uint end = Math.Max(range.start, range.end);
+                    uint length = end - start;
+                    if (length == 0)
+                    {
+                        range.start = range.index;
+                    }
+
+                    range.end = newIndex;
+                }
+                else
+                {
+                    range.start = 0;
+                    range.end = 0;
+                }
+
+                range.index = newIndex;
+            }
+
+            settings.EditRange = range;
         }
     }
 }

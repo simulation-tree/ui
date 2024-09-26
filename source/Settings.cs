@@ -97,24 +97,25 @@ namespace InteractionKit
             }
         }
 
-        public readonly (uint start, uint length) EditRange
+        public readonly (uint start, uint end, uint index) EditRange
         {
             get
             {
-                TextEditRange component = entity.GetComponent<TextEditRange>();
-                return (component.start, component.length);
+                TextEditState component = entity.GetComponent<TextEditState>();
+                return (component.selectionStart, component.selectionEnd, component.cursorIndex);
             }
             set
             {
-                ref TextEditRange component = ref entity.GetComponentRef<TextEditRange>();
-                component.start = value.start;
-                component.length = value.length;
+                ref TextEditState component = ref entity.GetComponentRef<TextEditState>();
+                component.selectionStart = value.start;
+                component.selectionEnd = value.end;
+                component.cursorIndex = value.index;
             }
         }
 
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<MeshSettings, FontSettings, AutomationSettings, TextEditRange>().AddArrayTypes<char, MaterialSettings>();
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<MeshSettings, FontSettings, AutomationSettings, TextEditState>().AddArrayTypes<char, MaterialSettings>();
 
 #if NET
         [Obsolete("Default constructor not supported", true)]
@@ -214,7 +215,7 @@ namespace InteractionKit
             entity.AddComponent(meshSettings);
             entity.AddComponent(fontSettings);
             entity.AddComponent(automationSettings);
-            entity.AddComponent(new TextEditRange());
+            entity.AddComponent(new TextEditState());
             entity.CreateArray<char>();
             entity.CreateArray<MaterialSettings>(1)[0] = materialSettings;
         }

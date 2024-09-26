@@ -3,7 +3,6 @@ using InteractionKit.Components;
 using InteractionKit.Events;
 using Simulation;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Transforms.Components;
 using Unmanaged;
@@ -12,6 +11,8 @@ namespace InteractionKit.Systems
 {
     public class TextFieldEditingSystem : SystemBase
     {
+        private static readonly char[] controlCharacters = { ' ', '.', ',', '_', '-', '+', '*', '/' };
+
         private readonly ComponentQuery<IsTextField> query;
         private FixedString lastPressedCharacters;
         private FixedString currentCharacters;
@@ -32,86 +33,94 @@ namespace InteractionKit.Systems
 
         private void Update(InteractionUpdate update)
         {
-            Settings settings = world.GetFirst<Settings>();
-            FixedString pressedCharacters = default;
-            pressedCharacters.CopyFrom(settings.PressedCharacters);
-
-            DateTime now = DateTime.UtcNow;
-            USpan<char> pressedBuffer = stackalloc char[(int)FixedString.MaxLength];
-            ulong ticks = (ulong)((now - DateTime.UnixEpoch).TotalSeconds * 3f);
-            query.Update(world, true);
-            foreach (var t in query)
+            if (world.TryGetFirst(out Settings settings))
             {
-                IsTextField component = t.Component1;
-                rint cursorReference = component.cursorReference;
-                uint cursorEntity = world.GetReference(t.entity, cursorReference);
-                if (component.editing)
+                FixedString pressedCharacters = default;
+                pressedCharacters.CopyFrom(settings.PressedCharacters);
+                bool editingAny = false;
+
+                DateTime now = DateTime.UtcNow;
+                USpan<char> pressedBuffer = stackalloc char[(int)FixedString.MaxLength];
+                ulong ticks = (ulong)((now - DateTime.UnixEpoch).TotalSeconds * 3f);
+                query.Update(world, true);
+                foreach (var t in query)
                 {
-                    bool enableCursor = (ticks + t.entity) % 2 == 0;
-                    world.SetEnabled(cursorEntity, enableCursor);
+                    IsTextField component = t.Component1;
+                    rint cursorReference = component.cursorReference;
+                    uint cursorEntity = world.GetReference(t.entity, cursorReference);
                     rint textLabelReference = component.textLabelReference;
                     uint textLabelEntity = world.GetReference(t.entity, textLabelReference);
                     Label textLabel = new(world, textLabelEntity);
-                    bool charactersChanged = false;
-                    if (lastPressedCharacters != pressedCharacters)
+                    if (component.editing)
                     {
-                        currentCharacters = default;
-                        for (uint i = 0; i < pressedCharacters.Length; i++)
+                        editingAny = true;
+                        bool enableCursor = (ticks + t.entity) % 2 == 0;
+                        world.SetEnabled(cursorEntity, enableCursor);
+                        bool charactersChanged = false;
+                        if (lastPressedCharacters != pressedCharacters)
                         {
-                            char c = pressedCharacters[i];
-                            if (!lastPressedCharacters.Contains(c))
+                            currentCharacters = default;
+                            for (uint i = 0; i < pressedCharacters.Length; i++)
                             {
-                                currentCharacters.Append(c);
+                                char c = pressedCharacters[i];
+                                if (!lastPressedCharacters.Contains(c))
+                                {
+                                    currentCharacters.Append(c);
+                                }
+                            }
+
+                            lastPressedCharacters = pressedCharacters;
+                            charactersChanged = true;
+                        }
+
+                        if (currentCharacters != default && (now >= nextPress || charactersChanged))
+                        {
+                            nextPress = now + TimeSpan.FromMilliseconds(50);
+                            for (uint i = 0; i < currentCharacters.Length; i++)
+                            {
+                                char c = currentCharacters[i];
+                                HandleCharacter(world, textLabel, c, settings);
                             }
                         }
 
-                        lastPressedCharacters = pressedCharacters;
-                        charactersChanged = true;
-                    }
-
-                    if (currentCharacters != default && (now >= nextPress || charactersChanged))
-                    {
-                        nextPress = now + TimeSpan.FromMilliseconds(60);
-                        for (uint i = 0; i < currentCharacters.Length; i++)
+                        if (charactersChanged)
                         {
-                            char c = currentCharacters[i];
-                            HandleCharacter(world, textLabel, c, settings);
+                            nextPress = now + TimeSpan.FromMilliseconds(500);
                         }
-                    }
 
-                    if (charactersChanged)
+                        //update cursor to match position
+                        UpdateCursorToMatchPosition(world, textLabel, cursorEntity, settings);
+                    }
+                    else
                     {
-                        nextPress = now + TimeSpan.FromMilliseconds(500);
+                        world.SetEnabled(cursorEntity, false);
                     }
 
-                    //update cursor to match position
-                    UpdateCursorToMatchPosition(world, t.entity, settings);
+                    rint highlightReference = component.highlightReference;
+                    uint highlightEntity = world.GetReference(t.entity, highlightReference);
+                    UpdateHighlightToMatchPosition(world, textLabel, highlightEntity, settings);
                 }
-                else
+
+                if (!editingAny)
                 {
-                    world.SetEnabled(cursorEntity, false);
+                    settings.EditRange = default;
                 }
             }
         }
 
-        private static void UpdateCursorToMatchPosition(World world, uint textFieldEntity, Settings settings)
+        private static void UpdateCursorToMatchPosition(World world, Label textLabel, uint cursorEntity, Settings settings)
         {
             uint pixelSize = 32;
-            rint textLabelReference = world.GetComponent<IsTextField>(textFieldEntity).textLabelReference;
-            uint textLabelEntity = world.GetReference(textFieldEntity, textLabelReference);
-            Label textLabel = new(world, textLabelEntity);
             Font font = textLabel.Font;
             USpan<char> text = textLabel.Text;
 
-            (uint start, uint length) range = settings.EditRange;
-            USpan<char> textToCursor = text.Slice(0, range.start);
+            (uint start, uint end, uint index) range = settings.EditRange;
+            USpan<char> textToCursor = text.Slice(0, range.index);
             USpan<char> tempText = stackalloc char[(int)textToCursor.Length + 1];
             textToCursor.CopyTo(tempText);
             tempText[tempText.Length - 1] = ' ';
             Vector2 totalSize = font.CalulcateSize(tempText, pixelSize);
 
-            rint cursorReference = world.GetComponent<IsTextField>(textFieldEntity).cursorReference;
-            uint cursorEntity = world.GetReference(textFieldEntity, cursorReference);
             ref Position cursorPosition = ref world.GetComponentRef<Position>(cursorEntity);
             LocalToWorld ltw = world.GetComponent<LocalToWorld>(cursorEntity);
             Vector3 worldPosition = ltw.Position + new Vector3(totalSize.X, 0, 0);
@@ -121,112 +130,272 @@ namespace InteractionKit.Systems
             cursorPosition.value = localPosition;
         }
 
+        private static void UpdateHighlightToMatchPosition(World world, Label textLabel, uint highlightEntity, Settings settings)
+        {
+            (uint start, uint end, uint index) range = settings.EditRange;
+            uint start = Math.Min(range.start, range.end);
+            uint end = Math.Max(range.start, range.end);
+            uint length = end - start;
+            if (length > 0)
+            {
+                world.SetEnabled(highlightEntity, true);
+
+                Font font = textLabel.Font;
+                USpan<char> text = textLabel.Text;
+                USpan<char> textToStart = text.Slice(0, start);
+                USpan<char> textToEnd = text.Slice(0, end);
+                uint pixelSize = 32;
+                Vector2 startPosition = font.CalulcateSize(textToStart, pixelSize);
+                Vector2 endPosition = font.CalulcateSize(textToEnd, pixelSize);
+                Vector2 totalSize = endPosition - startPosition;
+
+                ref Position highlightPosition = ref world.GetComponentRef<Position>(highlightEntity);
+                highlightPosition.value.X = (startPosition.X * 0.5f) + 2;
+
+                ref Scale highlightScale = ref world.GetComponentRef<Scale>(highlightEntity);
+                highlightScale.value.X = (totalSize.X * 0.5f) + 2; //dividing by 2 because pixelSize/16???
+            }
+            else
+            {
+                world.SetEnabled(highlightEntity, false);
+            }
+        }
+
+        private static bool TryGetPreviousIndex(USpan<char> text, out uint index)
+        {
+            for (uint i = text.Length - 1; i != uint.MaxValue; i--)
+            {
+                if (Array.IndexOf(controlCharacters, text[i]) != -1)
+                {
+                    index = i;
+                    return true;
+                }
+            }
+
+            index = default;
+            return false;
+        }
+
+        private static bool TryGetNextIndex(USpan<char> text, out uint index)
+        {
+            for (uint i = 0; i < text.Length; i++)
+            {
+                if (Array.IndexOf(controlCharacters, text[i]) != -1)
+                {
+                    index = i;
+                    return true;
+                }
+            }
+
+            index = default;
+            return false;
+        }
+
         private static void HandleCharacter(World world, Label textLabel, char character, Settings settings)
         {
             USpan<char> text = textLabel.Text;
-            (uint start, uint length) range = settings.EditRange;
-            if (character == Settings.GroupSeparatorCharacter)
+            (uint start, uint end, uint index) range = settings.EditRange;
+            uint start = Math.Min(range.start, range.end);
+            uint end = Math.Max(range.start, range.end);
+            uint length = end - start;
+
+            if (character == Settings.GroupSeparatorCharacter || character == Settings.ShiftCharacter)
             {
                 //skip
             }
             else if (character == Settings.MoveLeftCharacter)
             {
-                if (range.start > 0)
+                bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
+                if (range.index > 0)
                 {
                     bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
                     if (groupSeparator)
                     {
-                        //todo: handle characters other than alphanumeric too, and multiples of the same in a row
-                        if (text.Slice(0, range.start - 1).TryLastIndexOf(' ', out uint lastIndex))
+                        if (shift && length == 0)
                         {
-                            range.start = lastIndex + 1;
+                            range.start = range.index;
+                        }
+
+                        if (TryGetPreviousIndex(text.Slice(0, range.index - 1), out uint index))
+                        {
+                            range.index = index + 1;
                         }
                         else
                         {
-                            range.start = 0;
+                            range.index = 0;
+                        }
+
+                        if (shift)
+                        {
+                            range.end = index;
                         }
                     }
                     else
                     {
-                        range.start--;
-                    }
+                        if (shift && length == 0)
+                        {
+                            range.start = range.index;
+                        }
 
-                    settings.EditRange = range;
+                        range.index--;
+
+                        if (shift)
+                        {
+                            range.end = range.index;
+                        }
+                    }
+                }
+
+                if (!shift)
+                {
+                    range.start = 0;
+                    range.end = 0;
                 }
             }
             else if (character == Settings.MoveRightCharacter)
             {
-                if (range.start < text.Length)
+                bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
+                if (range.index < text.Length)
                 {
                     bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
                     if (groupSeparator)
                     {
-                        if (text.Slice(range.start + 1).TryIndexOf(' ', out uint index))
+                        if (shift && length == 0)
                         {
-                            range.start += index + 1;
+                            range.start = range.index;
+                        }
+
+                        if (TryGetNextIndex(text.Slice(range.index + 1), out uint index))
+                        {
+                            range.index += index + 1;
                         }
                         else
                         {
-                            range.start = text.Length;
+                            range.index = text.Length;
+                        }
+
+                        if (shift)
+                        {
+                            range.end = index;
                         }
                     }
                     else
                     {
-                        range.start++;
-                    }
+                        if (shift && length == 0)
+                        {
+                            range.start = range.index;
+                        }
 
-                    settings.EditRange = range;
+                        range.index++;
+
+                        if (shift)
+                        {
+                            range.end = range.index;
+                        }
+                    }
+                }
+
+                if (!shift)
+                {
+                    range.start = 0;
+                    range.end = 0;
                 }
             }
             else if (character == Settings.StartOfTextCharacter)
             {
                 //move cursor to start
                 bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
-                settings.EditRange = (0, 0);
+                bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
+                if (shift && length == 0)
+                {
+                    range.start = range.index;
+                }
+
+                range.index = 0;
+
+                if (shift)
+                {
+                    range.end = range.index;
+                }
+                else
+                {
+                    range.start = 0;
+                    range.end = 0;
+                }
             }
             else if (character == Settings.EndOfTextCharacter)
             {
                 //move cursor to end
                 bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
-                settings.EditRange = (text.Length, 0);
-            }
-            else if (character == Settings.ShiftCharacter)
-            {
-                //do nothing
+                bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
+                if (shift && length == 0)
+                {
+                    range.start = range.index;
+                }
+
+                range.index = text.Length;
+
+                if (shift)
+                {
+                    range.end = range.index;
+                }
+                else
+                {
+                    range.start = 0;
+                    range.end = 0;
+                }
             }
             else if (character == '\b')
             {
-                if (text.Length == 0 || range.start == 0)
+                if (text.Length == 0)
                 {
                     return;
                 }
 
-                if (range.start == text.Length)
+                if (length > 0)
                 {
-                    //remove last char
-                    USpan<char> newText = stackalloc char[(int)(text.Length - 1)];
-                    text.Slice(0, text.Length - 1).CopyTo(newText);
-                    textLabel.SetText(newText);
-                }
-                else if (text.Length == 1)
-                {
-                    textLabel.SetText(default(FixedString));
+                    range = RemoveSelection(textLabel, range);
                 }
                 else
                 {
-                    //remove char at cursor
-                    USpan<char> newText = stackalloc char[(int)(text.Length - 1)];
-                    //copy first part
-                    text.Slice(0, range.start - 1).CopyTo(newText);
-                    //copy remaining
-                    text.Slice(range.start).CopyTo(newText.Slice(range.start - 1));
-                    textLabel.SetText(newText);
-                }
+                    if (range.index == 0)
+                    {
+                        return;
+                    }
 
-                settings.EditRange = (range.start - 1, range.length);
+                    if (range.index == text.Length)
+                    {
+                        //remove last char
+                        USpan<char> newText = stackalloc char[(int)(text.Length - 1)];
+                        text.Slice(0, text.Length - 1).CopyTo(newText);
+                        textLabel.SetText(newText);
+                    }
+                    else if (text.Length == 1)
+                    {
+                        textLabel.SetText(default(FixedString));
+                    }
+                    else
+                    {
+                        //remove char at cursor
+                        USpan<char> newText = stackalloc char[(int)(text.Length - 1)];
+                        //copy first part
+                        text.Slice(0, range.index - 1).CopyTo(newText);
+                        //copy remaining
+                        text.Slice(range.index).CopyTo(newText.Slice(range.index - 1));
+                        textLabel.SetText(newText);
+                    }
+
+                    range.index--;
+                }
             }
             else
             {
+                if (length > 0)
+                {
+                    range = RemoveSelection(textLabel, range);
+                    text = textLabel.Text;
+                }
+
                 //write char
                 bool holdingShift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
                 if (holdingShift)
@@ -323,18 +492,45 @@ namespace InteractionKit.Systems
 
                 //insert character into cursor position
                 USpan<char> newText = stackalloc char[(int)(text.Length + 1)];
-                USpan<char> firstPart = text.Slice(0, range.start);
+                USpan<char> firstPart = text.Slice(0, range.index);
                 firstPart.CopyTo(newText);
-                newText[range.start] = character;
-                if (range.start + 1 < newText.Length)
+                newText[range.index] = character;
+                if (range.index + 1 < newText.Length)
                 {
-                    USpan<char> secondPart = text.Slice(range.start);
-                    secondPart.CopyTo(newText.Slice(range.start + 1));
+                    USpan<char> secondPart = text.Slice(range.index);
+                    secondPart.CopyTo(newText.Slice(range.index + 1));
                 }
 
                 textLabel.SetText(newText);
-                settings.EditRange = (range.start + 1, range.length);
+                range.index++;
             }
+
+            settings.EditRange = range;
+        }
+
+        private static (uint start, uint end, uint index) RemoveSelection(Label textLabel, (uint start, uint end, uint index) range)
+        {
+            uint start = Math.Min(range.start, range.end);
+            uint end = Math.Max(range.start, range.end);
+            uint length = end - start;
+            USpan<char> text = textLabel.Text;
+            USpan<char> newText = stackalloc char[(int)(text.Length - length)];
+
+            if (start > 0)
+            {
+                text.Slice(0, start).CopyTo(newText);
+            }
+
+            if (end < text.Length)
+            {
+                text.Slice(end).CopyTo(newText.Slice(range.start));
+            }
+
+            textLabel.SetText(newText);
+            range.start = 0;
+            range.end = 0;
+            range.index = start;
+            return range;
         }
     }
 }
