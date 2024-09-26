@@ -73,12 +73,12 @@ namespace InteractionKit
             cursor.Position = new(16f, 0f);
 
             Image highlight = new(world, canvas);
-            highlight.transform.LocalPosition = new(0f, 0f, 0.2f);
+            highlight.transform.LocalPosition = new(0f, 0f, 0.05f);
             highlight.Parent = background;
-            highlight.Color = Color.SkyBlue * new Color(1f, 1f, 1f, 0.5f);
-            highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
+            highlight.Color = Color.SkyBlue * new Color(1f, 1f, 1f, 0.4f);
+            highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(0.5f, false), default);
             highlight.Size = new(32, 1f);
-            highlight.SetEnabled(false);
+            //highlight.SetEnabled(false);
 
             rint textReference = background.AddReference(text);
             rint cursorReference = background.AddReference(cursor);

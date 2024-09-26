@@ -1,5 +1,6 @@
 ﻿using Data;
 using InteractionKit.Components;
+using InteractionKit.Functions;
 using Simulation;
 using System.Numerics;
 using Transforms.Components;
@@ -72,6 +73,8 @@ namespace InteractionKit
             }
         }
 
+        public readonly ref ToggleCallbackFunction Callback => ref background.AsEntity().GetComponentRef<IsToggle>().callback;
+
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new([RuntimeType.Get<IsToggle>(), RuntimeType.Get<IsSelectable>()], []);
@@ -92,7 +95,7 @@ namespace InteractionKit
             checkmarkBox.Color = Color.Black;
 
             rint checkmarkReference = background.AddReference(checkmarkBox);
-            background.AddComponent(new IsToggle(checkmarkReference, initialValue));
+            background.AddComponent(new IsToggle(checkmarkReference, initialValue, default));
             background.AddComponent(new IsSelectable());
             checkmarkBox.SetEnabled(initialValue);
         }

@@ -1,4 +1,5 @@
-﻿using Simulation;
+﻿using InteractionKit.Functions;
+using Simulation;
 
 namespace InteractionKit.Components
 {
@@ -6,8 +7,9 @@ namespace InteractionKit.Components
     {
         public rint checkmarkReference;
         public bool value;
+        public ToggleCallbackFunction callback;
 
-        public IsToggle(rint checkmarkReference, bool value)
+        public IsToggle(rint checkmarkReference, bool value, ToggleCallbackFunction callback)
         {
             this.checkmarkReference = checkmarkReference;
             this.value = value;

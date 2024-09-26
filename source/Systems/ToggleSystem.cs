@@ -50,6 +50,11 @@ namespace InteractionKit.Systems
                             rint checkmarkReference = toggle.checkmarkReference;
                             uint checkmarkEntity = world.GetReference(selectedEntity, checkmarkReference);
                             world.SetEnabled(checkmarkEntity, toggle.value);
+
+                            if (toggle.callback != default)
+                            {
+                                toggle.callback.Invoke(new(world, selectedEntity), toggle.value);
+                            }
                         }
 
                         pressedPointers.Add(pointerEntity);
