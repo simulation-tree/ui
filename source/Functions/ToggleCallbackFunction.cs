@@ -5,17 +5,17 @@ namespace InteractionKit.Functions
     public unsafe readonly struct ToggleCallbackFunction : IEquatable<ToggleCallbackFunction>
     {
 #if NET
-        private readonly delegate* unmanaged<Toggle, bool, void> function;
+        private readonly delegate* unmanaged<Toggle, byte, void> function;
 
-        public ToggleCallbackFunction(delegate* unmanaged<Toggle, bool, void> function)
+        public ToggleCallbackFunction(delegate* unmanaged<Toggle, byte, void> function)
         {
             this.function = function;
         }
 
 #else
-        private readonly delegate*<Toggle, bool, void> function;
+        private readonly delegate*<Toggle, byte, void> function;
 
-        public ToggleCallbackFunction(delegate*<Toggle, bool, void> function)
+        public ToggleCallbackFunction(delegate*<Toggle, byte, void> function)
         {
             this.function = function;
         }
@@ -23,7 +23,7 @@ namespace InteractionKit.Functions
 
         public readonly void Invoke(Toggle toggle, bool value)
         {
-            function(toggle, value);
+            function(toggle, value ? (byte)1 : (byte)0);
         }
 
         public readonly override bool Equals(object? obj)

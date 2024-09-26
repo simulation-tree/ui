@@ -145,12 +145,12 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void BooleanToggled(Toggle toggle, bool newValue)
+        private static void BooleanToggled(Toggle toggle, byte newValue)
         {
             ControlField controlField = toggle.Parent.As<ControlField>();
             (Entity entity, RuntimeType componentType) = controlField.Target;
             ThrowIfTypeMismatches<bool>(componentType);
-            entity.SetComponent<bool>(newValue);
+            entity.SetComponent<bool>(newValue == 1);
         }
     }
 }
