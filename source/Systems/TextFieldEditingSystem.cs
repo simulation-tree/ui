@@ -12,7 +12,7 @@ namespace InteractionKit.Systems
 {
     public class TextFieldEditingSystem : SystemBase
     {
-        private static readonly char[] controlCharacters = { ' ', '.', ',', '_', '-', '+', '*', '/' };
+        private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/'];
 
         private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly ComponentQuery<IsTextField, IsSelectable> textFieldQuery;
@@ -56,6 +56,7 @@ namespace InteractionKit.Systems
 
                 FixedString pressedCharacters = default;
                 pressedCharacters.CopyFrom(settings.PressedCharacters);
+                bool pressedEscape = pressedCharacters.Contains(Settings.EscapeCharacter);
                 bool editingAny = false;
                 bool startedEditing = false;
                 DateTime now = DateTime.UtcNow;
@@ -65,7 +66,7 @@ namespace InteractionKit.Systems
                 foreach (var t in textFieldQuery)
                 {
                     uint textFieldEntity = t.entity;
-                    IsTextField component = t.Component1;
+                    ref IsTextField component = ref t.Component1;
                     bool startEditing = t.Component2.WasPrimaryInteractedWith;
                     if (startEditing && !startedEditing)
                     {
@@ -77,6 +78,10 @@ namespace InteractionKit.Systems
 
                         StartEditing(world, textFieldEntity);
                         startedEditing = true;
+                    }
+                    else if (pressedEscape && component.editing)
+                    {
+                        component.editing = false;
                     }
 
                     rint cursorReference = component.cursorReference;
@@ -287,7 +292,7 @@ namespace InteractionKit.Systems
             uint end = Math.Max(range.start, range.end);
             uint length = end - start;
 
-            if (character == Settings.GroupSeparatorCharacter || character == Settings.ShiftCharacter)
+            if (character == Settings.GroupSeparatorCharacter || character == Settings.ShiftCharacter || character == Settings.EscapeCharacter)
             {
                 //skip
             }
