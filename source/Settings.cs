@@ -128,7 +128,7 @@ namespace InteractionKit
 
         public Settings(World world)
         {
-            ThrowIfSettingsAlreadyExists(world);
+            ThrowIfAlreadyExists(world);
             entity = new(world);
 
             USpan<AvailableState> states = stackalloc AvailableState[3];
@@ -294,11 +294,20 @@ namespace InteractionKit
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfSettingsAlreadyExists(World world)
+        public static void ThrowIfAlreadyExists(World world)
         {
             if (world.TryGetFirst<Settings>(out _))
             {
                 throw new InvalidOperationException("Settings already exists in world, only 1 is permitted");
+            }
+        }
+
+        [Conditional("DEBUG")]
+        public static void ThrowIfMissing(World world)
+        {
+            if (!world.TryGetFirst<Settings>(out _))
+            {
+                throw new InvalidOperationException("Settings does not exist in world");
             }
         }
     }

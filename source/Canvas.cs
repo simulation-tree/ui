@@ -3,7 +3,6 @@ using Rendering;
 using Simulation;
 using System;
 using Transforms;
-using Unmanaged;
 
 namespace InteractionKit
 {
@@ -37,7 +36,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.entity.value;
         readonly World IEntity.World => transform.entity.world;
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsCanvas>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsCanvas>();
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -49,6 +48,7 @@ namespace InteractionKit
 
         public Canvas(World world, Camera camera)
         {
+            Settings.ThrowIfMissing(world);
             transform = new(world);
 
             rint cameraReference = transform.AddReference(camera);
