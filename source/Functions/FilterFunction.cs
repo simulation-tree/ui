@@ -37,19 +37,19 @@ namespace InteractionKit.Functions
             public readonly World world;
             public readonly ulong identifier;
 
-            private readonly void* entities;
+            private readonly nint address;
             private readonly uint length;
 
             /// <summary>
             /// All entities containing the same filter, callback and identifier combinations.
             /// </summary>
-            public readonly USpan<uint> Entities => new(entities, length);
+            public readonly USpan<uint> Entities => new(address, length);
 
             public Input(World world, USpan<uint> entities, ulong identifier)
             {
                 this.world = world;
                 this.identifier = identifier;
-                this.entities = entities.pointer;
+                this.address = entities.Address;
                 length = entities.Length;
             }
         }
