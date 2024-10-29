@@ -1,6 +1,7 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
+using Rendering;
 using Simulation;
 using System.Numerics;
 using Transforms.Components;
@@ -98,6 +99,11 @@ namespace InteractionKit
             background.AddComponent(new IsToggle(checkmarkReference, initialValue, default));
             background.AddComponent(new IsSelectable());
             checkmarkBox.SetEnabled(initialValue);
+        }
+
+        public readonly void Dispose()
+        {
+            background.Dispose();
         }
     }
 }

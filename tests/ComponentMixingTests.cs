@@ -1,54 +1,44 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using InteractionKit.Systems;
-using Simulation;
+using Simulation.Tests;
+using System;
 using System.Numerics;
-using Unmanaged;
 
 namespace InteractionKit.Tests
 {
-    public class ComponentMixingTests
+    public class ComponentMixingTests : SimulationTests
     {
-        [TearDown]
-        public void CleanUp()
+        protected override void SetUp()
         {
-            Allocations.ThrowIfAny();
-        }
-
-        private void Simulate(World world)
-        {
-            world.Submit(new MixingUpdate());
-            world.Poll();
+            base.SetUp();
+            Simulator.AddSystem<ComponentMixingSystem>();
         }
 
         [Test]
         public void IntegerAddition()
         {
-            using World world = new();
-            using ComponentMixingSystem componentMixing = new(world);
+            uint entity = World.CreateEntity();
+            World.AddComponent(entity, new First(7));
+            World.AddComponent(entity, new Second(9123));
+            World.AddComponent(entity, ComponentMix.Create<First, Second, Result>(ComponentMix.Operation.UnsignedAdd));
 
-            uint entity = world.CreateEntity();
-            world.AddComponent(entity, new First(7));
-            world.AddComponent(entity, new Second(9123));
-            world.AddComponent(entity, ComponentMix.Create<First, Second, Result>(ComponentMix.Operation.UnsignedAdd));
+            Simulator.Update(TimeSpan.FromSeconds(0.1f));
 
-            Simulate(world);
-
-            Assert.That(world.ContainsComponent<Result>(entity), Is.True);
-            int first = world.GetComponent<First>(entity).value;
-            int second = world.GetComponent<Second>(entity).value;
-            int result = world.GetComponent<Result>(entity).value;
+            Assert.That(World.ContainsComponent<Result>(entity), Is.True);
+            int first = World.GetComponent<First>(entity).value;
+            int second = World.GetComponent<Second>(entity).value;
+            int result = World.GetComponent<Result>(entity).value;
             Assert.That(result, Is.EqualTo(first + second));
 
-            ref ComponentMix mix = ref world.GetComponentRef<ComponentMix>(entity);
+            ref ComponentMix mix = ref World.GetComponentRef<ComponentMix>(entity);
             mix.operation = ComponentMix.Operation.SignedAdd;
-            world.SetComponent(entity, new First(-424));
+            World.SetComponent(entity, new First(-424));
 
-            Simulate(world);
+            Simulator.Update(TimeSpan.FromSeconds(0.1f));
 
-            first = world.GetComponent<First>(entity).value;
-            second = world.GetComponent<Second>(entity).value;
-            result = world.GetComponent<Result>(entity).value;
+            first = World.GetComponent<First>(entity).value;
+            second = World.GetComponent<Second>(entity).value;
+            result = World.GetComponent<Result>(entity).value;
             Assert.That(result, Is.EqualTo(first + second));
         }
 
@@ -85,25 +75,27 @@ namespace InteractionKit.Tests
         [Test]
         public void FloatingMultiply()
         {
-            using World world = new();
-            using ComponentMixingSystem componentMixing = new(world);
-            uint entity = world.CreateEntity();
-            world.AddComponent(entity, new FirstFloat(7.5f));
-            world.AddComponent(entity, new SecondFloat(0.5f));
-            world.AddComponent(entity, ComponentMix.Create<FirstFloat, SecondFloat, ResultFloat>(ComponentMix.Operation.FloatingMultiply));
-            Simulate(world);
-            Assert.That(world.ContainsComponent<ResultFloat>(entity), Is.True);
-            float first = world.GetComponent<FirstFloat>(entity).value;
-            float second = world.GetComponent<SecondFloat>(entity).value;
-            float result = world.GetComponent<ResultFloat>(entity).value;
+            uint entity = World.CreateEntity();
+            World.AddComponent(entity, new FirstFloat(7.5f));
+            World.AddComponent(entity, new SecondFloat(0.5f));
+            World.AddComponent(entity, ComponentMix.Create<FirstFloat, SecondFloat, ResultFloat>(ComponentMix.Operation.FloatingMultiply));
+
+            Simulator.Update(TimeSpan.FromSeconds(0.1f));
+
+            Assert.That(World.ContainsComponent<ResultFloat>(entity), Is.True);
+            float first = World.GetComponent<FirstFloat>(entity).value;
+            float second = World.GetComponent<SecondFloat>(entity).value;
+            float result = World.GetComponent<ResultFloat>(entity).value;
             Assert.That(result, Is.EqualTo(first * second));
-            ref ComponentMix mix = ref world.GetComponentRef<ComponentMix>(entity);
+            ref ComponentMix mix = ref World.GetComponentRef<ComponentMix>(entity);
             mix.operation = ComponentMix.Operation.FloatingAdd;
-            world.SetComponent(entity, new FirstFloat(-424.5f));
-            Simulate(world);
-            first = world.GetComponent<FirstFloat>(entity).value;
-            second = world.GetComponent<SecondFloat>(entity).value;
-            result = world.GetComponent<ResultFloat>(entity).value;
+            World.SetComponent(entity, new FirstFloat(-424.5f));
+
+            Simulator.Update(TimeSpan.FromSeconds(0.1f));
+
+            first = World.GetComponent<FirstFloat>(entity).value;
+            second = World.GetComponent<SecondFloat>(entity).value;
+            result = World.GetComponent<ResultFloat>(entity).value;
             Assert.That(result, Is.EqualTo(first + second));
         }
 
@@ -140,17 +132,17 @@ namespace InteractionKit.Tests
         [Test]
         public void MixTwoVectors()
         {
-            using World world = new();
-            using ComponentMixingSystem componentMixing = new(world);
-            uint entity = world.CreateEntity();
-            world.AddComponent(entity, new FirstVector(new Vector3(1f, 2f, 3f)));
-            world.AddComponent(entity, new SecondVector(new Vector3(0.5f, 0.5f, 0.5f)));
-            world.AddComponent(entity, ComponentMix.Create<FirstVector, SecondVector, ResultVector>(ComponentMix.Operation.FloatingMultiply, 3));
-            Simulate(world);
-            Assert.That(world.ContainsComponent<ResultVector>(entity), Is.True);
-            Vector3 first = world.GetComponent<FirstVector>(entity).value;
-            Vector3 second = world.GetComponent<SecondVector>(entity).value;
-            Vector3 result = world.GetComponent<ResultVector>(entity).value;
+            uint entity = World.CreateEntity();
+            World.AddComponent(entity, new FirstVector(new Vector3(1f, 2f, 3f)));
+            World.AddComponent(entity, new SecondVector(new Vector3(0.5f, 0.5f, 0.5f)));
+            World.AddComponent(entity, ComponentMix.Create<FirstVector, SecondVector, ResultVector>(ComponentMix.Operation.FloatingMultiply, 3));
+
+            Simulator.Update(TimeSpan.FromSeconds(0.1f));
+
+            Assert.That(World.ContainsComponent<ResultVector>(entity), Is.True);
+            Vector3 first = World.GetComponent<FirstVector>(entity).value;
+            Vector3 second = World.GetComponent<SecondVector>(entity).value;
+            Vector3 result = World.GetComponent<ResultVector>(entity).value;
             Assert.That(result, Is.EqualTo(first * second));
         }
 

@@ -72,5 +72,10 @@ namespace InteractionKit
             entity = new(world);
             entity.AddComponent(new IsPointer());
         }
+
+        public readonly void Dispose()
+        {
+            entity.Dispose();
+        }
     }
 }

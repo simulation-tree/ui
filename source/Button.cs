@@ -55,14 +55,18 @@ namespace InteractionKit
             image.AddComponent(new IsSelectable());
         }
 
+        public readonly void Dispose()
+        {
+            image.Dispose();
+        }
+
         [UnmanagedCallersOnly]
         private static void Filter(FilterFunction.Input input)
         {
-            World world = input.world;
-            foreach (ref uint entity in input.Entities)
+            foreach (ref Entity entity in input.Entities)
             {
                 //todo: efficiency: doing individual calls within a filter function
-                IsSelectable component = world.GetComponent<IsSelectable>(entity);
+                IsSelectable component = entity.GetComponent<IsSelectable>();
                 if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;

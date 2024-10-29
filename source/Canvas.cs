@@ -55,6 +55,11 @@ namespace InteractionKit
             transform.AddComponent(new IsCanvas(cameraReference));
         }
 
+        public readonly void Dispose()
+        {
+            transform.Dispose();
+        }
+
         public static implicit operator Transform(Canvas canvas)
         {
             return canvas.transform;

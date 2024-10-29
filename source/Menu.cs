@@ -91,10 +91,15 @@ namespace InteractionKit
         {
             transform = new(world);
             transform.LocalPosition = new(0, 0, 0.1f);
-            transform.AsEntity().AddComponent(new Anchor());
-            transform.AsEntity().AddComponent(new Pivot());
-            transform.AsEntity().AddComponent(new IsMenu(callback));
+            transform.AddComponent(new Anchor());
+            transform.AddComponent(new Pivot());
+            transform.AddComponent(new IsMenu(callback));
             transform.AsEntity().CreateArray<MenuOption>();
+        }
+
+        public readonly void Dispose()
+        {
+            transform.Dispose();
         }
 
         /// <summary>
@@ -104,7 +109,7 @@ namespace InteractionKit
         public unsafe readonly OptionPath AddOption(FixedString label, Canvas canvas)
         {
             Vector2 size = Size;
-            Entity entity = transform.AsEntity();
+            Entity entity = transform;
             uint optionCount = entity.GetArrayLength<MenuOption>();
             World world = transform.GetWorld();
             bool hasPath = label.TryIndexOf('/', out uint slashIndex);
@@ -194,15 +199,16 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private unsafe static void OptionChosen(World world, uint optionButtonEntity)
+        private unsafe static void OptionChosen(Entity optionButtonEntity)
         {
-            uint menuEntity = world.GetParent(optionButtonEntity);
-            USpan<uint> menuChildren = world.GetChildren(menuEntity);
+            World world = optionButtonEntity.GetWorld();
+            Entity menuEntity = optionButtonEntity.Parent;
+            USpan<uint> menuChildren = menuEntity.Children;
             uint chosenIndex = 0;
             for (uint i = 0; i < menuChildren.Length; i++)
             {
                 uint childEntity = menuChildren[i];
-                if (childEntity == optionButtonEntity)
+                if (childEntity == optionButtonEntity.GetEntityValue())
                 {
                     break;
                 }
@@ -213,12 +219,12 @@ namespace InteractionKit
                 }
             }
 
-            Menu menu = new Entity(world, menuEntity).As<Menu>();
-            ref MenuOption option = ref world.GetArrayElementRef<MenuOption>(menuEntity, chosenIndex);
+            Menu menu = menuEntity.As<Menu>();
+            ref MenuOption option = ref menuEntity.GetArrayElementRef<MenuOption>(chosenIndex);
             if (option.childMenuReference != default)
             {
                 option.expanded = !option.expanded;
-                uint childMenuEntity = world.GetReference(menuEntity, option.childMenuReference);
+                uint childMenuEntity = menuEntity.GetReference(option.childMenuReference);
                 world.SetEnabled(childMenuEntity, option.expanded);
                 if (option.expanded)
                 {
@@ -241,7 +247,7 @@ namespace InteractionKit
             }
             else
             {
-                ref IsMenu component = ref world.GetComponentRef<IsMenu>(menuEntity);
+                ref IsMenu component = ref menuEntity.GetComponentRef<IsMenu>();
                 if (component.callback != default)
                 {
                     component.callback.Invoke(menu, chosenIndex);

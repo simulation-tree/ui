@@ -6,24 +6,24 @@ namespace InteractionKit.Functions
     public unsafe readonly struct CallbackFunction : IEquatable<CallbackFunction>
     {
 #if NET
-        private readonly delegate* unmanaged<World, uint, void> function;
+        private readonly delegate* unmanaged<Entity, void> function;
 
-        public CallbackFunction(delegate* unmanaged<World, uint, void> function)
+        public CallbackFunction(delegate* unmanaged<Entity, void> function)
         {
             this.function = function;
         }
 #else
-        private readonly delegate*<World, uint, void> function;
+        private readonly delegate*<Entity, void> function;
 
-        public TriggerFunction(delegate*<World, uint, void> function)
+        public TriggerFunction(delegate*<Entity, void> function)
         {
             this.function = function;
         }   
 #endif
 
-        public readonly void Invoke(World world, uint entity)
+        public readonly void Invoke(Entity entity)
         {
-            function(world, entity);
+            function(entity);
         }
 
         public readonly override int GetHashCode()

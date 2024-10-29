@@ -1,16 +1,17 @@
 ﻿using Fonts;
 using InteractionKit.Components;
-using InteractionKit.Events;
 using Simulation;
+using Simulation.Functions;
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
 
 namespace InteractionKit.Systems
 {
-    public class TextFieldEditingSystem : SystemBase
+    public struct TextFieldEditingSystem : ISystem
     {
         private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/'];
 
@@ -21,22 +22,45 @@ namespace InteractionKit.Systems
         private DateTime nextPress;
         private bool lastAnyPointerPressed;
 
-        public TextFieldEditingSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref TextFieldEditingSystem system = ref container.Read<TextFieldEditingSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref TextFieldEditingSystem system = ref container.Read<TextFieldEditingSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public TextFieldEditingSystem()
         {
             pointerQuery = new();
             textFieldQuery = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private void CleanUp()
         {
-            Unsubscribe<InteractionUpdate>();
             textFieldQuery.Dispose();
             pointerQuery.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private void Update(World world)
         {
             if (world.TryGetFirst(out Settings settings))
             {

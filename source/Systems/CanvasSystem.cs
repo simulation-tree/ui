@@ -1,29 +1,55 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using Rendering;
 using Simulation;
+using Simulation.Functions;
+using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Transforms.Components;
 
 namespace InteractionKit.Systems
 {
-    public class CanvasSystem : SystemBase
+    public readonly struct CanvasSystem : ISystem
     {
         private readonly ComponentQuery<IsCanvas, Position, Scale> canvasQuery;
 
-        public CanvasSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref CanvasSystem system = ref container.Read<CanvasSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref CanvasSystem system = ref container.Read<CanvasSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public CanvasSystem()
         {
             canvasQuery = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private readonly void CleanUp()
         {
             canvasQuery.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private readonly void Update(World world)
         {
             canvasQuery.Update(world);
             foreach (var x in canvasQuery)

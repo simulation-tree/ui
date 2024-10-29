@@ -86,14 +86,14 @@ namespace InteractionKit
         public unsafe TreeNode(World world, FixedString text, Canvas canvas)
         {
             transform = new(world);
-            transform.AsEntity().AddComponent(new Anchor());
+            transform.AddComponent(new Anchor());
 
             Image box = new(world, canvas);
             box.Parent = transform;
             box.Color = Color.White;
             box.Anchor = new(new(24f, true), new(0f, false), default, new(1f, false), new(1f, false), default);
-            box.AsEntity().AddComponent(new IsTrigger(new(&Filter), new(&ToggleSelected)));
-            box.AsEntity().AddComponent(new IsSelectable());
+            box.AddComponent(new IsTrigger(new(&Filter), new(&ToggleSelected)));
+            box.AddComponent(new IsSelectable());
 
             Label label = new(world, canvas, text);
             label.Parent = box;
@@ -105,8 +105,13 @@ namespace InteractionKit
             rint boxReference = transform.AddReference(box);
             rint labelReference = transform.AddReference(label);
 
-            transform.AsEntity().AddComponent(new IsTreeNode(text, boxReference, labelReference));
+            transform.AddComponent(new IsTreeNode(text, boxReference, labelReference));
             transform.AsEntity().CreateArray<TreeNodeOption>();
+        }
+
+        public readonly void Dispose()
+        {
+            transform.Dispose();
         }
 
         public override string ToString()
@@ -198,10 +203,9 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void Filter(FilterFunction.Input input)
         {
-            World world = input.world;
-            foreach (ref uint entity in input.Entities)
+            foreach (ref Entity entity in input.Entities)
             {
-                IsSelectable component = world.GetComponent<IsSelectable>(entity);
+                IsSelectable component = entity.GetComponent<IsSelectable>();
                 if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;
@@ -210,10 +214,11 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void ToggleSelected(World world, uint boxEntity)
+        private static void ToggleSelected(Entity boxEntity)
         {
-            uint nodeEntity = world.GetParent(boxEntity);
-            uint parentEntity = world.GetParent(nodeEntity);
+            World world = boxEntity.GetWorld();
+            Entity nodeEntity = boxEntity.Parent;
+            uint parentEntity = nodeEntity.Parent.GetEntityValue();
             while (parentEntity != default)
             {
                 if (world.ContainsComponent<IsTree>(parentEntity))
@@ -249,23 +254,23 @@ namespace InteractionKit
                 tree.AsEntity().ResizeArray<SelectedLeaf>(0);
             }
 
-            TreeNode node = new Entity(world, nodeEntity).As<TreeNode>();
+            TreeNode node = nodeEntity.As<TreeNode>();
             bool isSelected = tree.IsSelected(node);
             tree.SetSelected(node, !isSelected);
         }
 
         [UnmanagedCallersOnly]
-        private static void ToggleExpanded(World world, uint expandButtonEntity)
+        private static void ToggleExpanded(Entity expandButtonEntity)
         {
-            uint treeNodeEntity = world.GetParent(expandButtonEntity);
-            ref IsTreeNode component = ref world.GetComponentRef<IsTreeNode>(treeNodeEntity);
+            Entity treeNodeEntity = expandButtonEntity.Parent;
+            ref IsTreeNode component = ref treeNodeEntity.GetComponentRef<IsTreeNode>();
             component.expanded = !component.expanded;
-            TreeNode treeNode = new Entity(world, treeNodeEntity).As<TreeNode>();
+            TreeNode treeNode = treeNodeEntity.As<TreeNode>();
 
-            ref Rotation rotation = ref world.GetComponentRef<Rotation>(expandButtonEntity);
+            ref Rotation rotation = ref expandButtonEntity.GetComponentRef<Rotation>();
             rotation.value = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, component.expanded ? MathF.PI : MathF.PI * -0.5f);
 
-            Button triangleButton = new Entity(world, expandButtonEntity).As<Button>();
+            Button triangleButton = expandButtonEntity.As<Button>();
             if (component.expanded)
             {
                 triangleButton.Position = new(18f, -6f);
@@ -276,6 +281,7 @@ namespace InteractionKit
             }
 
             //set enable state of children
+            World world = expandButtonEntity.GetWorld();
             USpan<TreeNodeOption> nodes = treeNode.Nodes;
             for (uint i = 0; i < nodes.Length; i++)
             {
@@ -287,7 +293,7 @@ namespace InteractionKit
             }
 
             //ask parent trees to update their positions
-            uint parentEntity = world.GetParent(treeNodeEntity);
+            uint parentEntity = treeNodeEntity.Parent.GetEntityValue();
             while (parentEntity != default)
             {
                 if (world.ContainsComponent<IsTree>(parentEntity))

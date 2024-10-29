@@ -1,61 +1,53 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using InteractionKit.Functions;
 using InteractionKit.Systems;
 using Simulation;
+using Simulation.Tests;
+using System;
 using System.Runtime.InteropServices;
-using Unmanaged;
 
 namespace InteractionKit.Tests
 {
-    public class TriggerTests
+    public class TriggerTests : SimulationTests
     {
-        [TearDown]
-        public void CleanUp()
+        protected override void SetUp()
         {
-            Allocations.ThrowIfAny();
-        }
-
-        private void Simulate(World world)
-        {
-            world.Submit(new InteractionUpdate());
-            world.Poll();
+            base.SetUp();
+            Simulator.AddSystem<InvokeTriggersSystem>();
         }
 
         [Test]
         public unsafe void CheckTrigger()
         {
-            using World world = new();
-            using InvokeTriggersSystem invokeTriggers = new(world);
+            uint triggerA = World.CreateEntity();
+            uint triggerB = World.CreateEntity();
+            uint triggerC = World.CreateEntity();
+            World.AddComponent(triggerA, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
+            World.AddComponent(triggerB, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
+            World.AddComponent(triggerC, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
 
-            uint triggerA = world.CreateEntity();
-            uint triggerB = world.CreateEntity();
-            uint triggerC = world.CreateEntity();
-            world.AddComponent(triggerA, new IsTrigger(new(&BadCondition), new(&Callback)));
-            world.AddComponent(triggerB, new IsTrigger(new(&BadCondition), new(&Callback)));
-            world.AddComponent(triggerC, new IsTrigger(new(&BadCondition), new(&Callback)));
+            World.AddComponent(triggerA, (byte)1);
+            World.AddComponent(triggerB, (byte)2);
+            World.AddComponent(triggerC, (int)3);
 
-            world.AddComponent(triggerA, (byte)1);
-            world.AddComponent(triggerB, (byte)2);
-            world.AddComponent(triggerC, (int)3);
+            Simulator.Update(TimeSpan.FromSeconds(0.1f));
 
-            Simulate(world);
+            Assert.That(World.ContainsComponent<byte>(triggerA), Is.True);
+            Assert.That(World.ContainsComponent<byte>(triggerB), Is.True);
 
-            Assert.That(world.ContainsComponent<byte>(triggerA), Is.True);
-            Assert.That(world.ContainsComponent<byte>(triggerB), Is.True);
+            World.GetComponentRef<IsTrigger>(triggerA).filter = new(&SelectFirstEntity);
+            World.GetComponentRef<IsTrigger>(triggerB).filter = new(&SelectFirstEntity);
+            World.GetComponentRef<IsTrigger>(triggerC).filter = new(&SelectFirstEntity);
 
-            world.GetComponentRef<IsTrigger>(triggerA).filter = new(&SelectFirstEntity);
-            world.GetComponentRef<IsTrigger>(triggerB).filter = new(&SelectFirstEntity);
-            world.GetComponentRef<IsTrigger>(triggerC).filter = new(&SelectFirstEntity);
-            Simulate(world);
+            Simulator.Update(TimeSpan.FromSeconds(0.1f));
 
-            Assert.That(world.ContainsComponent<byte>(triggerA), Is.False);
-            Assert.That(world.ContainsComponent<byte>(triggerB), Is.True);
+            Assert.That(World.ContainsComponent<byte>(triggerA), Is.False);
+            Assert.That(World.ContainsComponent<byte>(triggerB), Is.True);
 
             [UnmanagedCallersOnly]
-            static void BadCondition(FilterFunction.Input input)
+            static void FilterEverythingOut(FilterFunction.Input input)
             {
-                foreach (ref uint entity in input.Entities)
+                foreach (ref Entity entity in input.Entities)
                 {
                     entity = default;
                 }
@@ -64,9 +56,9 @@ namespace InteractionKit.Tests
             [UnmanagedCallersOnly]
             static void SelectFirstEntity(FilterFunction.Input input)
             {
-                foreach (ref uint entity in input.Entities)
+                foreach (ref Entity entity in input.Entities)
                 {
-                    if ((uint)entity != 1)
+                    if (entity.GetEntityValue() != 1)
                     {
                         entity = default;
                     }
@@ -74,9 +66,9 @@ namespace InteractionKit.Tests
             }
 
             [UnmanagedCallersOnly]
-            static void Callback(World world, uint entity)
+            static void RemoveByteComponent(Entity entity)
             {
-                world.RemoveComponent<byte>(entity);
+                entity.RemoveComponent<byte>();
             }
         }
     }

@@ -226,6 +226,11 @@ namespace InteractionKit
             background.AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
         }
 
+        public readonly void Dispose()
+        {
+            background.Dispose();
+        }
+
         [UnmanagedCallersOnly]
         private static void ChosenOption(Menu menu, uint chosenOption)
         {
@@ -278,10 +283,9 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void Filter(FilterFunction.Input input)
         {
-            World world = input.world;
-            foreach (ref uint entity in input.Entities)
+            foreach (ref Entity entity in input.Entities)
             {
-                IsSelectable component = world.GetComponent<IsSelectable>(entity);
+                IsSelectable component = entity.GetComponent<IsSelectable>();
                 if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;
@@ -290,9 +294,9 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void ToggleDropdown(World world, uint dropdownEntity)
+        private static void ToggleDropdown(Entity dropdownEntity)
         {
-            Dropdown dropdown = new(world, dropdownEntity);
+            Dropdown dropdown = dropdownEntity.As<Dropdown>();
             dropdown.IsExpanded = !dropdown.IsExpanded;
         }
 

@@ -1,38 +1,63 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using Rendering;
 using Rendering.Components;
 using Simulation;
+using Simulation.Functions;
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Transforms.Components;
 using Unmanaged;
 
 namespace InteractionKit.Systems
 {
-    public class ScrollViewSystem : SystemBase
+    public readonly struct ScrollViewSystem : ISystem
     {
         private readonly ComponentQuery<IsView, LocalToWorld> viewQuery;
         private readonly ComponentQuery<IsView, ViewScrollBarLink> scrollBarLinkQuery;
         private readonly ComponentQuery<IsPointer> pointerQuery;
 
-        public ScrollViewSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref ScrollViewSystem system = ref container.Read<ScrollViewSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref ScrollViewSystem system = ref container.Read<ScrollViewSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public ScrollViewSystem()
         {
             viewQuery = new();
             scrollBarLinkQuery = new();
             pointerQuery = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private void CleanUp()
         {
             pointerQuery.Dispose();
             scrollBarLinkQuery.Dispose();
             viewQuery.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private void Update(World world)
         {
             pointerQuery.Update(world);
             scrollBarLinkQuery.Update(world);
@@ -45,7 +70,7 @@ namespace InteractionKit.Systems
                 uint contentEntity = world.GetReference(scrollViewEntity, contentReference);
                 Vector3 viewPosition = ltw.Position;
                 Vector3 viewScale = ltw.Scale;
-                Destination destination = GetCanvas(scrollViewEntity).Camera.Destination;
+                Destination destination = GetCanvas(world, scrollViewEntity).Camera.Destination;
                 if (destination == default || destination.IsDestroyed()) continue;
 
                 LocalToWorld contentLtw = world.GetComponent<LocalToWorld>(contentEntity);
@@ -121,7 +146,7 @@ namespace InteractionKit.Systems
                     region.W = destinationSize.height;
                 }
 
-                UpdateScissors(contentEntity, region);
+                UpdateScissors(world, contentEntity, region);
 
                 Vector2 scrollValue = v.Component1.value;
                 if (float.IsNaN(scrollValue.X))
@@ -140,7 +165,7 @@ namespace InteractionKit.Systems
             }
         }
 
-        private Canvas GetCanvas(uint entity)
+        private Canvas GetCanvas(World world, uint entity)
         {
             while (entity != default)
             {
@@ -155,7 +180,7 @@ namespace InteractionKit.Systems
             throw new InvalidOperationException($"Entity `{entity}` is not a descendant of a canvas");
         }
 
-        private void UpdateScissors(uint contentEntity, Vector4 region)
+        private void UpdateScissors(World world, uint contentEntity, Vector4 region)
         {
             USpan<uint> contentChildren = world.GetChildren(contentEntity);
             foreach (uint child in contentChildren)
@@ -173,7 +198,7 @@ namespace InteractionKit.Systems
                     }
                 }
 
-                UpdateScissors(child, region);
+                UpdateScissors(world, child, region);
             }
         }
     }

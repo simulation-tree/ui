@@ -1,5 +1,6 @@
 ﻿using Data;
 using InteractionKit.Components;
+using Rendering;
 using Simulation;
 using System.Diagnostics;
 using System.Numerics;
@@ -66,6 +67,11 @@ namespace InteractionKit
             transform.AddComponent(new IsTree());
             transform.AsEntity().CreateArray<SelectedLeaf>();
             transform.AsEntity().CreateArray<TreeNodeOption>();
+        }
+
+        public readonly void Dispose()
+        {
+            transform.Dispose();
         }
 
         public unsafe readonly TreeNode AddLeaf(FixedString text)

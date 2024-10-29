@@ -6,6 +6,7 @@ using Fonts;
 using InteractionKit.Components;
 using Meshes;
 using Rendering;
+using Rendering.Components;
 using Simulation;
 using System;
 using System.Diagnostics;
@@ -182,17 +183,17 @@ namespace InteractionKit
             Material squareMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
             squareMaterial.AddPushBinding<Color>();
             squareMaterial.AddPushBinding<LocalToWorld>();
-            squareMaterial.AddComponentBinding<CameraProjection>(0, 0, default(Entity));
+            squareMaterial.AddComponentBinding<CameraMatrices>(0, 0, default(Entity));
             squareMaterial.AddTextureBinding(1, 0, squareTexture);
 
             Material triangleMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
             triangleMaterial.AddPushBinding<Color>();
             triangleMaterial.AddPushBinding<LocalToWorld>();
-            triangleMaterial.AddComponentBinding<CameraProjection>(0, 0, default(Entity));
+            triangleMaterial.AddComponentBinding<CameraMatrices>(0, 0, default(Entity));
             triangleMaterial.AddTextureBinding(1, 0, triangleTexture);
 
             Material textMaterial = new(world, Address.Get<TextMaterial>());
-            textMaterial.AddComponentBinding<CameraProjection>(1, 0, default(Entity));
+            textMaterial.AddComponentBinding<CameraMatrices>(1, 0, default(Entity));
             textMaterial.AddPushBinding<Color>();
             textMaterial.AddPushBinding<LocalToWorld>();
 
@@ -219,6 +220,11 @@ namespace InteractionKit
             entity.AddComponent(new TextEditState());
             entity.CreateArray<char>();
             entity.CreateArray<MaterialSettings>(1)[0] = materialSettings;
+        }
+
+        public readonly void Dispose()
+        {
+            entity.Dispose();
         }
 
         public readonly void SetPressedCharacters(USpan<char> characters)
@@ -280,9 +286,9 @@ namespace InteractionKit
             squareMaterial = squareMaterial.Clone();
             triangleMaterial = triangleMaterial.Clone();
             textMaterial = textMaterial.Clone();
-            squareMaterial.SetComponentBinding<CameraProjection>(0, 0, camera);
-            triangleMaterial.SetComponentBinding<CameraProjection>(0, 0, camera);
-            textMaterial.SetComponentBinding<CameraProjection>(1, 0, camera);
+            squareMaterial.SetComponentBinding<CameraMatrices>(0, 0, camera);
+            triangleMaterial.SetComponentBinding<CameraMatrices>(0, 0, camera);
+            textMaterial.SetComponentBinding<CameraMatrices>(1, 0, camera);
             MaterialSettings newSettings = defaultSettings;
             newSettings.cameraReference = entity.AddReference(camera);
             newSettings.squareMaterialReference = entity.AddReference(squareMaterial);

@@ -21,9 +21,9 @@ namespace InteractionKit.Functions
         }
 #endif
 
-        public readonly void Invoke(World world, USpan<uint> entities, ulong identifier)
+        public readonly void Invoke(USpan<Entity> entities, ulong identifier)
         {
-            Input input = new(world, entities, identifier);
+            Input input = new(entities, identifier);
             function(input);
         }
 
@@ -34,7 +34,6 @@ namespace InteractionKit.Functions
 
         public readonly struct Input
         {
-            public readonly World world;
             public readonly ulong identifier;
 
             private readonly nint address;
@@ -43,11 +42,10 @@ namespace InteractionKit.Functions
             /// <summary>
             /// All entities containing the same filter, callback and identifier combinations.
             /// </summary>
-            public readonly USpan<uint> Entities => new(address, length);
+            public readonly USpan<Entity> Entities => new(address, length);
 
-            public Input(World world, USpan<uint> entities, ulong identifier)
+            public Input(USpan<Entity> entities, ulong identifier)
             {
-                this.world = world;
                 this.identifier = identifier;
                 this.address = entities.Address;
                 length = entities.Length;

@@ -1,6 +1,7 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using Simulation;
+using Simulation.Functions;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unmanaged;
@@ -8,17 +9,13 @@ using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
-    public unsafe class ComponentMixingSystem : SystemBase
+    public unsafe readonly struct ComponentMixingSystem : ISystem
     {
-        private readonly ComponentQuery<ComponentMix> query;
-        private readonly UnmanagedList<Request> requests;
-        private readonly UnmanagedArray<MixFunction> functions;
+        private static readonly MixFunction[] functions;
 
-        public unsafe ComponentMixingSystem(World world) : base(world)
+        static ComponentMixingSystem()
         {
-            query = new();
-            requests = new();
-            functions = new(13);
+            functions = new MixFunction[13];
             functions[(byte)ComponentMix.Operation.UnsignedAdd] = new(&UnsignedAdd);
             functions[(byte)ComponentMix.Operation.UnsignedSubtract] = new(&UnsignedSubtract);
             functions[(byte)ComponentMix.Operation.UnsignedMultiply] = new(&UnsignedMultiply);
@@ -31,19 +28,50 @@ namespace InteractionKit.Systems
             functions[(byte)ComponentMix.Operation.FloatingSubtract] = new(&FloatingSubtract);
             functions[(byte)ComponentMix.Operation.FloatingMultiply] = new(&FloatingMultiply);
             functions[(byte)ComponentMix.Operation.FloatingDivide] = new(&FloatingDivide);
-            Subscribe<MixingUpdate>(Update);
         }
 
-        public override void Dispose()
+        private readonly ComponentQuery<ComponentMix> query;
+        private readonly UnmanagedList<Request> requests;
+
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
         {
-            Unsubscribe<MixingUpdate>();
-            functions.Dispose();
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref ComponentMixingSystem system = ref container.Read<ComponentMixingSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref ComponentMixingSystem system = ref container.Read<ComponentMixingSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public unsafe ComponentMixingSystem()
+        {
+            query = new();
+            requests = new();
+        }
+
+        private void CleanUp()
+        {
             requests.Dispose();
             query.Dispose();
-            base.Dispose();
         }
 
-        private void Update(MixingUpdate update)
+        private void Update(World world)
         {
             query.Update(world);
             foreach (var x in query)
@@ -53,11 +81,11 @@ namespace InteractionKit.Systems
                 requests.Add(new(entity, mix));
             }
 
-            MixComponents(requests.AsSpan());
+            MixComponents(world, requests.AsSpan());
             requests.Clear();
         }
 
-        private void MixComponents(USpan<Request> requests)
+        private void MixComponents(World world, USpan<Request> requests)
         {
             foreach (var request in requests)
             {
@@ -66,8 +94,8 @@ namespace InteractionKit.Systems
                 RuntimeType leftType = mix.left;
                 RuntimeType rightType = mix.right;
                 RuntimeType outputType = mix.output;
-                ThrowIfComponentIsMissing(entity, leftType);
-                ThrowIfComponentIsMissing(entity, rightType);
+                ThrowIfComponentIsMissing(world, entity, leftType);
+                ThrowIfComponentIsMissing(world, entity, rightType);
                 ThrowIfComponentSizesDontMatch(leftType, rightType);
                 ThrowIfComponentSizesDontMatch(leftType, outputType);
                 if (!world.ContainsComponent(entity, outputType))
@@ -121,7 +149,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -155,7 +183,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -189,7 +217,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -223,7 +251,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -257,7 +285,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -291,7 +319,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -325,7 +353,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -359,7 +387,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -379,7 +407,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -399,7 +427,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -419,7 +447,7 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
@@ -439,17 +467,17 @@ namespace InteractionKit.Systems
                 }
                 else
                 {
-                    throw new System.Exception($"Part size `{length}` is not supported");
+                    throw new Exception($"Part size `{length}` is not supported");
                 }
             }
         }
 
         [Conditional("DEBUG")]
-        private void ThrowIfComponentIsMissing(uint entity, RuntimeType componentType)
+        private void ThrowIfComponentIsMissing(World world, uint entity, RuntimeType componentType)
         {
             if (!world.ContainsComponent(entity, componentType))
             {
-                throw new System.Exception($"Entity `{entity}` is missing expected component `{componentType}`");
+                throw new Exception($"Entity `{entity}` is missing expected component `{componentType}`");
             }
         }
 
@@ -458,7 +486,7 @@ namespace InteractionKit.Systems
         {
             if (left.Size != right.Size)
             {
-                throw new System.Exception($"Components `{left}` and `{right}` don't match in size");
+                throw new Exception($"Components `{left}` and `{right}` don't match in size");
             }
         }
 

@@ -2,6 +2,7 @@
 using Fonts;
 using InteractionKit.Components;
 using Rendering;
+using Rendering.Components;
 using Simulation;
 using System.Numerics;
 using Transforms;
@@ -117,6 +118,11 @@ namespace InteractionKit
 
             transform.LocalScale = Vector3.One * 16f;
             transform.LocalPosition = new(0f, 0f, 0.1f);
+        }
+
+        public readonly void Dispose()
+        {
+            textRenderer.Dispose();
         }
 
         public readonly void SetText(USpan<char> text)

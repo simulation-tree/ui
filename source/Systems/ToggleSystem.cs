@@ -1,33 +1,59 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using Simulation;
+using Simulation.Functions;
+using System;
+using System.Runtime.InteropServices;
 using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
-    public class ToggleSystem : SystemBase
+    public readonly struct ToggleSystem : ISystem
     {
         private readonly ComponentQuery<IsToggle> toggleQuery;
         private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly UnmanagedList<uint> pressedPointers;
 
-        public ToggleSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref ToggleSystem system = ref container.Read<ToggleSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref ToggleSystem system = ref container.Read<ToggleSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public ToggleSystem()
         {
             toggleQuery = new();
             pointerQuery = new();
             pressedPointers = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private void CleanUp()
         {
             pressedPointers.Dispose();
             pointerQuery.Dispose();
             toggleQuery.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private void Update(World world)
         {
             pointerQuery.Update(world);
             toggleQuery.Update(world, true);

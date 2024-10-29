@@ -1,41 +1,67 @@
 ﻿using Automations;
 using Automations.Components;
 using InteractionKit.Components;
-using InteractionKit.Events;
 using Simulation;
+using Simulation.Functions;
+using System;
+using System.Runtime.InteropServices;
 using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
-    public class AutomationParameterSystem : SystemBase
+    public readonly struct AutomationParameterSystem : ISystem
     {
         private readonly ComponentQuery<IsSelectable, IsStateful> selectablesQuery;
         private readonly ComponentQuery<IsPointer> pointerQuery;
-        private readonly UnmanagedList<uint> selectedEntities;
+        private readonly UnmanagedList<Entity> selectedEntities;
 
-        public AutomationParameterSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref AutomationParameterSystem system = ref container.Read<AutomationParameterSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref AutomationParameterSystem system = ref container.Read<AutomationParameterSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public AutomationParameterSystem()
         {
             selectablesQuery = new();
             pointerQuery = new();
             selectedEntities = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private readonly void CleanUp()
         {
             selectedEntities.Dispose();
             pointerQuery.Dispose();
             selectablesQuery.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private readonly void Update(World world)
         {
-            FindSelectedEntities();
-            UpdateSelectableParameters();
+            FindSelectedEntities(world);
+            UpdateSelectableParameters(world);
         }
 
-        private void FindSelectedEntities()
+        private readonly void FindSelectedEntities(World world)
         {
             selectedEntities.Clear();
             pointerQuery.Update(world);
@@ -45,12 +71,12 @@ namespace InteractionKit.Systems
                 if (pointer.hoveringOverReference != default)
                 {
                     uint hoveringOverEntity = world.GetReference(p.entity, pointer.hoveringOverReference);
-                    selectedEntities.Add(hoveringOverEntity);
+                    selectedEntities.Add(new(world, hoveringOverEntity));
                 }
             }
         }
 
-        private void UpdateSelectableParameters()
+        private readonly void UpdateSelectableParameters(World world)
         {
             selectablesQuery.Update(world);
             foreach (var x in selectablesQuery)

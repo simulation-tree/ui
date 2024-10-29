@@ -110,6 +110,7 @@ namespace InteractionKit
 
         public Image(World world, Canvas canvas)
         {
+            Settings.ThrowIfMissing(world);
             Settings settings = world.GetFirst<Settings>();
 
             transform = new(world);
@@ -130,10 +131,15 @@ namespace InteractionKit
             stateful.AddOrSetLink<ColorTint>("selected", settings.SelectedAutomation);
             stateful.AddOrSetLink<ColorTint>("pressed", settings.PressedAutomation);
 
-            Renderer renderer = transform.entity.Become<Renderer>();
+            MeshRenderer renderer = transform.entity.Become<MeshRenderer>();
             renderer.Mesh = settings.QuadMesh;
             renderer.Material = settings.GetSquareMaterial(canvas.Camera);
             renderer.Camera = canvas.Camera;
+        }
+
+        public readonly void Dispose()
+        {
+            transform.Dispose();
         }
 
         public static implicit operator Entity(Image box)

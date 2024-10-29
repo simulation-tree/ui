@@ -117,13 +117,18 @@ namespace InteractionKit
             background.AddComponent(new IsVirtualWindow(headerReference, titleLabelReference, closeButtonReference, scrollBarReference, viewReference, closeCallback));
         }
 
-        [UnmanagedCallersOnly]
-        private static void PressedWindowCloseButton(World world, uint closeButtonEntity)
+        public readonly void Dispose()
         {
-            uint headerEntity = world.GetParent(closeButtonEntity);
-            uint windowEntity = world.GetParent(headerEntity);
-            VirtualWindow window = new(world, windowEntity);
-            IsVirtualWindow component = world.GetComponent<IsVirtualWindow>(windowEntity);
+            background.Dispose();
+        }
+
+        [UnmanagedCallersOnly]
+        private static void PressedWindowCloseButton(Entity closeButtonEntity)
+        {
+            Entity headerEntity = closeButtonEntity.Parent;
+            Entity windowEntity = headerEntity.Parent;
+            VirtualWindow window = windowEntity.As<VirtualWindow>();
+            IsVirtualWindow component = windowEntity.GetComponent<IsVirtualWindow>();
             component.closeCallback.Invoke(window);
         }
 

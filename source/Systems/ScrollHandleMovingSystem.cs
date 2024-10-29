@@ -1,15 +1,15 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using Simulation;
-using System.ComponentModel;
-using System.Diagnostics;
+using Simulation.Functions;
+using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Transforms.Components;
 using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
-    public class ScrollHandleMovingSystem : SystemBase
+    public struct ScrollHandleMovingSystem : ISystem
     {
         private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly ComponentQuery<IsScrollBar> scrollBarQuery;
@@ -19,25 +19,49 @@ namespace InteractionKit.Systems
         private uint currentPointer;
         private Vector2 dragOffset;
 
-        public ScrollHandleMovingSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref ScrollHandleMovingSystem system = ref container.Read<ScrollHandleMovingSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref ScrollHandleMovingSystem system = ref container.Read<ScrollHandleMovingSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public ScrollHandleMovingSystem()
         {
             pointerQuery = new();
             scrollBarQuery = new();
             scrollHandleEntities = new();
             scrollRegionEntities = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private void CleanUp()
         {
             scrollRegionEntities.Dispose();
             scrollHandleEntities.Dispose();
             scrollBarQuery.Dispose();
             pointerQuery.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private void Update(World world)
         {
             scrollBarQuery.Update(world, true);
             foreach (var s in scrollBarQuery)

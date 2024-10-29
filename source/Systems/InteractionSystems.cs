@@ -1,50 +1,57 @@
 ﻿using Simulation;
+using Simulation.Functions;
+using System;
+using System.Runtime.InteropServices;
 
 namespace InteractionKit.Systems
 {
-    public class InteractionSystems : SystemBase
+    public readonly struct InteractionSystems : ISystem
     {
-        public readonly CanvasSystem canvases;
-        public readonly SelectionSystem selections;
-        public readonly VirtualWindowsScrollViewSystem virtualWindowsScrollViews;
-        public readonly InvokeTriggersSystem triggers;
-        public readonly AutomationParameterSystem automationParameters;
-        public readonly ComponentMixingSystem componentMixing;
-        public readonly PointerDraggingSelectableSystem pointerDragging;
-        public readonly ToggleSystem toggles;
-        public readonly ScrollHandleMovingSystem scrollHandles;
-        public readonly ScrollViewSystem scrollViews;
-        public readonly TextFieldEditingSystem textFieldEditing;
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
 
-        public InteractionSystems(World world) : base(world)
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
         {
-            canvases = new(world);
-            selections = new(world);
-            virtualWindowsScrollViews = new(world);
-            triggers = new(world);
-            automationParameters = new(world);
-            componentMixing = new(world);
-            pointerDragging = new(world);
-            toggles = new(world);
-            scrollHandles = new(world);
-            scrollViews = new(world);
-            textFieldEditing = new(world);
+            if (container.World == world)
+            {
+                container.Simulator.AddSystem<CanvasSystem>();
+                container.Simulator.AddSystem<SelectionSystem>();
+                container.Simulator.AddSystem<VirtualWindowsScrollViewSystem>();
+                container.Simulator.AddSystem<InvokeTriggersSystem>();
+                container.Simulator.AddSystem<AutomationParameterSystem>();
+                container.Simulator.AddSystem<ComponentMixingSystem>();
+                container.Simulator.AddSystem<PointerDraggingSelectableSystem>();
+                container.Simulator.AddSystem<ToggleSystem>();
+                container.Simulator.AddSystem<ScrollHandleMovingSystem>();
+                container.Simulator.AddSystem<ScrollViewSystem>();
+                container.Simulator.AddSystem<TextFieldEditingSystem>();
+            }
         }
 
-        public override void Dispose()
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
         {
-            textFieldEditing.Dispose();
-            scrollViews.Dispose();
-            scrollHandles.Dispose();
-            toggles.Dispose();
-            pointerDragging.Dispose();
-            componentMixing.Dispose();
-            automationParameters.Dispose();
-            triggers.Dispose();
-            virtualWindowsScrollViews.Dispose();
-            selections.Dispose();
-            canvases.Dispose();
-            base.Dispose();
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                container.Simulator.RemoveSystem<TextFieldEditingSystem>();
+                container.Simulator.RemoveSystem<ScrollViewSystem>();
+                container.Simulator.RemoveSystem<ScrollHandleMovingSystem>();
+                container.Simulator.RemoveSystem<ToggleSystem>();
+                container.Simulator.RemoveSystem<PointerDraggingSelectableSystem>();
+                container.Simulator.RemoveSystem<ComponentMixingSystem>();
+                container.Simulator.RemoveSystem<AutomationParameterSystem>();
+                container.Simulator.RemoveSystem<InvokeTriggersSystem>();
+                container.Simulator.RemoveSystem<VirtualWindowsScrollViewSystem>();
+                container.Simulator.RemoveSystem<SelectionSystem>();
+                container.Simulator.RemoveSystem<CanvasSystem>();
+            }
         }
     }
 }

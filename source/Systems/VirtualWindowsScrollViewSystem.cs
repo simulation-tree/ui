@@ -1,31 +1,55 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using Simulation;
+using Simulation.Functions;
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Transforms.Components;
 using Unmanaged;
 
 namespace InteractionKit.Systems
 {
-    public class VirtualWindowsScrollViewSystem : SystemBase
+    public readonly struct VirtualWindowsScrollViewSystem : ISystem
     {
         private readonly ComponentQuery<IsVirtualWindow> query;
 
-        public VirtualWindowsScrollViewSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref VirtualWindowsScrollViewSystem system = ref container.Read<VirtualWindowsScrollViewSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref VirtualWindowsScrollViewSystem system = ref container.Read<VirtualWindowsScrollViewSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public VirtualWindowsScrollViewSystem()
         {
             query = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private readonly void CleanUp()
         {
-            Unsubscribe<InteractionUpdate>();
             query.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private readonly void Update(World world)
         {
             query.Update(world, true);
             foreach (var v in query)

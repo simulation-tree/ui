@@ -1,27 +1,54 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using Simulation;
+using Simulation.Functions;
+using System;
+using System.Runtime.InteropServices;
 using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
-    public class InvokeTriggersSystem : SystemBase
+    public readonly struct InvokeTriggersSystem : ISystem
     {
         private readonly ComponentQuery<IsTrigger> invokeQuery;
-        private readonly UnmanagedArray<uint> currentEntities;
-        private readonly UnmanagedDictionary<int, UnmanagedList<uint>> entitiesPerTrigger;
+        private readonly UnmanagedArray<Entity> currentEntities;
+        private readonly UnmanagedDictionary<int, UnmanagedList<Entity>> entitiesPerTrigger;
         private readonly UnmanagedDictionary<int, IsTrigger> functions;
 
-        public InvokeTriggersSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref InvokeTriggersSystem system = ref container.Read<InvokeTriggersSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref InvokeTriggersSystem system = ref container.Read<InvokeTriggersSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public InvokeTriggersSystem()
         {
             invokeQuery = new();
             currentEntities = new();
             entitiesPerTrigger = new();
             functions = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private void CleanUp()
         {
             foreach (int functionHash in entitiesPerTrigger.Keys)
             {
@@ -32,19 +59,18 @@ namespace InteractionKit.Systems
             entitiesPerTrigger.Dispose();
             currentEntities.Dispose();
             invokeQuery.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private void Update(World world)
         {
             //find new entities
             invokeQuery.Update(world, true);
             foreach (var x in invokeQuery)
             {
-                uint entity = x.entity;
+                Entity entity = new(world, x.entity);
                 IsTrigger trigger = x.Component1;
                 int triggerHash = trigger.GetHashCode();
-                if (!entitiesPerTrigger.TryGetValue(triggerHash, out UnmanagedList<uint> entities))
+                if (!entitiesPerTrigger.TryGetValue(triggerHash, out UnmanagedList<Entity> entities))
                 {
                     entities = new();
                     entitiesPerTrigger.Add(triggerHash, entities);
@@ -57,27 +83,27 @@ namespace InteractionKit.Systems
             foreach (int functionHash in entitiesPerTrigger.Keys)
             {
                 IsTrigger trigger = functions[functionHash];
-                UnmanagedList<uint> entities = entitiesPerTrigger[functionHash];
+                UnmanagedList<Entity> entities = entitiesPerTrigger[functionHash];
 
                 //remove entities that no longer exist
                 for (uint i = entities.Count - 1; i != uint.MaxValue; i--)
                 {
-                    uint entity = entities[i];
+                    Entity entity = entities[i];
                     if (!world.ContainsEntity(entity))
                     {
                         entities.RemoveAt(i);
                     }
                 }
 
-                currentEntities.Resize(entities.Count);
+                currentEntities.Length = entities.Count;
                 currentEntities.CopyFrom(entities.AsSpan());
-                trigger.filter.Invoke(world, currentEntities.AsSpan(), trigger.identifier);
+                trigger.filter.Invoke(currentEntities.AsSpan(), trigger.identifier);
                 for (uint i = 0; i < currentEntities.Length; i++)
                 {
-                    uint entity = currentEntities[i];
+                    Entity entity = currentEntities[i];
                     if (entity != default && trigger.callback != default)
                     {
-                        trigger.callback.Invoke(world, entity);
+                        trigger.callback.Invoke(entity);
                     }
                 }
 

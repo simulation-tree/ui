@@ -1,59 +1,86 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Events;
 using Simulation;
+using Simulation.Functions;
+using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Transforms.Components;
 using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
-    public class SelectionSystem : SystemBase
+    public readonly struct SelectionSystem : ISystem
     {
         private readonly ComponentQuery<IsSelectable, LocalToWorld> selectableQuery;
         private readonly ComponentQuery<IsPointer> pointersQuery;
-        private readonly UnmanagedDictionary<uint, uint> selectionStates;
-        private readonly UnmanagedDictionary<uint, PointerAction> pointerStates;
+        private readonly UnmanagedDictionary<Entity, uint> selectionStates;
+        private readonly UnmanagedDictionary<Entity, PointerAction> pointerStates;
 
-        public SelectionSystem(World world) : base(world)
+        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
+        readonly unsafe IterateFunction ISystem.Update => new(&Update);
+        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+
+        [UnmanagedCallersOnly]
+        private static void Initialize(SystemContainer container, World world)
+        {
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        {
+            ref SelectionSystem system = ref container.Read<SelectionSystem>();
+            system.Update(world);
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Finalize(SystemContainer container, World world)
+        {
+            if (container.World == world)
+            {
+                ref SelectionSystem system = ref container.Read<SelectionSystem>();
+                system.CleanUp();
+            }
+        }
+
+        public SelectionSystem()
         {
             selectableQuery = new();
             pointersQuery = new();
             selectionStates = new();
             pointerStates = new();
-            Subscribe<InteractionUpdate>(Update);
         }
 
-        public override void Dispose()
+        private readonly void CleanUp()
         {
             pointerStates.Dispose();
             selectionStates.Dispose();
             pointersQuery.Dispose();
             selectableQuery.Dispose();
-            base.Dispose();
         }
 
-        private void Update(InteractionUpdate update)
+        private void Update(World world)
         {
             pointersQuery.Update(world, true);
             selectableQuery.Update(world, true);
             foreach (var p in pointersQuery)
             {
-                ref IsPointer pointer = ref p.Component1;
-                Vector2 pointerPosition = pointer.position;
+                Entity pointer = new(world, p.entity);
+                ref IsPointer component = ref p.Component1;
+                Vector2 pointerPosition = component.position;
                 float lastDepth = float.MinValue;
                 uint currentHoveringOver = default;
-                bool hasPrimaryIntent = pointer.HasPrimaryIntent;
-                bool hasSecondaryIntent = pointer.HasSecondaryIntent;
+                bool hasPrimaryIntent = component.HasPrimaryIntent;
+                bool hasSecondaryIntent = component.HasSecondaryIntent;
                 bool primaryIntentStarted = false;
                 bool secondaryIntentStarted = false;
-                if (pointerStates.TryAdd(p.entity, pointer.action))
+                if (pointerStates.TryAdd(pointer, component.action))
                 {
                     primaryIntentStarted = hasPrimaryIntent;
                     secondaryIntentStarted = hasSecondaryIntent;
                 }
                 else
                 {
-                    ref PointerAction action = ref pointerStates[p.entity];
+                    ref PointerAction action = ref pointerStates[pointer];
                     bool lastPrimaryIntent = (action & PointerAction.Primary) != 0;
                     if (!lastPrimaryIntent && hasPrimaryIntent)
                     {
@@ -66,7 +93,7 @@ namespace InteractionKit.Systems
                         secondaryIntentStarted = true;
                     }
 
-                    action = pointer.action;
+                    action = component.action;
                 }
 
                 //find currently hovering over entity
@@ -97,7 +124,7 @@ namespace InteractionKit.Systems
                 }
 
                 //update currently selected entity
-                ref rint hoveringOverReference = ref pointer.hoveringOverReference;
+                ref rint hoveringOverReference = ref component.hoveringOverReference;
                 uint oldHoveringOver = world.GetReference(p.entity, hoveringOverReference);
                 if (oldHoveringOver != currentHoveringOver)
                 {

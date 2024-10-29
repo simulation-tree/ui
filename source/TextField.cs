@@ -2,10 +2,8 @@
 using InteractionKit.Components;
 using InteractionKit.Functions;
 using Simulation;
-using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Transforms;
 using Transforms.Components;
 using Unmanaged;
 
@@ -110,6 +108,11 @@ namespace InteractionKit
             background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference));
         }
 
+        public readonly void Dispose()
+        {
+            background.Dispose();
+        }
+
         public readonly void SetText(USpan<char> text)
         {
             TextLabel.SetText(text);
@@ -123,11 +126,10 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void Filter(FilterFunction.Input input)
         {
-            World world = input.world;
-            foreach (ref uint entity in input.Entities)
+            foreach (ref Entity entity in input.Entities)
             {
                 //todo: efficiency: doing individual calls within a filter function
-                IsSelectable component = world.GetComponent<IsSelectable>(entity);
+                IsSelectable component = entity.GetComponent<IsSelectable>();
                 if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;

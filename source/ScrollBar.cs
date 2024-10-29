@@ -139,5 +139,10 @@ namespace InteractionKit
             rint scrollHandleReference = background.AddReference(scrollHandle);
             background.AddComponent(new IsScrollBar(scrollHandleReference, axis));
         }
+
+        public readonly void Dispose()
+        {
+            background.Dispose();
+        }
     }
 }

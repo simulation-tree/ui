@@ -126,6 +126,11 @@ namespace InteractionKit
             transform.AddComponent(new IsControlField(labelReference, controlReference, entityReference, componentType));
         }
 
+        public readonly void Dispose()
+        {
+            transform.Dispose();
+        }
+
         [Conditional("DEBUG")]
         private readonly void ThrowIfEntityIsMissingComponent(World world, uint entity, RuntimeType componentType)
         {

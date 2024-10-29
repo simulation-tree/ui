@@ -1,4 +1,5 @@
 ﻿using InteractionKit.Components;
+using Rendering;
 using Simulation;
 using System.Numerics;
 using Transforms;
@@ -115,6 +116,11 @@ namespace InteractionKit
             content.AddComponent(new Anchor());
             rint contentReference = transform.AddReference(content);
             transform.AddComponent(new IsView(contentReference));
+        }
+
+        public readonly void Dispose()
+        {
+            transform.Dispose();
         }
 
         public readonly void SetScrollBar(ScrollBar scrollBar)
