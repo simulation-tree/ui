@@ -1,11 +1,11 @@
-﻿using InteractionKit.Components;
+﻿using Collections;
+using InteractionKit.Components;
 using Simulation;
 using Simulation.Functions;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms.Components;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
@@ -13,8 +13,8 @@ namespace InteractionKit.Systems
     {
         private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly ComponentQuery<IsScrollBar> scrollBarQuery;
-        private readonly UnmanagedList<uint> scrollHandleEntities;
-        private readonly UnmanagedList<uint> scrollRegionEntities;
+        private readonly List<uint> scrollHandleEntities;
+        private readonly List<uint> scrollRegionEntities;
         private uint currentScrollHandleEntity;
         private uint currentPointer;
         private Vector2 dragOffset;

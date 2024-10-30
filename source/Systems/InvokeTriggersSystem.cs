@@ -1,18 +1,18 @@
-﻿using InteractionKit.Components;
+﻿using Collections;
+using InteractionKit.Components;
 using Simulation;
 using Simulation.Functions;
 using System;
 using System.Runtime.InteropServices;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
     public readonly struct InvokeTriggersSystem : ISystem
     {
         private readonly ComponentQuery<IsTrigger> invokeQuery;
-        private readonly UnmanagedArray<Entity> currentEntities;
-        private readonly UnmanagedDictionary<int, UnmanagedList<Entity>> entitiesPerTrigger;
-        private readonly UnmanagedDictionary<int, IsTrigger> functions;
+        private readonly Array<Entity> currentEntities;
+        private readonly Dictionary<int, List<Entity>> entitiesPerTrigger;
+        private readonly Dictionary<int, IsTrigger> functions;
 
         readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
         readonly unsafe IterateFunction ISystem.Update => new(&Update);
@@ -70,7 +70,7 @@ namespace InteractionKit.Systems
                 Entity entity = new(world, x.entity);
                 IsTrigger trigger = x.Component1;
                 int triggerHash = trigger.GetHashCode();
-                if (!entitiesPerTrigger.TryGetValue(triggerHash, out UnmanagedList<Entity> entities))
+                if (!entitiesPerTrigger.TryGetValue(triggerHash, out List<Entity> entities))
                 {
                     entities = new();
                     entitiesPerTrigger.Add(triggerHash, entities);
@@ -83,7 +83,7 @@ namespace InteractionKit.Systems
             foreach (int functionHash in entitiesPerTrigger.Keys)
             {
                 IsTrigger trigger = functions[functionHash];
-                UnmanagedList<Entity> entities = entitiesPerTrigger[functionHash];
+                List<Entity> entities = entitiesPerTrigger[functionHash];
 
                 //remove entities that no longer exist
                 for (uint i = entities.Count - 1; i != uint.MaxValue; i--)

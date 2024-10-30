@@ -1,11 +1,11 @@
-﻿using InteractionKit.Components;
+﻿using Collections;
+using InteractionKit.Components;
 using Simulation;
 using Simulation.Functions;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unmanaged;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
@@ -31,7 +31,7 @@ namespace InteractionKit.Systems
         }
 
         private readonly ComponentQuery<ComponentMix> query;
-        private readonly UnmanagedList<Request> requests;
+        private readonly List<Request> requests;
 
         readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
         readonly unsafe IterateFunction ISystem.Update => new(&Update);

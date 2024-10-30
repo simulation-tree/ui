@@ -1,9 +1,9 @@
-﻿using InteractionKit.Components;
+﻿using Collections;
+using InteractionKit.Components;
 using Simulation;
 using Simulation.Functions;
 using System;
 using System.Runtime.InteropServices;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
@@ -11,7 +11,7 @@ namespace InteractionKit.Systems
     {
         private readonly ComponentQuery<IsToggle> toggleQuery;
         private readonly ComponentQuery<IsPointer> pointerQuery;
-        private readonly UnmanagedList<uint> pressedPointers;
+        private readonly List<uint> pressedPointers;
 
         readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
         readonly unsafe IterateFunction ISystem.Update => new(&Update);

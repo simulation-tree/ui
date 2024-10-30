@@ -1,11 +1,11 @@
-﻿using InteractionKit.Components;
+﻿using Collections;
+using InteractionKit.Components;
 using Simulation;
 using Simulation.Functions;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms.Components;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
@@ -13,8 +13,8 @@ namespace InteractionKit.Systems
     {
         private readonly ComponentQuery<IsSelectable, LocalToWorld> selectableQuery;
         private readonly ComponentQuery<IsPointer> pointersQuery;
-        private readonly UnmanagedDictionary<Entity, uint> selectionStates;
-        private readonly UnmanagedDictionary<Entity, PointerAction> pointerStates;
+        private readonly Dictionary<Entity, uint> selectionStates;
+        private readonly Dictionary<Entity, PointerAction> pointerStates;
 
         readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
         readonly unsafe IterateFunction ISystem.Update => new(&Update);

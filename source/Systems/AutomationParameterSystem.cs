@@ -1,11 +1,11 @@
 ﻿using Automations;
 using Automations.Components;
+using Collections;
 using InteractionKit.Components;
 using Simulation;
 using Simulation.Functions;
 using System;
 using System.Runtime.InteropServices;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
@@ -13,7 +13,7 @@ namespace InteractionKit.Systems
     {
         private readonly ComponentQuery<IsSelectable, IsStateful> selectablesQuery;
         private readonly ComponentQuery<IsPointer> pointerQuery;
-        private readonly UnmanagedList<Entity> selectedEntities;
+        private readonly List<Entity> selectedEntities;
 
         readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
         readonly unsafe IterateFunction ISystem.Update => new(&Update);

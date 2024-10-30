@@ -1,11 +1,11 @@
-﻿using InteractionKit.Components;
+﻿using Collections;
+using InteractionKit.Components;
 using Simulation;
 using Simulation.Functions;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms.Components;
-using Unmanaged.Collections;
 
 namespace InteractionKit.Systems
 {
@@ -13,7 +13,7 @@ namespace InteractionKit.Systems
     {
         private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly ComponentQuery<IsDraggable> draggableQuery;
-        private readonly UnmanagedList<Entity> pressedStates;
+        private readonly List<Entity> pressedStates;
         private Entity dragTargetEntity;
         private Entity dragPointerEntity;
         private Vector2 lastPosition;
