@@ -84,7 +84,7 @@ namespace InteractionKit.Systems
                 bool editingAny = false;
                 bool startedEditing = false;
                 DateTime now = DateTime.UtcNow;
-                USpan<char> pressedBuffer = stackalloc char[(int)FixedString.MaxLength];
+                USpan<char> pressedBuffer = stackalloc char[(int)FixedString.Capacity];
                 ulong ticks = (ulong)((now - DateTime.UnixEpoch).TotalSeconds * 3f);
                 textFieldQuery.Update(world, true);
                 foreach (var t in textFieldQuery)
