@@ -304,7 +304,7 @@ namespace InteractionKit
         {
             if (world.TryGetFirst<Settings>(out _))
             {
-                throw new InvalidOperationException("Settings already exists in world, only 1 is permitted");
+                throw new InvalidOperationException($"An entity with the {nameof(Settings)} already exists in world, only 1 is permitted");
             }
         }
 
@@ -313,7 +313,7 @@ namespace InteractionKit
         {
             if (!world.TryGetFirst<Settings>(out _))
             {
-                throw new InvalidOperationException("Settings does not exist in world");
+                throw new InvalidOperationException($"An entity with the {nameof(Settings)} component is missing from the world");
             }
         }
     }
