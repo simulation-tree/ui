@@ -1,8 +1,8 @@
-﻿using Data;
+﻿using Cameras;
+using Data;
 using Fonts;
 using InteractionKit.Components;
 using Rendering;
-using Rendering.Components;
 using Simulation;
 using System.Numerics;
 using Transforms;
@@ -112,7 +112,7 @@ namespace InteractionKit
             textRenderer = transform.entity.Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
-            textRenderer.Camera = camera;
+            textRenderer.Mask = 1; //todo: customizing the layer that ui controls are on
 
             textRenderer.AddComponent(new IsLabel());
 

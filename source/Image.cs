@@ -134,7 +134,7 @@ namespace InteractionKit
             MeshRenderer renderer = transform.entity.Become<MeshRenderer>();
             renderer.Mesh = settings.QuadMesh;
             renderer.Material = settings.GetSquareMaterial(canvas.Camera);
-            renderer.Camera = canvas.Camera;
+            renderer.Mask = 1; //todo: customizing the layer that ui controls are on
         }
 
         public readonly void Dispose()
