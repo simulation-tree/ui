@@ -79,7 +79,7 @@ namespace InteractionKit.Systems
             {
                 uint pointerEntity = p.entity;
                 rint hoveringOverReference = p.Component1.hoveringOverReference;
-                uint hoveringOverEntity = world.GetReference(pointerEntity, hoveringOverReference);
+                uint hoveringOverEntity = hoveringOverReference == default ? default : world.GetReference(pointerEntity, hoveringOverReference);
                 Vector2 pointerPosition = p.Component1.position;
                 Vector2 pointerScroll = p.Component1.scroll;
                 bool pressed = p.Component1.HasPrimaryIntent;

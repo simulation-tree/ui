@@ -125,7 +125,7 @@ namespace InteractionKit.Systems
 
                 //update currently selected entity
                 ref rint hoveringOverReference = ref component.hoveringOverReference;
-                uint oldHoveringOver = world.GetReference(p.entity, hoveringOverReference);
+                uint oldHoveringOver = hoveringOverReference == default ? default : world.GetReference(p.entity, hoveringOverReference);
                 if (oldHoveringOver != currentHoveringOver)
                 {
                     if (oldHoveringOver != default)

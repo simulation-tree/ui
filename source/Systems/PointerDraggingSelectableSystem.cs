@@ -14,8 +14,8 @@ namespace InteractionKit.Systems
         private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly ComponentQuery<IsDraggable> draggableQuery;
         private readonly List<Entity> pressedStates;
-        private Entity dragTargetEntity;
-        private Entity dragPointerEntity;
+        private Entity dragTarget;
+        private Entity dragPointer;
         private Vector2 lastPosition;
 
         readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
@@ -77,39 +77,42 @@ namespace InteractionKit.Systems
                 }
 
                 Vector2 position = p.Component1.position;
-                if (wasPressed && dragTargetEntity == default)
+                if (wasPressed && dragTarget == default)
                 {
                     rint hoveringOverReference = p.Component1.hoveringOverReference;
-                    Entity hoveringOverEntity = new(world, pointer.GetReference(hoveringOverReference));
-                    if (hoveringOverEntity != default && draggableQuery.TryIndexOf(hoveringOverEntity.GetEntityValue(), out uint index))
+                    if (hoveringOverReference != default)
                     {
-                        rint targetReference = draggableQuery[index].Component1.targetReference;
-                        Entity targetEntity = new(world, hoveringOverEntity.GetReference(targetReference));
-                        if (targetEntity == default)
+                        uint hoveringOverEntity = pointer.GetReference(hoveringOverReference);
+                        if (draggableQuery.TryIndexOf(hoveringOverEntity, out uint index))
                         {
-                            targetEntity = hoveringOverEntity;
-                        }
+                            rint targetReference = draggableQuery[index].Component1.targetReference;
+                            uint targetEntity = targetReference == default ? default : world.GetReference(hoveringOverEntity, targetReference);
+                            if (targetEntity == default)
+                            {
+                                targetEntity = hoveringOverEntity;
+                            }
 
-                        if (targetEntity != default && world.ContainsEntity(targetEntity))
-                        {
-                            dragTargetEntity = targetEntity;
-                            dragPointerEntity = pointer;
-                            lastPosition = position;
+                            if (targetEntity != default && world.ContainsEntity(targetEntity))
+                            {
+                                dragTarget = new(world, targetEntity);
+                                dragPointer = pointer;
+                                lastPosition = position;
+                            }
                         }
                     }
                 }
-                else if (!pressed && pointer == dragPointerEntity)
+                else if (!pressed && pointer == dragPointer)
                 {
-                    dragTargetEntity = default;
+                    dragTarget = default;
                 }
             }
 
-            if (dragTargetEntity != default && world.ContainsEntity(dragTargetEntity))
+            if (dragTarget != default && world.ContainsEntity(dragTarget))
             {
-                Vector2 position = dragPointerEntity.GetComponent<IsPointer>().position;
+                Vector2 position = dragPointer.GetComponent<IsPointer>().position;
                 Vector2 pointerDelta = position - lastPosition;
                 lastPosition = position;
-                ref Position selectablePosition = ref dragTargetEntity.TryGetComponentRef<Position>(out bool contains);
+                ref Position selectablePosition = ref dragTarget.TryGetComponentRef<Position>(out bool contains);
                 if (contains)
                 {
                     selectablePosition.value += new Vector3(pointerDelta, 0);

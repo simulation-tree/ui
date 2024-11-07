@@ -67,19 +67,22 @@ namespace InteractionKit.Systems
                     if (pressed)
                     {
                         rint hoveringOverReference = p.Component1.hoveringOverReference;
-                        uint selectedEntity = world.GetReference(pointerEntity, hoveringOverReference);
-                        if (selectedEntity != default && toggleQuery.TryIndexOf(selectedEntity, out uint index))
+                        if (hoveringOverReference != default)
                         {
-                            ref IsToggle toggle = ref toggleQuery[index].Component1;
-                            toggle.value = !toggle.value;
-
-                            rint checkmarkReference = toggle.checkmarkReference;
-                            uint checkmarkEntity = world.GetReference(selectedEntity, checkmarkReference);
-                            world.SetEnabled(checkmarkEntity, toggle.value);
-
-                            if (toggle.callback != default)
+                            uint selectedEntity = world.GetReference(pointerEntity, hoveringOverReference);
+                            if (toggleQuery.TryIndexOf(selectedEntity, out uint index))
                             {
-                                toggle.callback.Invoke(new(world, selectedEntity), toggle.value);
+                                ref IsToggle toggle = ref toggleQuery[index].Component1;
+                                toggle.value = !toggle.value;
+
+                                rint checkmarkReference = toggle.checkmarkReference;
+                                uint checkmarkEntity = world.GetReference(selectedEntity, checkmarkReference);
+                                world.SetEnabled(checkmarkEntity, toggle.value);
+
+                                if (toggle.callback != default)
+                                {
+                                    toggle.callback.Invoke(new(world, selectedEntity), toggle.value);
+                                }
                             }
                         }
 
