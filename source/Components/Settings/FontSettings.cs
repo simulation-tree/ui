@@ -1,7 +1,8 @@
-﻿using Simulation;
+﻿using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct FontSettings
     {
         public rint fontReference;

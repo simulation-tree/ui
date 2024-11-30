@@ -3,25 +3,18 @@ using Data;
 using InteractionKit.Components;
 using Rendering;
 using Rendering.Components;
-using Simulation;
 using System;
 using System.Numerics;
 using Textures;
 using Transforms;
 using Transforms.Components;
-using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct Image : IEntity
     {
-        public readonly Transform transform;
-
-        public readonly Entity Parent
-        {
-            get => transform.Parent;
-            set => transform.Parent = value;
-        }
+        private readonly Transform transform;
 
         public readonly Vector2 Position
         {
@@ -32,8 +25,9 @@ namespace InteractionKit
             }
             set
             {
-                Vector3 position = transform.LocalPosition;
-                transform.LocalPosition = new(value.X, value.Y, position.Z);
+                ref Vector3 position = ref transform.LocalPosition;
+                position.X = value.X;
+                position.Y = value.Y;
             }
         }
 
@@ -46,26 +40,27 @@ namespace InteractionKit
             }
             set
             {
-                Vector3 scale = transform.LocalScale;
-                transform.LocalScale = new(value.X, value.Y, scale.Z);
+                ref Vector3 scale = ref transform.LocalScale;
+                scale.X = value.X;
+                scale.Y = value.Y;
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.entity.GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.entity.GetComponentRef<Pivot>().value;
-        public readonly ref Color Color => ref transform.entity.GetComponentRef<BaseColor>().value;
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
+        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponentRef<Pivot>().value;
+        public readonly ref Color Color => ref transform.AsEntity().GetComponentRef<BaseColor>().value;
 
         public readonly Material Material
         {
             get
             {
-                rint materialReference = transform.entity.GetComponent<IsRenderer>().materialReference;
+                rint materialReference = transform.AsEntity().GetComponent<IsRenderer>().materialReference;
                 uint materialEntity = transform.GetReference(materialReference);
                 return new(transform.GetWorld(), materialEntity);
             }
             set
             {
-                ref IsRenderer renderer = ref transform.entity.GetComponentRef<IsRenderer>();
+                ref IsRenderer renderer = ref transform.AsEntity().GetComponentRef<IsRenderer>();
                 if (renderer.materialReference != default)
                 {
                     transform.SetReference(renderer.materialReference, value.GetEntityValue());
@@ -94,7 +89,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsTransform>(), RuntimeType.Get<IsRenderer>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTransform, IsRenderer>();
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -121,9 +116,9 @@ namespace InteractionKit
             transform.AddComponent(new BaseColor(new Vector4(1f)));
             transform.AddComponent(new Color(new Vector4(1f)));
             transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
-            transform.Parent = canvas;
+            transform.SetParent(canvas);
 
-            StatefulAutomationPlayer stateful = transform.entity.Become<StatefulAutomationPlayer>();
+            StatefulAutomationPlayer stateful = transform.AsEntity().Become<StatefulAutomationPlayer>();
             stateful.StateMachine = settings.ControlStateMachine;
             stateful.AddParameter("pressed", 0f);
             stateful.AddParameter("selected", 1f);
@@ -131,7 +126,7 @@ namespace InteractionKit
             stateful.AddOrSetLink<ColorTint>("selected", settings.SelectedAutomation);
             stateful.AddOrSetLink<ColorTint>("pressed", settings.PressedAutomation);
 
-            MeshRenderer renderer = transform.entity.Become<MeshRenderer>();
+            MeshRenderer renderer = transform.AsEntity().Become<MeshRenderer>();
             renderer.Mesh = settings.QuadMesh;
             renderer.Material = settings.GetSquareMaterial(canvas.Camera);
             renderer.Mask = 1; //todo: customizing the layer that ui controls are on
@@ -145,6 +140,11 @@ namespace InteractionKit
         public static implicit operator Entity(Image box)
         {
             return box.AsEntity();
+        }
+
+        public static implicit operator Transform(Image box)
+        {
+            return box.transform;
         }
     }
 }

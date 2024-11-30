@@ -7,14 +7,13 @@ using Fonts;
 using InteractionKit.Components;
 using Meshes;
 using Rendering;
-using Rendering.Components;
-using Simulation;
 using System;
 using System.Diagnostics;
 using System.Numerics;
 using Textures;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
@@ -30,7 +29,7 @@ namespace InteractionKit
         public const char GroupSeparatorCharacter = (char)29;
         public const char EscapeCharacter = (char)27;
 
-        public readonly Entity entity;
+        private readonly Entity entity;
 
         public readonly USpan<char> PressedCharacters => entity.GetArray<char>();
 
@@ -316,6 +315,11 @@ namespace InteractionKit
             {
                 throw new InvalidOperationException($"An entity with the {nameof(Settings)} component is missing from the world");
             }
+        }
+
+        public static implicit operator Entity(Settings settings)
+        {
+            return settings.entity;
         }
     }
 }

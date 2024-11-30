@@ -3,6 +3,7 @@ using InteractionKit.Systems;
 using Simulation.Tests;
 using System;
 using System.Numerics;
+using Worlds;
 
 namespace InteractionKit.Tests
 {
@@ -11,6 +12,16 @@ namespace InteractionKit.Tests
         protected override void SetUp()
         {
             base.SetUp();
+            ComponentType.Register<ComponentMix>();
+            ComponentType.Register<First>();
+            ComponentType.Register<Second>();
+            ComponentType.Register<Result>();
+            ComponentType.Register<FirstFloat>();
+            ComponentType.Register<SecondFloat>();
+            ComponentType.Register<ResultFloat>();
+            ComponentType.Register<FirstVector>();
+            ComponentType.Register<SecondVector>();
+            ComponentType.Register<ResultVector>();
             Simulator.AddSystem<ComponentMixingSystem>();
         }
 
@@ -42,6 +53,7 @@ namespace InteractionKit.Tests
             Assert.That(result, Is.EqualTo(first + second));
         }
 
+        [Component]
         public struct Result
         {
             public int value;
@@ -52,6 +64,7 @@ namespace InteractionKit.Tests
             }
         }
 
+        [Component]
         public struct First
         {
             public int value;
@@ -62,6 +75,7 @@ namespace InteractionKit.Tests
             }
         }
 
+        [Component]
         public struct Second
         {
             public int value;
@@ -99,6 +113,7 @@ namespace InteractionKit.Tests
             Assert.That(result, Is.EqualTo(first + second));
         }
 
+        [Component]
         public struct FirstFloat
         {
             public float value;
@@ -109,6 +124,7 @@ namespace InteractionKit.Tests
             }
         }
 
+        [Component]
         public struct SecondFloat
         {
             public float value;
@@ -119,6 +135,7 @@ namespace InteractionKit.Tests
             }
         }
 
+        [Component]
         public struct ResultFloat
         {
             public float value;
@@ -146,6 +163,7 @@ namespace InteractionKit.Tests
             Assert.That(result, Is.EqualTo(first * second));
         }
 
+        [Component]
         public struct FirstVector
         {
             public Vector3 value;
@@ -156,6 +174,7 @@ namespace InteractionKit.Tests
             }
         }
 
+        [Component]
         public struct SecondVector
         {
             public Vector3 value;
@@ -166,6 +185,7 @@ namespace InteractionKit.Tests
             }
         }
 
+        [Component]
         public struct ResultVector
         {
             public Vector3 value;

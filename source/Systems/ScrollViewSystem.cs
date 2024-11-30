@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit.Systems
 {
@@ -17,12 +18,12 @@ namespace InteractionKit.Systems
         private readonly ComponentQuery<IsView, ViewScrollBarLink> scrollBarLinkQuery;
         private readonly ComponentQuery<IsPointer> pointerQuery;
 
-        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
-        readonly unsafe IterateFunction ISystem.Iterate => new(&Update);
-        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+        readonly unsafe StartSystem ISystem.Start => new(&Start);
+        readonly unsafe UpdateSystem ISystem.Update => new(&Update);
+        readonly unsafe FinishSystem ISystem.Finish => new(&Finish);
 
         [UnmanagedCallersOnly]
-        private static void Initialize(SystemContainer container, World world)
+        private static void Start(SystemContainer container, World world)
         {
         }
 
@@ -34,7 +35,7 @@ namespace InteractionKit.Systems
         }
 
         [UnmanagedCallersOnly]
-        private static void Finalize(SystemContainer container, World world)
+        private static void Finish(SystemContainer container, World world)
         {
             if (container.World == world)
             {

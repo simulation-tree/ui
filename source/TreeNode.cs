@@ -1,25 +1,19 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
-using Simulation;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct TreeNode : IEntity, ICanvasDescendant
+    public readonly struct TreeNode : ICanvasDescendant
     {
-        public readonly Transform transform;
-
-        public readonly Entity Parent
-        {
-            get => transform.Parent;
-            set => transform.Parent = value;
-        }
+        private readonly Transform transform;
 
         public readonly Vector2 Position
         {
@@ -89,14 +83,14 @@ namespace InteractionKit
             transform.AddComponent(new Anchor());
 
             Image box = new(world, canvas);
-            box.Parent = transform;
+            box.SetParent(transform);
             box.Color = Color.White;
             box.Anchor = new(new(24f, true), new(0f, false), default, new(1f, false), new(1f, false), default);
             box.AddComponent(new IsTrigger(new(&Filter), new(&ToggleSelected)));
             box.AddComponent(new IsSelectable());
 
             Label label = new(world, canvas, text);
-            label.Parent = box;
+            label.SetParent(box);
             label.Anchor = Anchor.TopLeft;
             label.Color = Color.Black;
             label.Position = new(4f, -4f);
@@ -138,17 +132,21 @@ namespace InteractionKit
                 //the button that toggles expanded state
                 float triangleButtonSize = 16f;
                 Button triangle = new(world, new(&ToggleExpanded), canvas);
-                triangle.Parent = transform.AsEntity();
-                triangle.image.Material = settings.GetTriangleMaterial(canvas.Camera);
+                triangle.SetParent(transform);
                 triangle.Anchor = Anchor.TopLeft;
                 triangle.Size = new(triangleButtonSize, triangleButtonSize);
                 triangle.Color = Color.Black;
                 triangle.Position = new(4f, -4f);
-                triangle.image.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
+
+                Image triangleImage = triangle;
+                triangleImage.Material = settings.GetTriangleMaterial(canvas.Camera);
+
+                Transform triangleTransform = triangle;
+                triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
             }
 
             TreeNode node = new(world, text, canvas);
-            node.Parent = transform;
+            node.SetParent(transform);
             node.Position = new(30, -(nodeCount + 1) * size.Y);
             node.Size = size;
             node.SetEnabled(false);
@@ -201,7 +199,7 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void Filter(FilterFunction.Input input)
+        private static void Filter(TriggerFilter.Input input)
         {
             foreach (ref Entity entity in input.Entities)
             {
@@ -311,6 +309,16 @@ namespace InteractionKit
                     throw new System.Exception();
                 }
             }
+        }
+
+        public static implicit operator Entity(TreeNode node)
+        {
+            return node.transform;
+        }
+
+        public static implicit operator Transform(TreeNode node)
+        {
+            return node.transform;
         }
     }
 }

@@ -1,14 +1,14 @@
 ﻿using Cameras;
 using InteractionKit.Components;
-using Simulation;
 using System;
 using Transforms;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct Canvas : IEntity
     {
-        public readonly Transform transform;
+        private readonly Transform transform;
 
         /// <summary>
         /// The camera that all elements in the canvas will be rendered to.
@@ -17,25 +17,25 @@ namespace InteractionKit
         {
             get
             {
-                ref IsCanvas component = ref transform.entity.GetComponentRef<IsCanvas>();
-                return transform.entity.GetReference<Camera>(component.cameraReference);
+                ref IsCanvas component = ref transform.AsEntity().GetComponentRef<IsCanvas>();
+                return transform.AsEntity().GetReference<Camera>(component.cameraReference);
             }
             set
             {
-                ref IsCanvas component = ref transform.entity.GetComponentRef<IsCanvas>();
+                ref IsCanvas component = ref transform.AsEntity().GetComponentRef<IsCanvas>();
                 if (component.cameraReference == default)
                 {
-                    component.cameraReference = transform.entity.AddReference(value);
+                    component.cameraReference = transform.AsEntity().AddReference(value);
                 }
                 else
                 {
-                    transform.entity.SetReference(component.cameraReference, value);
+                    transform.AsEntity().SetReference(component.cameraReference, value);
                 }
             }
         }
 
-        readonly uint IEntity.Value => transform.entity.value;
-        readonly World IEntity.World => transform.entity.world;
+        readonly uint IEntity.Value => transform.GetEntityValue();
+        readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentType<IsCanvas>();
 
 #if NET

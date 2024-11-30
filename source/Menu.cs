@@ -3,25 +3,19 @@ using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
 using Rendering;
-using Simulation;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct Menu : IEntity
     {
-        public readonly Transform transform;
-
-        public readonly Entity Parent
-        {
-            get => transform.Parent;
-            set => transform.Parent = value;
-        }
+        private readonly Transform transform;
 
         public readonly Vector2 Position
         {
@@ -70,8 +64,8 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.entity.GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.entity.GetComponentRef<Pivot>().value;
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
+        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponentRef<Pivot>().value;
 
         public readonly USpan<MenuOption> Options => transform.AsEntity().GetArray<MenuOption>();
 
@@ -149,7 +143,7 @@ namespace InteractionKit
                 //while the menus of dropdowns position downwards
                 ref MenuOption addedOption = ref entity.GetArrayElementRef<MenuOption>(optionCount);
                 Menu newChildMenu = new(world);
-                newChildMenu.Parent = transform;
+                newChildMenu.SetParent(transform);
                 newChildMenu.Position = new(size.X, 0);
                 newChildMenu.Size = size;
                 newChildMenu.Anchor = Anchor.BottomLeft;
@@ -159,13 +153,15 @@ namespace InteractionKit
 
                 uint buttonEntity = transform.GetReference(addedOption.buttonReference);
                 Image triangle = new(world, canvas);
-                triangle.Parent = new Entity(world, buttonEntity);
+                triangle.SetParent(buttonEntity);
                 triangle.Material = GetTriangleMaterialFromSettings(world, canvas.Camera);
                 triangle.Anchor = Anchor.Right;
                 triangle.Size = new(16f, 16f);
                 triangle.Color = Color.Black;
                 triangle.Pivot = new(1f, -0.5f, 0f);
-                triangle.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
+
+                Transform triangleTransform = triangle;
+                triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
 
                 addedOption.childMenuReference = transform.AddReference(newChildMenu);
                 OptionPath pathInNew = newChildMenu.AddOption(remainder, canvas);
@@ -175,14 +171,14 @@ namespace InteractionKit
             else
             {
                 Button optionButton = new(world, new(&OptionChosen), canvas);
-                optionButton.Parent = transform;
+                optionButton.SetParent(transform);
                 optionButton.Position = new(0, -size.Y * optionCount);
                 optionButton.Size = size;
                 optionButton.Anchor = Anchor.TopLeft;
                 optionButton.Pivot = new(0f, 1f, 0f);
 
                 Label optionButtonLabel = new(world, canvas, label);
-                optionButtonLabel.Parent = optionButton.AsEntity();
+                optionButtonLabel.SetParent(optionButton);
                 optionButtonLabel.Anchor = Anchor.TopLeft;
                 optionButtonLabel.Color = Color.Black;
                 optionButtonLabel.Position = new(4f, -4f);
@@ -260,6 +256,16 @@ namespace InteractionKit
         {
             Settings settings = world.GetFirst<Settings>();
             return settings.GetTriangleMaterial(camera);
+        }
+
+        public static implicit operator Transform(Menu menu)
+        {
+            return menu.transform;
+        }
+
+        public static implicit operator Entity(Menu menu)
+        {
+            return menu.transform;
         }
     }
 }

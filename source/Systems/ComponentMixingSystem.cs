@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit.Systems
 {
@@ -33,12 +34,12 @@ namespace InteractionKit.Systems
         private readonly ComponentQuery<ComponentMix> query;
         private readonly List<Request> requests;
 
-        readonly unsafe InitializeFunction ISystem.Initialize => new(&Initialize);
-        readonly unsafe IterateFunction ISystem.Iterate => new(&Update);
-        readonly unsafe FinalizeFunction ISystem.Finalize => new(&Finalize);
+        readonly unsafe StartSystem ISystem.Start => new(&Start);
+        readonly unsafe UpdateSystem ISystem.Update => new(&Update);
+        readonly unsafe FinishSystem ISystem.Finish => new(&Finish);
 
         [UnmanagedCallersOnly]
-        private static void Initialize(SystemContainer container, World world)
+        private static void Start(SystemContainer container, World world)
         {
         }
 
@@ -50,7 +51,7 @@ namespace InteractionKit.Systems
         }
 
         [UnmanagedCallersOnly]
-        private static void Finalize(SystemContainer container, World world)
+        private static void Finish(SystemContainer container, World world)
         {
             if (container.World == world)
             {
@@ -91,9 +92,9 @@ namespace InteractionKit.Systems
             {
                 uint entity = request.entity;
                 ComponentMix mix = request.mix;
-                RuntimeType leftType = mix.left;
-                RuntimeType rightType = mix.right;
-                RuntimeType outputType = mix.output;
+                ComponentType leftType = mix.left;
+                ComponentType rightType = mix.right;
+                ComponentType outputType = mix.output;
                 ThrowIfComponentIsMissing(world, entity, leftType);
                 ThrowIfComponentIsMissing(world, entity, rightType);
                 ThrowIfComponentSizesDontMatch(leftType, rightType);
@@ -473,7 +474,7 @@ namespace InteractionKit.Systems
         }
 
         [Conditional("DEBUG")]
-        private void ThrowIfComponentIsMissing(World world, uint entity, RuntimeType componentType)
+        private void ThrowIfComponentIsMissing(World world, uint entity, ComponentType componentType)
         {
             if (!world.ContainsComponent(entity, componentType))
             {
@@ -482,7 +483,7 @@ namespace InteractionKit.Systems
         }
 
         [Conditional("DEBUG")]
-        private void ThrowIfComponentSizesDontMatch(RuntimeType left, RuntimeType right)
+        private void ThrowIfComponentSizesDontMatch(ComponentType left, ComponentType right)
         {
             if (left.Size != right.Size)
             {

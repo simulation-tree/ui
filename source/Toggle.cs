@@ -1,50 +1,27 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
-using Rendering;
-using Simulation;
 using System.Numerics;
+using Transforms;
 using Transforms.Components;
-using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct Toggle : ISelectable
     {
-        public readonly Image background;
-
-        public readonly Entity Parent
-        {
-            get => background.Parent;
-            set => background.Parent = value;
-        }
+        private readonly Image background;
 
         public readonly Vector2 Position
         {
-            get
-            {
-                Vector3 position = background.transform.LocalPosition;
-                return new(position.X, position.Y);
-            }
-            set
-            {
-                Vector3 position = background.transform.LocalPosition;
-                background.transform.LocalPosition = new(value.X, value.Y, position.Z);
-            }
+            get => background.Position;
+            set => background.Position = value;
         }
 
         public readonly Vector2 Size
         {
-            get
-            {
-                Vector3 scale = background.transform.LocalScale;
-                return new(scale.X, scale.Y);
-            }
-            set
-            {
-                Vector3 scale = background.transform.LocalScale;
-                background.transform.LocalScale = new(value.X, value.Y, scale.Z);
-            }
+            get => background.Size;
+            set => background.Size = value;
         }
 
         public readonly ref Anchor Anchor => ref background.AsEntity().GetComponentRef<Anchor>();
@@ -78,7 +55,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsToggle>(), RuntimeType.Get<IsSelectable>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsToggle, IsSelectable>();
 
         public Toggle(World world, uint existingEntity)
         {
@@ -90,10 +67,12 @@ namespace InteractionKit
             background = new(world, canvas);
 
             Image checkmarkBox = new(world, canvas);
-            checkmarkBox.transform.LocalPosition = new(0f, 0f, 0.1f);
-            checkmarkBox.Parent = background;
+            checkmarkBox.SetParent(background);
             checkmarkBox.Anchor = new(new(4, true), new(4, true), default, new(4, true), new(4, true), default);
             checkmarkBox.Color = Color.Black;
+
+            Transform checkmarkTransform = checkmarkBox;
+            checkmarkTransform.LocalPosition = new(0f, 0f, 0.1f);
 
             rint checkmarkReference = background.AddReference(checkmarkBox);
             background.AddComponent(new IsToggle(checkmarkReference, initialValue, default));
@@ -104,6 +83,21 @@ namespace InteractionKit
         public readonly void Dispose()
         {
             background.Dispose();
+        }
+
+        public static implicit operator Entity(Toggle toggle)
+        {
+            return toggle.AsEntity();
+        }
+
+        public static implicit operator Image(Toggle toggle)
+        {
+            return toggle.background;
+        }
+
+        public static implicit operator Transform(Toggle toggle)
+        {
+            return toggle.background;
         }
     }
 }

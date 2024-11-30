@@ -1,24 +1,17 @@
 ﻿using Data;
 using InteractionKit.Components;
-using Rendering;
-using Simulation;
 using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct Tree : IEntity, ICanvasDescendant
+    public readonly struct Tree : ICanvasDescendant
     {
-        public readonly Transform transform;
-
-        public readonly Entity Parent
-        {
-            get => transform.Parent;
-            set => transform.Parent = value;
-        }
+        private readonly Transform transform;
 
         public readonly Vector2 Position
         {
@@ -48,8 +41,8 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.entity.GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.entity.GetComponentRef<Pivot>().value;
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
+        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponentRef<Pivot>().value;
         public readonly USpan<SelectedLeaf> Selected => transform.AsEntity().GetArray<SelectedLeaf>();
         public readonly USpan<TreeNodeOption> Nodes => transform.AsEntity().GetArray<TreeNodeOption>();
 
@@ -60,7 +53,7 @@ namespace InteractionKit
         public Tree(World world, Canvas canvas)
         {
             transform = new(world);
-            transform.Parent = canvas;
+            transform.SetParent(canvas);
             transform.LocalPosition = new(0, 0, 0.1f);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
@@ -79,7 +72,7 @@ namespace InteractionKit
             Vector2 size = Size;
             uint nodeCount = transform.AsEntity().GetArrayLength<TreeNodeOption>();
             TreeNode node = new(transform.GetWorld(), text, this.GetCanvas());
-            node.Parent = transform;
+            node.SetParent(transform);
             node.Position = new(0, -nodeCount * size.Y);
             node.Size = size;
             rint nodeReference = transform.AddReference(node);
@@ -183,6 +176,16 @@ namespace InteractionKit
             {
                 throw new System.InvalidOperationException();
             }
+        }
+
+        public static implicit operator Transform(Tree tree)
+        {
+            return tree.transform;
+        }
+
+        public static implicit operator Entity(Tree tree)
+        {
+            return tree.transform;
         }
     }
 }

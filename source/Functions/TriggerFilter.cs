@@ -1,21 +1,21 @@
-﻿using Simulation;
-using Unmanaged;
+﻿using Unmanaged;
+using Worlds;
 
 namespace InteractionKit.Functions
 {
-    public unsafe readonly struct FilterFunction
+    public unsafe readonly struct TriggerFilter
     {
 #if NET
         private readonly delegate* unmanaged<Input, void> function;
 
-        public FilterFunction(delegate* unmanaged<Input, void> function)
+        public TriggerFilter(delegate* unmanaged<Input, void> function)
         {
             this.function = function;
         }
 #else
         private readonly delegate*<Input, void> function;
 
-        public SystemFunction(delegate*<Input, void> function)
+        public TriggerFilter(delegate*<Input, void> function)
         {
             this.function = function;
         }

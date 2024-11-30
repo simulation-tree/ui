@@ -1,8 +1,9 @@
 using InteractionKit.Functions;
-using Simulation;
+using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct IsDropdown
     {
         public rint labelReference;

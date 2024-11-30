@@ -3,23 +3,17 @@ using Data;
 using Fonts;
 using InteractionKit.Components;
 using Rendering;
-using Simulation;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct Label : ISelectable
     {
-        public readonly TextRenderer textRenderer;
-
-        public readonly Entity Parent
-        {
-            get => textRenderer.Parent;
-            set => textRenderer.Parent = value;
-        }
+        private readonly TextRenderer textRenderer;
 
         public readonly Vector2 Position
         {
@@ -53,9 +47,9 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref textRenderer.entity.GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref textRenderer.entity.GetComponentRef<Pivot>().value;
-        public readonly ref Color Color => ref textRenderer.entity.GetComponentRef<BaseColor>().value;
+        public readonly ref Anchor Anchor => ref textRenderer.AsEntity().GetComponentRef<Anchor>();
+        public readonly ref Vector3 Pivot => ref textRenderer.AsEntity().GetComponentRef<Pivot>().value;
+        public readonly ref Color Color => ref textRenderer.AsEntity().GetComponentRef<BaseColor>().value;
 
         public readonly USpan<char> Text
         {
@@ -82,7 +76,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => textRenderer.GetEntityValue();
         readonly World IEntity.World => textRenderer.GetWorld();
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<TextRenderer>(), RuntimeType.Get<IsSelectable>()], []);
+        readonly Definition IEntity.Definition => new([ComponentType.Get<TextRenderer>(), ComponentType.Get<IsSelectable>()], []);
 
         public Label(World world, uint existingEntity)
         {
@@ -106,10 +100,10 @@ namespace InteractionKit
             transform.AddComponent(new BaseColor(new Vector4(1f)));
             transform.AddComponent(new Color(new Vector4(1f)));
             transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
-            transform.Parent = canvas;
+            transform.SetParent(canvas);
 
             Camera camera = canvas.Camera;
-            textRenderer = transform.entity.Become<TextRenderer>();
+            textRenderer = transform.AsEntity().Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
             textRenderer.Mask = 1; //todo: customizing the layer that ui controls are on
@@ -136,6 +130,16 @@ namespace InteractionKit
             USpan<char> buffer = stackalloc char[(int)text.Length];
             uint length = text.CopyTo(buffer);
             SetText(buffer.Slice(0, length));
+        }
+
+        public static implicit operator Entity(Label label)
+        {
+            return label.textRenderer.AsEntity();
+        }
+
+        public static implicit operator TextRenderer(Label label)
+        {
+            return label.textRenderer;
         }
     }
 }

@@ -1,8 +1,9 @@
-﻿using Simulation;
-using System.Numerics;
+﻿using System.Numerics;
+using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct IsPointer
     {
         public Vector2 position;

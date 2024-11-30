@@ -1,14 +1,13 @@
 ﻿using InteractionKit.Components;
-using Simulation;
 using System;
 using System.Numerics;
-using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct Pointer : IEntity
     {
-        public readonly Entity entity;
+        private readonly Entity entity;
 
         /// <summary>
         /// Position of the pointer in screen space.
@@ -57,7 +56,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => entity.value;
         readonly World IEntity.World => entity.world;
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsPointer>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsPointer>();
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -76,6 +75,11 @@ namespace InteractionKit
         public readonly void Dispose()
         {
             entity.Dispose();
+        }
+
+        public static implicit operator Entity(Pointer pointer)
+        {
+            return pointer.entity;
         }
     }
 }

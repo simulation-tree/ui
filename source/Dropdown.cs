@@ -3,24 +3,19 @@ using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
 using Rendering;
-using Simulation;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Transforms;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct Dropdown : ISelectable
     {
         public readonly Image background;
-
-        public readonly Entity Parent
-        {
-            get => background.Parent;
-            set => background.Parent = value;
-        }
 
         public readonly Vector2 Position
         {
@@ -199,23 +194,25 @@ namespace InteractionKit
             background.AddComponent(new IsSelectable());
 
             Label label = new(world, canvas, "");
-            label.Parent = background;
+            label.SetParent(background);
             label.Anchor = Anchor.TopLeft;
             label.Color = Color.Black;
             label.Position = new(4f, -4f);
             label.Pivot = new(0f, 1f, 0f);
 
             Image triangle = new(world, canvas);
-            triangle.Parent = background;
+            triangle.SetParent(background);
             triangle.Material = GetTriangleMaterialFromSettings(world, canvas.Camera);
             triangle.Anchor = Anchor.TopRight;
             triangle.Size = new(16f, 16f);
             triangle.Color = Color.Black;
             triangle.Pivot = new(0.5f, 0.5f, 0f);
-            triangle.transform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
+
+            Transform triangleTransform = triangle;
+            triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
 
             Menu menu = new(world, new(&ChosenOption));
-            menu.Parent = background;
+            menu.SetParent(background);
             menu.Anchor = Anchor.BottomLeft;
             menu.Size = background.Size;
             menu.Pivot = new(0f, 1f, 0f);
@@ -240,7 +237,7 @@ namespace InteractionKit
 
             World world = menu.GetWorld();
             uint childEntity = menu.GetEntityValue();
-            uint parentEntity = menu.Parent.GetEntityValue();
+            uint parentEntity = menu.GetParent().GetEntityValue();
             while (parentEntity != default)
             {
                 if (world.ContainsComponent<IsDropdown>(parentEntity))
@@ -282,7 +279,7 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void Filter(FilterFunction.Input input)
+        private static void Filter(TriggerFilter.Input input)
         {
             foreach (ref Entity entity in input.Entities)
             {

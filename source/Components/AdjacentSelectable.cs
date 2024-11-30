@@ -1,7 +1,8 @@
-﻿using Simulation;
+﻿using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct AdjacentSelectable
     {
         public rint up;

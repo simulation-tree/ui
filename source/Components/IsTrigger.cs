@@ -1,12 +1,14 @@
 ﻿using InteractionKit.Functions;
 using System;
+using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct IsTrigger
     {
-        public FilterFunction filter;
-        public CallbackFunction callback;
+        public TriggerFilter filter;
+        public TriggerCallback callback;
         public ulong identifier;
 
 #if NET
@@ -17,7 +19,7 @@ namespace InteractionKit.Components
         }
 #endif
 
-        public IsTrigger(FilterFunction filter, CallbackFunction callback, ulong identifier = default)
+        public IsTrigger(TriggerFilter filter, TriggerCallback callback, ulong identifier = default)
         {
             this.filter = filter;
             this.callback = callback;

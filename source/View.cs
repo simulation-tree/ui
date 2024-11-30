@@ -1,22 +1,14 @@
 ﻿using InteractionKit.Components;
-using Rendering;
-using Simulation;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
-using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct View : IEntity
     {
-        public readonly Transform transform;
-
-        public readonly Entity Parent
-        {
-            get => transform.Parent;
-            set => transform.Parent = value;
-        }
+        private readonly Transform transform;
 
         public readonly Vector2 ViewPosition
         {
@@ -101,18 +93,18 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsView>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsView>();
 
         public View(World world, Canvas canvas)
         {
             transform = new Transform(world);
             transform.LocalPosition = new(0f, 0f, 0.1f);
-            transform.Parent = canvas;
+            transform.SetParent(canvas);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
 
             Transform content = new(world);
-            content.Parent = transform;
+            content.SetParent(transform);
             content.AddComponent(new Anchor());
             rint contentReference = transform.AddReference(content);
             transform.AddComponent(new IsView(contentReference));
@@ -135,7 +127,7 @@ namespace InteractionKit
             {
                 if (link.scrollBarReference != default)
                 {
-                    transform.SetReference(link.scrollBarReference, scrollBar); 
+                    transform.SetReference(link.scrollBarReference, scrollBar);
                 }
                 else
                 {
@@ -143,6 +135,16 @@ namespace InteractionKit
                     link.scrollBarReference = scrollBarReference;
                 }
             }
+        }
+
+        public static implicit operator Entity(View view)
+        {
+            return view.transform;
+        }
+
+        public static implicit operator Transform(View view)
+        {
+            return view.transform;
         }
     }
 }

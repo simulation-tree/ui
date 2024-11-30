@@ -1,8 +1,9 @@
-﻿using Simulation;
-using Unmanaged;
+﻿using Unmanaged;
+using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct IsTreeNode
     {
         public FixedString text;

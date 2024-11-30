@@ -1,7 +1,8 @@
-﻿using Simulation;
+﻿using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Array]
     public struct MaterialSettings
     {
         public rint cameraReference;

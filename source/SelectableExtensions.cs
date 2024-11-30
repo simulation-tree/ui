@@ -1,8 +1,8 @@
-﻿using Simulation;
+﻿using Worlds;
 
 namespace InteractionKit
 {
-    public static class SelectablesFunctions
+    public static class SelectableExtensions
     {
         public static bool IsSelected<T>(this T selectable, Pointer pointer) where T : unmanaged, ISelectable
         {

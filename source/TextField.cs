@@ -1,23 +1,18 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
-using Simulation;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Transforms;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct TextField : IEntity, ISelectable, ICanvasDescendant
+    public readonly struct TextField : ISelectable, ICanvasDescendant
     {
-        public readonly Image background;
-
-        public readonly Entity Parent
-        {
-            get => background.Parent;
-            set => background.Parent = value;
-        }
+        private readonly Image background;
 
         public readonly Vector2 Position
         {
@@ -81,26 +76,28 @@ namespace InteractionKit
             background.AddComponent(new IsSelectable());
 
             Label text = new(world, canvas, defaultValue);
-            text.Parent = background;
+            text.SetParent(background);
             text.Anchor = Anchor.TopLeft;
             text.Color = Color.Black;
             text.Position = new(4f, -4f);
             text.Pivot = new(0f, 1f, 0f);
 
             Image cursor = new(world, canvas);
-            cursor.Parent = background;
+            cursor.SetParent(background);
             cursor.Color = Color.Black;
             cursor.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
             cursor.Size = new(2f, 1f);
             cursor.Position = new(16f, 0f);
 
             Image highlight = new(world, canvas);
-            highlight.transform.LocalPosition = new(0f, 0f, 0.05f);
-            highlight.Parent = background;
+            highlight.SetParent(background);
             highlight.Color = new Color(0.3f, 0.3f, 0.3f, 1f);
             highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
             highlight.Size = new(0f, 1f);
             highlight.SetEnabled(false);
+
+            Transform highlightTransform = highlight;
+            highlightTransform.LocalPosition = new(0f, 0f, 0.05f);
 
             rint textReference = background.AddReference(text);
             rint cursorReference = background.AddReference(cursor);
@@ -124,7 +121,7 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void Filter(FilterFunction.Input input)
+        private static void Filter(TriggerFilter.Input input)
         {
             foreach (ref Entity entity in input.Entities)
             {
@@ -135,6 +132,21 @@ namespace InteractionKit
                     entity = default;
                 }
             }
+        }
+
+        public static implicit operator Entity(TextField textField)
+        {
+            return textField.background;
+        }
+
+        public static implicit operator Image(TextField textField)
+        {
+            return textField.background;
+        }
+
+        public static implicit operator Transform(TextField textField)
+        {
+            return textField.background;
         }
     }
 }

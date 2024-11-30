@@ -5,6 +5,7 @@ using Simulation;
 using Simulation.Tests;
 using System;
 using System.Runtime.InteropServices;
+using Worlds;
 
 namespace InteractionKit.Tests
 {
@@ -13,6 +14,9 @@ namespace InteractionKit.Tests
         protected override void SetUp()
         {
             base.SetUp();
+            ComponentType.Register<IsTrigger>();
+            ComponentType.Register<byte>();
+            ComponentType.Register<int>();
             Simulator.AddSystem<InvokeTriggersSystem>();
         }
 
@@ -45,7 +49,7 @@ namespace InteractionKit.Tests
             Assert.That(World.ContainsComponent<byte>(triggerB), Is.True);
 
             [UnmanagedCallersOnly]
-            static void FilterEverythingOut(FilterFunction.Input input)
+            static void FilterEverythingOut(TriggerFilter.Input input)
             {
                 foreach (ref Entity entity in input.Entities)
                 {
@@ -54,7 +58,7 @@ namespace InteractionKit.Tests
             }
 
             [UnmanagedCallersOnly]
-            static void SelectFirstEntity(FilterFunction.Input input)
+            static void SelectFirstEntity(TriggerFilter.Input input)
             {
                 foreach (ref Entity entity in input.Entities)
                 {

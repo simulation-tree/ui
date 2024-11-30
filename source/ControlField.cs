@@ -1,6 +1,5 @@
 ﻿using Data;
 using InteractionKit.Components;
-using Simulation;
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -8,10 +7,11 @@ using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct ControlField : IEntity, ICanvasDescendant
+    public readonly struct ControlField : ICanvasDescendant
     {
         public readonly Transform transform;
 
@@ -26,12 +26,6 @@ namespace InteractionKit
         }
 
         public readonly ref Color LabelColor => ref Label.Color;
-
-        public readonly Entity Parent
-        {
-            get => transform.Parent;
-            set => transform.Parent = value;
-        }
 
         public readonly Vector2 Position
         {
@@ -61,7 +55,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly (Entity entity, RuntimeType componentType) Target
+        public readonly (Entity entity, ComponentType componentType) Target
         {
             get
             {
@@ -79,34 +73,34 @@ namespace InteractionKit
         readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentType<IsControlField>();
 
-        public ControlField(World world, Canvas canvas, FixedString label, Entity entity, RuntimeType componentType)
+        public ControlField(World world, Canvas canvas, FixedString label, Entity entity, ComponentType componentType)
             : this(world, canvas, label, entity.GetEntityValue(), componentType)
         {
         }
 
-        public unsafe ControlField(World world, Canvas canvas, FixedString label, uint entity, RuntimeType componentType)
+        public unsafe ControlField(World world, Canvas canvas, FixedString label, uint entity, ComponentType componentType)
         {
             ThrowIfEntityIsMissingComponent(world, entity, componentType);
 
             transform = new(world);
             transform.LocalPosition = new(0f, 0f, 0.1f);
-            transform.Parent = canvas;
+            transform.SetParent(canvas);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
 
             Label labelEntity = new(world, canvas, label);
-            labelEntity.Parent = transform;
+            labelEntity.SetParent(transform);
             labelEntity.Anchor = Anchor.TopLeft;
             labelEntity.Color = Color.White;
             labelEntity.Position = new(4f, -4f);
             labelEntity.Pivot = new(0f, 1f, 0f);
 
             rint controlReference = default;
-            if (componentType.Is<bool>())
+            if (componentType == ComponentType.Get<bool>())
             {
                 bool initialValue = world.GetComponent<bool>(entity);
                 Toggle toggle = new(world, canvas, initialValue);
-                toggle.Parent = transform;
+                toggle.SetParent(transform);
                 //toggle.Position = new(100f, 0f);
                 toggle.Size = new(24, 24f);
                 toggle.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1f);
@@ -132,7 +126,7 @@ namespace InteractionKit
         }
 
         [Conditional("DEBUG")]
-        private readonly void ThrowIfEntityIsMissingComponent(World world, uint entity, RuntimeType componentType)
+        private readonly void ThrowIfEntityIsMissingComponent(World world, uint entity, ComponentType componentType)
         {
             if (!world.ContainsComponent(entity, componentType))
             {
@@ -141,9 +135,9 @@ namespace InteractionKit
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfTypeMismatches<T>(RuntimeType targetType) where T : unmanaged
+        private static void ThrowIfTypeMismatches<T>(ComponentType targetType) where T : unmanaged
         {
-            if (!targetType.Is<T>())
+            if (targetType != ComponentType.Get<T>())
             {
                 throw new ArgumentException($"Type mismatch: {typeof(T)} != {targetType}");
             }
@@ -152,10 +146,20 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void BooleanToggled(Toggle toggle, byte newValue)
         {
-            ControlField controlField = toggle.Parent.As<ControlField>();
-            (Entity entity, RuntimeType componentType) = controlField.Target;
+            ControlField controlField = toggle.GetParent().As<ControlField>();
+            (Entity entity, ComponentType componentType) = controlField.Target;
             ThrowIfTypeMismatches<bool>(componentType);
             entity.SetComponent<bool>(newValue == 1);
+        }
+
+        public static implicit operator Transform(ControlField controlField)
+        {
+            return controlField.transform;
+        }
+
+        public static implicit operator Entity(ControlField controlField)
+        {
+            return controlField.AsEntity();
         }
     }
 }

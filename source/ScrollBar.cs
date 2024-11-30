@@ -1,22 +1,15 @@
 ﻿using Data;
 using InteractionKit.Components;
-using Simulation;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
-using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
     public readonly struct ScrollBar : ISelectable
     {
-        public readonly Image background;
-
-        public readonly Entity Parent
-        {
-            get => background.Parent;
-            set => background.Parent = value;
-        }
+        private readonly Image background;
 
         public readonly Vector2 Position
         {
@@ -104,19 +97,19 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsSelectable>(), RuntimeType.Get<IsScrollBar>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsScrollBar, IsSelectable>();
 
         public ScrollBar(World world, Canvas canvas, Vector2 axis, float handlePercentageSize)
         {
             background = new Image(world, canvas);
 
             Transform scrollRegion = new(world);
-            scrollRegion.Parent = background;
+            scrollRegion.SetParent(background);
             scrollRegion.AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
             scrollRegion.AddComponent(new IsSelectable());
 
             Image scrollHandle = new(world, canvas);
-            scrollHandle.Parent = scrollRegion;
+            scrollHandle.SetParent(scrollRegion);
             scrollHandle.Color = Color.Black;
             if (axis.Y > axis.X)
             {
@@ -143,6 +136,21 @@ namespace InteractionKit
         public readonly void Dispose()
         {
             background.Dispose();
+        }
+
+        public static implicit operator Entity(ScrollBar scrollBar)
+        {
+            return scrollBar.background;
+        }
+
+        public static implicit operator Image(ScrollBar scrollBar)
+        {
+            return scrollBar.background;
+        }
+
+        public static implicit operator Transform(ScrollBar scrollBar)
+        {
+            return scrollBar.background;
         }
     }
 }

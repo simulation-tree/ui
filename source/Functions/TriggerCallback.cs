@@ -1,21 +1,21 @@
-﻿using Simulation;
-using System;
+﻿using System;
+using Worlds;
 
 namespace InteractionKit.Functions
 {
-    public unsafe readonly struct CallbackFunction : IEquatable<CallbackFunction>
+    public unsafe readonly struct TriggerCallback : IEquatable<TriggerCallback>
     {
 #if NET
         private readonly delegate* unmanaged<Entity, void> function;
 
-        public CallbackFunction(delegate* unmanaged<Entity, void> function)
+        public TriggerCallback(delegate* unmanaged<Entity, void> function)
         {
             this.function = function;
         }
 #else
         private readonly delegate*<Entity, void> function;
 
-        public TriggerFunction(delegate*<Entity, void> function)
+        public TriggerCallback(delegate*<Entity, void> function)
         {
             this.function = function;
         }   
@@ -33,20 +33,20 @@ namespace InteractionKit.Functions
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is CallbackFunction function && Equals(function);
+            return obj is TriggerCallback function && Equals(function);
         }
 
-        public readonly bool Equals(CallbackFunction other)
+        public readonly bool Equals(TriggerCallback other)
         {
             return GetHashCode() == other.GetHashCode();
         }
 
-        public static bool operator ==(CallbackFunction left, CallbackFunction right)
+        public static bool operator ==(TriggerCallback left, TriggerCallback right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(CallbackFunction left, CallbackFunction right)
+        public static bool operator !=(TriggerCallback left, TriggerCallback right)
         {
             return !(left == right);
         }

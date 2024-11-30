@@ -1,24 +1,18 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
-using Simulation;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Transforms;
 using Transforms.Components;
-using Unmanaged;
+using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct Button : ISelectable
+    public readonly struct Button : IEntity, ISelectable
     {
-        public readonly Image image;
-
-        public readonly Entity Parent
-        {
-            get => image.Parent;
-            set => image.Parent = value;
-        }
+        private readonly Image image;
 
         public readonly Vector2 Position
         {
@@ -38,7 +32,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => image.GetEntityValue();
         readonly World IEntity.World => image.GetWorld();
-        readonly Definition IEntity.Definition => new([RuntimeType.Get<IsTrigger>(), RuntimeType.Get<IsSelectable>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTrigger, IsSelectable>();
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -48,7 +42,7 @@ namespace InteractionKit
         }
 #endif
 
-        public unsafe Button(World world, CallbackFunction callback, Canvas canvas)
+        public unsafe Button(World world, TriggerCallback callback, Canvas canvas)
         {
             image = new(world, canvas);
             image.AddComponent(new IsTrigger(new(&Filter), callback));
@@ -61,7 +55,7 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void Filter(FilterFunction.Input input)
+        private static void Filter(TriggerFilter.Input input)
         {
             foreach (ref Entity entity in input.Entities)
             {
@@ -77,6 +71,16 @@ namespace InteractionKit
         public static implicit operator Entity(Button button)
         {
             return button.AsEntity();
+        }
+
+        public static implicit operator Image(Button button)
+        {
+            return button.image;
+        }
+
+        public static implicit operator Transform(Button button)
+        {
+            return button.image;
         }
     }
 }

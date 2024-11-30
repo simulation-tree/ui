@@ -1,7 +1,8 @@
-﻿using Simulation;
+﻿using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct IsDraggable
     {
         public rint targetReference;

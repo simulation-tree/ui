@@ -1,7 +1,9 @@
 ﻿using System;
+using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct IsSelectable
     {
         public State state;
