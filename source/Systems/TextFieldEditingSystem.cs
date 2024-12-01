@@ -55,7 +55,7 @@ namespace InteractionKit.Systems
             textFieldQuery = new();
         }
 
-        private void CleanUp()
+        private readonly void CleanUp()
         {
             textFieldQuery.Dispose();
             pointerQuery.Dispose();

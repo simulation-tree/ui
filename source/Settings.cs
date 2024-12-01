@@ -7,6 +7,7 @@ using Fonts;
 using InteractionKit.Components;
 using Meshes;
 using Rendering;
+using Rendering.Components;
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -31,7 +32,7 @@ namespace InteractionKit
 
         private readonly Entity entity;
 
-        public readonly USpan<char> PressedCharacters => entity.GetArray<char>();
+        public readonly USpan<char> PressedCharacters => entity.GetArray<TextCharacter>().As<char>();
 
         public readonly StateMachine ControlStateMachine
         {
@@ -117,7 +118,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<MeshSettings, FontSettings, AutomationSettings, TextEditState>().AddArrayTypes<char, MaterialSettings>();
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<MeshSettings, FontSettings, AutomationSettings, TextEditState>().AddArrayTypes<TextCharacter, MaterialSettings>();
 
 #if NET
         [Obsolete("Default constructor not supported", true)]
@@ -146,15 +147,15 @@ namespace InteractionKit
             StateMachine controlStateMachine = new(world, states, transitions);
 
             //automations for each state
-            USpan<Keyframe<Vector4>> keyframes = stackalloc Keyframe<Vector4>[1];
-            keyframes[0] = new(0f, new Vector4(0.8f, 0.8f, 0.8f, 1f));
-            Automation<Vector4> idleAutomation = new(world, keyframes);
+            USpan<Vector4> keyframes = stackalloc Vector4[1];
+            keyframes[0] = new Vector4(0.8f, 0.8f, 0.8f, 1f);
+            Automation<Vector4> idleAutomation = new(world, [0f], keyframes);
 
-            keyframes[0] = new(0f, new Vector4(1.4f, 1.4f, 1.4f, 1f));
-            Automation<Vector4> selectedAutomation = new(world, keyframes);
+            keyframes[0] = new Vector4(1.4f, 1.4f, 1.4f, 1f);
+            Automation<Vector4> selectedAutomation = new(world, [0f], keyframes);
 
-            keyframes[0] = new(0f, new Vector4(0.6f, 0.6f, 0.6f, 1f));
-            Automation<Vector4> pressedAutomation = new(world, keyframes);
+            keyframes[0] = new Vector4(0.6f, 0.6f, 0.6f, 1f);
+            Automation<Vector4> pressedAutomation = new(world, [0f], keyframes);
 
             //create default quad mesh
             Mesh quadMesh = new(world);
@@ -218,7 +219,7 @@ namespace InteractionKit
             entity.AddComponent(fontSettings);
             entity.AddComponent(automationSettings);
             entity.AddComponent(new TextEditState());
-            entity.CreateArray<char>();
+            entity.CreateArray<TextCharacter>();
             entity.CreateArray<MaterialSettings>(1)[0] = materialSettings;
         }
 
@@ -229,8 +230,8 @@ namespace InteractionKit
 
         public readonly void SetPressedCharacters(USpan<char> characters)
         {
-            USpan<char> array = entity.ResizeArray<char>(characters.Length);
-            characters.CopyTo(array);
+            USpan<TextCharacter> array = entity.ResizeArray<TextCharacter>(characters.Length);
+            characters.As<TextCharacter>().CopyTo(array);
         }
 
         public readonly Material GetSquareMaterial(Camera camera)

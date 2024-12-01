@@ -1,8 +1,10 @@
 ﻿using Data;
 using System.Numerics;
+using Worlds;
 
 namespace InteractionKit.Components
 {
+    [Component]
     public struct ColorTint
     {
         public Color value;

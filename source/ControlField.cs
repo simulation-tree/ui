@@ -112,7 +112,7 @@ namespace InteractionKit
             }
             else
             {
-                throw new NotImplementedException($"ControlField does not support component type {componentType}");
+                throw new NotImplementedException($"ControlField does not support component type `{componentType}`");
             }
 
             rint labelReference = transform.AddReference(labelEntity);
