@@ -1,43 +1,32 @@
 ﻿using Collections;
 using InteractionKit.Components;
 using Simulation;
-using Simulation.Functions;
 using System;
-using System.Runtime.InteropServices;
 using Worlds;
 
 namespace InteractionKit.Systems
 {
-    public readonly struct InvokeTriggersSystem : ISystem
+    public readonly partial struct InvokeTriggersSystem : ISystem
     {
         private readonly ComponentQuery<IsTrigger> invokeQuery;
         private readonly Array<Entity> currentEntities;
         private readonly Dictionary<int, List<Entity>> entitiesPerTrigger;
         private readonly Dictionary<int, IsTrigger> functions;
 
-        readonly unsafe StartSystem ISystem.Start => new(&Start);
-        readonly unsafe UpdateSystem ISystem.Update => new(&Update);
-        readonly unsafe FinishSystem ISystem.Finish => new(&Finish);
-
-        [UnmanagedCallersOnly]
-        private static void Start(SystemContainer container, World world)
+        void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
         }
 
-        [UnmanagedCallersOnly]
-        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            ref InvokeTriggersSystem system = ref container.Read<InvokeTriggersSystem>();
-            system.Update(world);
+            Update(world);
         }
 
-        [UnmanagedCallersOnly]
-        private static void Finish(SystemContainer container, World world)
+        void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (container.World == world)
+            if (systemContainer.World == world)
             {
-                ref InvokeTriggersSystem system = ref container.Read<InvokeTriggersSystem>();
-                system.CleanUp();
+                CleanUp();
             }
         }
 

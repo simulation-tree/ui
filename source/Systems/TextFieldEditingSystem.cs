@@ -1,10 +1,8 @@
 ﻿using Fonts;
 using InteractionKit.Components;
 using Simulation;
-using Simulation.Functions;
 using System;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
@@ -12,7 +10,7 @@ using Worlds;
 
 namespace InteractionKit.Systems
 {
-    public struct TextFieldEditingSystem : ISystem
+    public partial struct TextFieldEditingSystem : ISystem
     {
         private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/'];
 
@@ -23,31 +21,23 @@ namespace InteractionKit.Systems
         private DateTime nextPress;
         private bool lastAnyPointerPressed;
 
-        readonly unsafe StartSystem ISystem.Start => new(&Start);
-        readonly unsafe UpdateSystem ISystem.Update => new(&Update);
-        readonly unsafe FinishSystem ISystem.Finish => new(&Finish);
-
-        [UnmanagedCallersOnly]
-        private static void Start(SystemContainer container, World world)
+        void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
         }
 
-        [UnmanagedCallersOnly]
-        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            ref TextFieldEditingSystem system = ref container.Read<TextFieldEditingSystem>();
-            system.Update(world);
+            Update(world);
         }
 
-        [UnmanagedCallersOnly]
-        private static void Finish(SystemContainer container, World world)
+        void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (container.World == world)
+            if (systemContainer.World == world)
             {
-                ref TextFieldEditingSystem system = ref container.Read<TextFieldEditingSystem>();
-                system.CleanUp();
+                CleanUp();
             }
         }
+
 
         public TextFieldEditingSystem()
         {

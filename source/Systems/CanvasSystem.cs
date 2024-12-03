@@ -2,42 +2,31 @@
 using InteractionKit.Components;
 using Rendering;
 using Simulation;
-using Simulation.Functions;
 using System;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Transforms.Components;
 using Worlds;
 
 namespace InteractionKit.Systems
 {
-    public readonly struct CanvasSystem : ISystem
+    public readonly partial struct CanvasSystem : ISystem
     {
         private readonly ComponentQuery<IsCanvas, Position, Scale> canvasQuery;
 
-        readonly unsafe StartSystem ISystem.Start => new(&Start);
-        readonly unsafe UpdateSystem ISystem.Update => new(&Update);
-        readonly unsafe FinishSystem ISystem.Finish => new(&Finish);
-
-        [UnmanagedCallersOnly]
-        private static void Start(SystemContainer container, World world)
+        void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
         }
 
-        [UnmanagedCallersOnly]
-        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            ref CanvasSystem system = ref container.Read<CanvasSystem>();
-            system.Update(world);
+            Update(world);
         }
 
-        [UnmanagedCallersOnly]
-        private static void Finish(SystemContainer container, World world)
+        void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (container.World == world)
+            if (systemContainer.World == world)
             {
-                ref CanvasSystem system = ref container.Read<CanvasSystem>();
-                system.CleanUp();
+                CleanUp();
             }
         }
 

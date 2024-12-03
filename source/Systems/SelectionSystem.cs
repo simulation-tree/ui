@@ -1,45 +1,34 @@
 ﻿using Collections;
 using InteractionKit.Components;
 using Simulation;
-using Simulation.Functions;
 using System;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Transforms.Components;
 using Worlds;
 
 namespace InteractionKit.Systems
 {
-    public readonly struct SelectionSystem : ISystem
+    public readonly partial struct SelectionSystem : ISystem
     {
         private readonly ComponentQuery<IsSelectable, LocalToWorld> selectableQuery;
         private readonly ComponentQuery<IsPointer> pointersQuery;
         private readonly Dictionary<Entity, uint> selectionStates;
         private readonly Dictionary<Entity, PointerAction> pointerStates;
 
-        readonly unsafe StartSystem ISystem.Start => new(&Start);
-        readonly unsafe UpdateSystem ISystem.Update => new(&Update);
-        readonly unsafe FinishSystem ISystem.Finish => new(&Finish);
-
-        [UnmanagedCallersOnly]
-        private static void Start(SystemContainer container, World world)
+        void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
         }
 
-        [UnmanagedCallersOnly]
-        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            ref SelectionSystem system = ref container.Read<SelectionSystem>();
-            system.Update(world);
+            Update(world);
         }
 
-        [UnmanagedCallersOnly]
-        private static void Finish(SystemContainer container, World world)
+        void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (container.World == world)
+            if (systemContainer.World == world)
             {
-                ref SelectionSystem system = ref container.Read<SelectionSystem>();
-                system.CleanUp();
+                CleanUp();
             }
         }
 

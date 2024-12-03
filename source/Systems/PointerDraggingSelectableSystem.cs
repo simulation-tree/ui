@@ -1,16 +1,14 @@
 ﻿using Collections;
 using InteractionKit.Components;
 using Simulation;
-using Simulation.Functions;
 using System;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Transforms.Components;
 using Worlds;
 
 namespace InteractionKit.Systems
 {
-    public struct PointerDraggingSelectableSystem : ISystem
+    public partial struct PointerDraggingSelectableSystem : ISystem
     {
         private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly ComponentQuery<IsDraggable> draggableQuery;
@@ -19,29 +17,20 @@ namespace InteractionKit.Systems
         private Entity dragPointer;
         private Vector2 lastPosition;
 
-        readonly unsafe StartSystem ISystem.Start => new(&Start);
-        readonly unsafe UpdateSystem ISystem.Update => new(&Update);
-        readonly unsafe FinishSystem ISystem.Finish => new(&Finish);
-
-        [UnmanagedCallersOnly]
-        private static void Start(SystemContainer container, World world)
+        void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
         }
 
-        [UnmanagedCallersOnly]
-        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            ref PointerDraggingSelectableSystem system = ref container.Read<PointerDraggingSelectableSystem>();
-            system.Update(world);
+            Update(world);
         }
 
-        [UnmanagedCallersOnly]
-        private static void Finish(SystemContainer container, World world)
+        void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (container.World == world)
+            if (systemContainer.World == world)
             {
-                ref PointerDraggingSelectableSystem system = ref container.Read<PointerDraggingSelectableSystem>();
-                system.CleanUp();
+                CleanUp();
             }
         }
 

@@ -1,7 +1,6 @@
 ﻿using Collections;
 using InteractionKit.Components;
 using Simulation;
-using Simulation.Functions;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -10,11 +9,11 @@ using Worlds;
 
 namespace InteractionKit.Systems
 {
-    public unsafe readonly struct ComponentMixingSystem : ISystem
+    public readonly partial struct ComponentMixingSystem : ISystem
     {
         private static readonly MixFunction[] functions;
 
-        static ComponentMixingSystem()
+        unsafe static ComponentMixingSystem()
         {
             functions = new MixFunction[13];
             functions[(byte)ComponentMix.Operation.UnsignedAdd] = new(&UnsignedAdd);
@@ -34,29 +33,20 @@ namespace InteractionKit.Systems
         private readonly ComponentQuery<ComponentMix> query;
         private readonly List<Request> requests;
 
-        readonly unsafe StartSystem ISystem.Start => new(&Start);
-        readonly unsafe UpdateSystem ISystem.Update => new(&Update);
-        readonly unsafe FinishSystem ISystem.Finish => new(&Finish);
-
-        [UnmanagedCallersOnly]
-        private static void Start(SystemContainer container, World world)
+        void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
         }
 
-        [UnmanagedCallersOnly]
-        private static void Update(SystemContainer container, World world, TimeSpan delta)
+        void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            ref ComponentMixingSystem system = ref container.Read<ComponentMixingSystem>();
-            system.Update(world);
+            Update(world);
         }
 
-        [UnmanagedCallersOnly]
-        private static void Finish(SystemContainer container, World world)
+        void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (container.World == world)
+            if (systemContainer.World == world)
             {
-                ref ComponentMixingSystem system = ref container.Read<ComponentMixingSystem>();
-                system.CleanUp();
+                CleanUp();
             }
         }
 
