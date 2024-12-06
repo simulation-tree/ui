@@ -32,13 +32,12 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-        }
-
-        void IDisposable.Dispose()
-        {
-            selectableEntities.Dispose();
-            pointerStates.Dispose();
-            selectionStates.Dispose();
+            if (systemContainer.World == world)
+            {
+                selectableEntities.Dispose();
+                pointerStates.Dispose();
+                selectionStates.Dispose();
+            }
         }
 
         private readonly void Update(World world)

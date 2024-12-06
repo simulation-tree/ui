@@ -29,11 +29,10 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-        }
-
-        void IDisposable.Dispose()
-        {
-            selectedEntities.Dispose();
+            if (systemContainer.World == world)
+            {
+                selectedEntities.Dispose();
+            }
         }
 
         private readonly void FindSelectedEntities(World world)

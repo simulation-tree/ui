@@ -23,6 +23,17 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                foreach (int functionHash in entitiesPerTrigger.Keys)
+                {
+                    entitiesPerTrigger[functionHash].Dispose();
+                }
+
+                functions.Dispose();
+                entitiesPerTrigger.Dispose();
+                currentEntities.Dispose();
+            }
         }
 
         public InvokeTriggersSystem()
@@ -30,18 +41,6 @@ namespace InteractionKit.Systems
             currentEntities = new();
             entitiesPerTrigger = new();
             functions = new();
-        }
-
-        void IDisposable.Dispose()
-        {
-            foreach (int functionHash in entitiesPerTrigger.Keys)
-            {
-                entitiesPerTrigger[functionHash].Dispose();
-            }
-
-            functions.Dispose();
-            entitiesPerTrigger.Dispose();
-            currentEntities.Dispose();
         }
 
         private readonly void Update(World world)

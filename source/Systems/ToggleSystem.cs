@@ -28,12 +28,11 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-        }
-
-        void IDisposable.Dispose()
-        {
-            toggleEntities.Dispose();
-            pressedPointers.Dispose();
+            if (systemContainer.World == world)
+            {
+                toggleEntities.Dispose();
+                pressedPointers.Dispose();
+            }
         }
 
         private readonly void Update(World world)

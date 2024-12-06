@@ -23,10 +23,6 @@ namespace InteractionKit.Systems
         {
         }
 
-        void IDisposable.Dispose()
-        {
-        }
-
         private readonly void Update(World world)
         {
             ComponentQuery<IsVirtualWindow> query = new(world);

@@ -34,12 +34,11 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-        }
-
-        void IDisposable.Dispose()
-        {
-            draggableEntities.Dispose();
-            pressedStates.Dispose();
+            if (systemContainer.World == world)
+            {
+                draggableEntities.Dispose();
+                pressedStates.Dispose();
+            }
         }
 
         private void Update(World world)

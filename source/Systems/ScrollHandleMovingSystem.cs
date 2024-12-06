@@ -33,12 +33,11 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-        }
-
-        void IDisposable.Dispose()
-        {
-            scrollRegionEntities.Dispose();
-            scrollHandleEntities.Dispose();
+            if (systemContainer.World == world)
+            {
+                scrollRegionEntities.Dispose();
+                scrollHandleEntities.Dispose();
+            }
         }
 
         private void Update(World world)

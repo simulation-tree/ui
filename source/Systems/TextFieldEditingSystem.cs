@@ -32,10 +32,6 @@ namespace InteractionKit.Systems
         {
         }
 
-        void IDisposable.Dispose()
-        {
-        }
-
         private void Update(World world)
         {
             if (world.TryGetFirst(out Settings settings))

@@ -43,16 +43,15 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                requests.Dispose();
+            }
         }
 
         public unsafe ComponentMixingSystem()
         {
             requests = new();
-        }
-
-        void IDisposable.Dispose()
-        {
-            requests.Dispose();
         }
 
         private readonly void Update(World world)

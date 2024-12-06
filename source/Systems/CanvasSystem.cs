@@ -24,10 +24,6 @@ namespace InteractionKit.Systems
         {
         }
 
-        void IDisposable.Dispose()
-        {
-        }
-
         private readonly void Update(World world)
         {
             ComponentQuery<IsCanvas, Position, Scale> canvasQuery = new(world);

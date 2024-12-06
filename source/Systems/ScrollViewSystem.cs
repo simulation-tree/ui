@@ -31,11 +31,10 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-        }
-
-        void IDisposable.Dispose()
-        {
-            scrollBarLinkEntities.Dispose();
+            if (systemContainer.World == world)
+            {
+                scrollBarLinkEntities.Dispose();
+            }
         }
 
         private readonly void Update(World world)
