@@ -8,9 +8,14 @@ namespace InteractionKit.Systems
 {
     public readonly partial struct ToggleSystem : ISystem
     {
-        private readonly ComponentQuery<IsToggle> toggleQuery;
-        private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly List<uint> pressedPointers;
+        private readonly List<uint> toggleEntities;
+
+        public ToggleSystem()
+        {
+            pressedPointers = new();
+            toggleEntities = new();
+        }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
@@ -23,47 +28,36 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
-
-        public ToggleSystem()
+        void IDisposable.Dispose()
         {
-            toggleQuery = new();
-            pointerQuery = new();
-            pressedPointers = new();
-        }
-
-        private void CleanUp()
-        {
+            toggleEntities.Dispose();
             pressedPointers.Dispose();
-            pointerQuery.Dispose();
-            toggleQuery.Dispose();
         }
 
-        private void Update(World world)
+        private readonly void Update(World world)
         {
-            pointerQuery.Update(world);
-            toggleQuery.Update(world, true);
+            FindToggleEntities(world);
+
+            ComponentQuery<IsPointer> pointerQuery = new(world);
             foreach (var p in pointerQuery)
             {
-                uint pointerEntity = p.entity;
-                bool pressed = p.Component1.HasPrimaryIntent;
-                bool wasPressed = pressedPointers.Contains(pointerEntity);
+                ref IsPointer pointer = ref p.component1;
+                uint entity = p.entity;
+                bool pressed = pointer.HasPrimaryIntent;
+                bool wasPressed = pressedPointers.Contains(entity);
                 if (wasPressed != pressed)
                 {
                     if (pressed)
                     {
-                        rint hoveringOverReference = p.Component1.hoveringOverReference;
+                        rint hoveringOverReference = pointer.hoveringOverReference;
                         if (hoveringOverReference != default)
                         {
-                            uint selectedEntity = world.GetReference(pointerEntity, hoveringOverReference);
-                            if (toggleQuery.TryIndexOf(selectedEntity, out uint index))
+                            uint selectedEntity = world.GetReference(entity, hoveringOverReference);
+                            if (toggleEntities.Contains(selectedEntity))
                             {
-                                ref IsToggle toggle = ref toggleQuery[index].Component1;
+                                ref IsToggle toggle = ref world.GetComponent<IsToggle>(selectedEntity);
                                 toggle.value = !toggle.value;
 
                                 rint checkmarkReference = toggle.checkmarkReference;
@@ -77,12 +71,25 @@ namespace InteractionKit.Systems
                             }
                         }
 
-                        pressedPointers.Add(pointerEntity);
+                        pressedPointers.Add(entity);
                     }
                     else
                     {
-                        pressedPointers.TryRemoveBySwapping(pointerEntity);
+                        pressedPointers.TryRemoveBySwapping(entity);
                     }
+                }
+            }
+        }
+
+        private readonly void FindToggleEntities(World world)
+        {
+            toggleEntities.Clear();
+            ComponentQuery<IsToggle> query = new(world);
+            foreach (var t in query)
+            {
+                if (world.IsEnabled(t.entity))
+                {
+                    toggleEntities.Add(t.entity);
                 }
             }
         }

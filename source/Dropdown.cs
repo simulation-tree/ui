@@ -76,7 +76,7 @@ namespace InteractionKit
             }
             set
             {
-                ref IsDropdown component = ref background.AsEntity().GetComponentRef<IsDropdown>();
+                ref IsDropdown component = ref background.AsEntity().GetComponent<IsDropdown>();
                 component.selectedOption = value;
 
                 World world = background.GetWorld();
@@ -128,12 +128,12 @@ namespace InteractionKit
         {
             get
             {
-                ref IsDropdown component = ref background.AsEntity().GetComponentRef<IsDropdown>();
+                ref IsDropdown component = ref background.AsEntity().GetComponent<IsDropdown>();
                 return component.expanded;
             }
             set
             {
-                ref IsDropdown component = ref background.AsEntity().GetComponentRef<IsDropdown>();
+                ref IsDropdown component = ref background.AsEntity().GetComponent<IsDropdown>();
                 component.expanded = value;
 
                 Menu menu = Menu;
@@ -165,7 +165,7 @@ namespace InteractionKit
         {
             get
             {
-                ref IsDropdown component = ref background.AsEntity().GetComponentRef<IsDropdown>();
+                ref IsDropdown component = ref background.AsEntity().GetComponent<IsDropdown>();
                 return ref component.callback;
             }
         }

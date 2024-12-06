@@ -1,4 +1,5 @@
-﻿using InteractionKit.Components;
+﻿using Collections;
+using InteractionKit.Components;
 using Rendering;
 using Rendering.Components;
 using Simulation;
@@ -12,9 +13,12 @@ namespace InteractionKit.Systems
 {
     public readonly partial struct ScrollViewSystem : ISystem
     {
-        private readonly ComponentQuery<IsView, LocalToWorld> viewQuery;
-        private readonly ComponentQuery<IsView, ViewScrollBarLink> scrollBarLinkQuery;
-        private readonly ComponentQuery<IsPointer> pointerQuery;
+        private readonly List<uint> scrollBarLinkEntities;
+
+        public ScrollViewSystem()
+        {
+            scrollBarLinkEntities = new();
+        }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
@@ -27,36 +31,24 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
-        public ScrollViewSystem()
+        void IDisposable.Dispose()
         {
-            viewQuery = new();
-            scrollBarLinkQuery = new();
-            pointerQuery = new();
+            scrollBarLinkEntities.Dispose();
         }
 
-        private void CleanUp()
+        private readonly void Update(World world)
         {
-            pointerQuery.Dispose();
-            scrollBarLinkQuery.Dispose();
-            viewQuery.Dispose();
-        }
+            FindScrollBarLinkEntities(world);
 
-        private void Update(World world)
-        {
-            pointerQuery.Update(world);
-            scrollBarLinkQuery.Update(world);
-            viewQuery.Update(world);
+            ComponentQuery<IsView, LocalToWorld> viewQuery = new(world);
             foreach (var v in viewQuery)
             {
                 uint scrollViewEntity = v.entity;
-                LocalToWorld ltw = v.Component2;
-                rint contentReference = v.Component1.contentReference;
+                ref LocalToWorld ltw = ref v.component2;
+                ref IsView view = ref v.component1;
+                rint contentReference = view.contentReference;
                 uint contentEntity = world.GetReference(scrollViewEntity, contentReference);
                 Vector3 viewPosition = ltw.Position;
                 Vector3 viewScale = ltw.Scale;
@@ -65,23 +57,24 @@ namespace InteractionKit.Systems
 
                 LocalToWorld contentLtw = world.GetComponent<LocalToWorld>(contentEntity);
                 Vector3 contentScale = contentLtw.Scale;
-                if (scrollBarLinkQuery.TryIndexOf(scrollViewEntity, out uint scrollBarIndex))
+                if (scrollBarLinkEntities.Contains(scrollViewEntity))
                 {
-                    ViewScrollBarLink scrollBarLink = scrollBarLinkQuery[scrollBarIndex].Component2;
+                    ViewScrollBarLink scrollBarLink = world.GetComponent<ViewScrollBarLink>(scrollViewEntity);
                     rint scrollBarReference = scrollBarLink.scrollBarReference;
                     uint scrollBarEntity = world.GetReference(scrollViewEntity, scrollBarReference);
-                    ref IsScrollBar scrollBar = ref world.GetComponentRef<IsScrollBar>(scrollBarEntity);
+                    ref IsScrollBar scrollBar = ref world.GetComponent<IsScrollBar>(scrollBarEntity);
 
                     //let points scroll the bar
+                    ComponentQuery<IsPointer> pointerQuery = new(world);
                     foreach (var p in pointerQuery)
                     {
                         uint pointerEntity = p.entity;
-                        Vector2 pointerPosition = p.Component1.position;
-                        bool hoveredOver = pointerPosition.X >= viewPosition.X && pointerPosition.X <= viewPosition.X + viewScale.X &&
-                                           pointerPosition.Y >= viewPosition.Y && pointerPosition.Y <= viewPosition.Y + viewScale.Y;
+                        ref IsPointer pointer = ref p.component1;
+                        Vector2 pointerPosition = pointer.position;
+                        bool hoveredOver = pointerPosition.X >= viewPosition.X && pointerPosition.X <= viewPosition.X + viewScale.X && pointerPosition.Y >= viewPosition.Y && pointerPosition.Y <= viewPosition.Y + viewScale.Y;
                         if (hoveredOver)
                         {
-                            scrollBar.value += p.Component1.scroll * scrollBar.axis;
+                            scrollBar.value += pointer.scroll * scrollBar.axis;
                             if (scrollBar.value.X < 0)
                             {
                                 scrollBar.value.X = 0;
@@ -107,7 +100,7 @@ namespace InteractionKit.Systems
                     Vector2 value = scrollBar.value;
                     value.X *= (contentScale.X - viewScale.X);
                     value.Y *= (contentScale.Y - viewScale.Y);
-                    v.Component1.value = value;
+                    view.value = value;
                 }
 
                 (uint width, uint height) destinationSize = destination.Size;
@@ -138,7 +131,7 @@ namespace InteractionKit.Systems
 
                 UpdateScissors(world, contentEntity, region);
 
-                Vector2 scrollValue = v.Component1.value;
+                Vector2 scrollValue = view.value;
                 if (float.IsNaN(scrollValue.X))
                 {
                     scrollValue.X = 0f;
@@ -149,13 +142,23 @@ namespace InteractionKit.Systems
                     scrollValue.Y = 0f;
                 }
 
-                ref Position position = ref world.GetComponentRef<Position>(contentEntity);
+                ref Position position = ref world.GetComponent<Position>(contentEntity);
                 position.value.X = 1 - scrollValue.X;
                 position.value.Y = 1 - scrollValue.Y;
             }
         }
 
-        private Canvas GetCanvas(World world, uint entity)
+        private readonly void FindScrollBarLinkEntities(World world)
+        {
+            scrollBarLinkEntities.Clear();
+            ComponentQuery<ViewScrollBarLink> query = new(world);
+            foreach (var q in query)
+            {
+                scrollBarLinkEntities.Add(q.entity);
+            }
+        }
+
+        private readonly Canvas GetCanvas(World world, uint entity)
         {
             while (entity != default)
             {
@@ -170,14 +173,14 @@ namespace InteractionKit.Systems
             throw new InvalidOperationException($"Entity `{entity}` is not a descendant of a canvas");
         }
 
-        private void UpdateScissors(World world, uint contentEntity, Vector4 region)
+        private readonly void UpdateScissors(World world, uint contentEntity, Vector4 region)
         {
             USpan<uint> contentChildren = world.GetChildren(contentEntity);
             foreach (uint child in contentChildren)
             {
                 if (world.ContainsComponent<IsRenderer>(child))
                 {
-                    ref RendererScissor scissor = ref world.TryGetComponentRef<RendererScissor>(child, out bool contains);
+                    ref RendererScissor scissor = ref world.TryGetComponent<RendererScissor>(child, out bool contains);
                     if (!contains)
                     {
                         world.AddComponent(child, new RendererScissor(region));

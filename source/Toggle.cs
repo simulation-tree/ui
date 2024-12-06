@@ -24,25 +24,25 @@ namespace InteractionKit
             set => background.Size = value;
         }
 
-        public readonly ref Anchor Anchor => ref background.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref background.AsEntity().GetComponentRef<Pivot>().value;
-        public readonly ref Color BackgroundColor => ref background.AsEntity().GetComponentRef<BaseColor>().value;
+        public readonly ref Anchor Anchor => ref background.AsEntity().GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref background.AsEntity().GetComponent<Pivot>().value;
+        public readonly ref Color BackgroundColor => ref background.AsEntity().GetComponent<BaseColor>().value;
         public readonly ref Color CheckmarkColor
         {
             get
             {
                 rint checkmarkReference = background.AsEntity().GetComponent<IsToggle>().checkmarkReference;
                 uint checkmarkEntity = background.GetReference(checkmarkReference);
-                return ref background.GetWorld().GetComponentRef<BaseColor>(checkmarkEntity).value;
+                return ref background.GetWorld().GetComponent<BaseColor>(checkmarkEntity).value;
             }
         }
 
         public readonly bool Value
         {
-            get => background.AsEntity().GetComponentRef<IsToggle>().value;
+            get => background.AsEntity().GetComponent<IsToggle>().value;
             set
             {
-                ref IsToggle toggle = ref background.AsEntity().GetComponentRef<IsToggle>();
+                ref IsToggle toggle = ref background.AsEntity().GetComponent<IsToggle>();
                 toggle.value = value;
 
                 rint checkmarkReference = toggle.checkmarkReference;
@@ -51,7 +51,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref ToggleCallbackFunction Callback => ref background.AsEntity().GetComponentRef<IsToggle>().callback;
+        public readonly ref ToggleCallbackFunction Callback => ref background.AsEntity().GetComponent<IsToggle>().callback;
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();

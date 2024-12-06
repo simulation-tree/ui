@@ -30,7 +30,6 @@ namespace InteractionKit.Systems
             functions[(byte)ComponentMix.Operation.FloatingDivide] = new(&FloatingDivide);
         }
 
-        private readonly ComponentQuery<ComponentMix> query;
         private readonly List<Request> requests;
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
@@ -44,31 +43,25 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
         public unsafe ComponentMixingSystem()
         {
-            query = new();
             requests = new();
         }
 
-        private void CleanUp()
+        void IDisposable.Dispose()
         {
             requests.Dispose();
-            query.Dispose();
         }
 
-        private void Update(World world)
+        private readonly void Update(World world)
         {
-            query.Update(world);
+            ComponentQuery<ComponentMix> query = new(world);
             foreach (var x in query)
             {
                 uint entity = x.entity;
-                ComponentMix mix = x.Component1;
+                ref ComponentMix mix = ref x.component1;
                 requests.Add(new(entity, mix));
             }
 
@@ -76,7 +69,7 @@ namespace InteractionKit.Systems
             requests.Clear();
         }
 
-        private void MixComponents(World world, USpan<Request> requests)
+        private readonly void MixComponents(World world, USpan<Request> requests)
         {
             foreach (var request in requests)
             {

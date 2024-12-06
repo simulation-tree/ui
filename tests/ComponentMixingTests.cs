@@ -22,7 +22,7 @@ namespace InteractionKit.Tests
             ComponentType.Register<FirstVector>();
             ComponentType.Register<SecondVector>();
             ComponentType.Register<ResultVector>();
-            Simulator.AddSystem<ComponentMixingSystem>();
+            Simulator.AddSystem(new ComponentMixingSystem());
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace InteractionKit.Tests
             int result = World.GetComponent<Result>(entity).value;
             Assert.That(result, Is.EqualTo(first + second));
 
-            ref ComponentMix mix = ref World.GetComponentRef<ComponentMix>(entity);
+            ref ComponentMix mix = ref World.GetComponent<ComponentMix>(entity);
             mix.operation = ComponentMix.Operation.SignedAdd;
             World.SetComponent(entity, new First(-424));
 
@@ -101,7 +101,7 @@ namespace InteractionKit.Tests
             float second = World.GetComponent<SecondFloat>(entity).value;
             float result = World.GetComponent<ResultFloat>(entity).value;
             Assert.That(result, Is.EqualTo(first * second));
-            ref ComponentMix mix = ref World.GetComponentRef<ComponentMix>(entity);
+            ref ComponentMix mix = ref World.GetComponent<ComponentMix>(entity);
             mix.operation = ComponentMix.Operation.FloatingAdd;
             World.SetComponent(entity, new FirstFloat(-424.5f));
 

@@ -39,7 +39,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Vector2 Axis => ref background.AsEntity().GetComponentRef<IsScrollBar>().axis;
+        public readonly ref Vector2 Axis => ref background.AsEntity().GetComponent<IsScrollBar>().axis;
 
         public readonly Vector2 Value
         {
@@ -49,7 +49,7 @@ namespace InteractionKit
             }
             set
             {
-                background.AsEntity().GetComponentRef<IsScrollBar>().value = value;
+                background.AsEntity().GetComponent<IsScrollBar>().value = value;
             }
         }
 

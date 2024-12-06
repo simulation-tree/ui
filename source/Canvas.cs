@@ -17,12 +17,12 @@ namespace InteractionKit
         {
             get
             {
-                ref IsCanvas component = ref transform.AsEntity().GetComponentRef<IsCanvas>();
+                ref IsCanvas component = ref transform.AsEntity().GetComponent<IsCanvas>();
                 return transform.AsEntity().GetReference<Camera>(component.cameraReference);
             }
             set
             {
-                ref IsCanvas component = ref transform.AsEntity().GetComponentRef<IsCanvas>();
+                ref IsCanvas component = ref transform.AsEntity().GetComponent<IsCanvas>();
                 if (component.cameraReference == default)
                 {
                     component.cameraReference = transform.AsEntity().AddReference(value);

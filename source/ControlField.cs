@@ -66,8 +66,8 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Pivot Pivot => ref transform.AsEntity().GetComponentRef<Pivot>();
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
+        public readonly ref Pivot Pivot => ref transform.AsEntity().GetComponent<Pivot>();
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();

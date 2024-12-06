@@ -14,8 +14,6 @@ namespace InteractionKit.Systems
     {
         private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/'];
 
-        private readonly ComponentQuery<IsPointer> pointerQuery;
-        private readonly ComponentQuery<IsTextField, IsSelectable> textFieldQuery;
         private FixedString lastPressedCharacters;
         private FixedString currentCharacters;
         private DateTime nextPress;
@@ -32,34 +30,21 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
-
-        public TextFieldEditingSystem()
+        void IDisposable.Dispose()
         {
-            pointerQuery = new();
-            textFieldQuery = new();
-        }
-
-        private readonly void CleanUp()
-        {
-            textFieldQuery.Dispose();
-            pointerQuery.Dispose();
         }
 
         private void Update(World world)
         {
             if (world.TryGetFirst(out Settings settings))
             {
-                pointerQuery.Update(world);
+                ComponentQuery<IsPointer> pointerQuery = new(world);
                 bool currentAnyPointerPressed = false;
                 foreach (var p in pointerQuery)
                 {
-                    currentAnyPointerPressed |= p.Component1.HasPrimaryIntent;
+                    currentAnyPointerPressed |= p.component1.HasPrimaryIntent;
                 }
 
                 bool anyPointerPressed = false;
@@ -77,17 +62,20 @@ namespace InteractionKit.Systems
                 DateTime now = DateTime.UtcNow;
                 USpan<char> pressedBuffer = stackalloc char[(int)FixedString.Capacity];
                 ulong ticks = (ulong)((now - DateTime.UnixEpoch).TotalSeconds * 3f);
-                textFieldQuery.Update(world, true);
+
+                ComponentQuery<IsTextField, IsSelectable> textFieldQuery = new(world);
                 foreach (var t in textFieldQuery)
                 {
                     uint textFieldEntity = t.entity;
-                    ref IsTextField component = ref t.Component1;
-                    bool startEditing = t.Component2.WasPrimaryInteractedWith;
+                    ref IsTextField component = ref t.component1;
+                    ref IsSelectable selectable = ref t.component2;
+                    bool startEditing = selectable.WasPrimaryInteractedWith;
                     if (startEditing && !startedEditing)
                     {
-                        foreach (var otherT in textFieldQuery)
+                        ComponentQuery<IsTextField> otherTextFieldQuery = new(world);
+                        foreach (var otherT in otherTextFieldQuery)
                         {
-                            ref IsTextField otherComponent = ref otherT.Component1;
+                            ref IsTextField otherComponent = ref otherT.component1;
                             otherComponent.editing = false;
                         }
 
@@ -165,7 +153,7 @@ namespace InteractionKit.Systems
                     settings.EditRange = default;
                     foreach (var t in textFieldQuery)
                     {
-                        ref IsTextField component = ref t.Component1;
+                        ref IsTextField component = ref t.component1;
                         component.editing = false;
                     }
                 }
@@ -229,7 +217,7 @@ namespace InteractionKit.Systems
             tempText[tempText.Length - 1] = ' ';
             Vector2 totalSize = font.CalulcateSize(tempText, pixelSize);
 
-            ref Position cursorPosition = ref world.GetComponentRef<Position>(cursorEntity);
+            ref Position cursorPosition = ref world.GetComponent<Position>(cursorEntity);
             LocalToWorld ltw = world.GetComponent<LocalToWorld>(cursorEntity);
             Vector3 worldPosition = ltw.Position + new Vector3(totalSize.X, 0, 0);
             Matrix4x4.Invert(ltw.value, out Matrix4x4 inverseLtw);
@@ -257,10 +245,10 @@ namespace InteractionKit.Systems
                 Vector2 endPosition = font.CalulcateSize(textToEnd, pixelSize);
                 Vector2 totalSize = endPosition - startPosition;
 
-                ref Position highlightPosition = ref world.GetComponentRef<Position>(highlightEntity);
+                ref Position highlightPosition = ref world.GetComponent<Position>(highlightEntity);
                 highlightPosition.value.X = (startPosition.X * 0.5f) + 2;
 
-                ref Scale highlightScale = ref world.GetComponentRef<Scale>(highlightEntity);
+                ref Scale highlightScale = ref world.GetComponent<Scale>(highlightEntity);
                 highlightScale.value.X = (totalSize.X * 0.5f) + 2; //dividing by 2 because pixelSize/16???
             }
             else

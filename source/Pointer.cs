@@ -12,18 +12,18 @@ namespace InteractionKit
         /// <summary>
         /// Position of the pointer in screen space.
         /// </summary>
-        public readonly ref Vector2 Position => ref entity.GetComponentRef<IsPointer>().position;
+        public readonly ref Vector2 Position => ref entity.GetComponent<IsPointer>().position;
 
         public readonly bool HasPrimaryIntent
         {
             get => entity.GetComponent<IsPointer>().HasPrimaryIntent;
-            set => entity.GetComponentRef<IsPointer>().HasPrimaryIntent = value;
+            set => entity.GetComponent<IsPointer>().HasPrimaryIntent = value;
         }
 
         public readonly bool HasSecondaryIntent
         {
             get => entity.GetComponent<IsPointer>().HasSecondaryIntent;
-            set => entity.GetComponentRef<IsPointer>().HasSecondaryIntent = value;
+            set => entity.GetComponent<IsPointer>().HasSecondaryIntent = value;
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace InteractionKit
             }
             set
             {
-                ref IsPointer pointer = ref entity.GetComponentRef<IsPointer>();
+                ref IsPointer pointer = ref entity.GetComponent<IsPointer>();
                 if (pointer.hoveringOverReference == default)
                 {
                     pointer.hoveringOverReference = entity.AddReference(value);
@@ -52,7 +52,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Vector2 Scroll => ref entity.GetComponentRef<IsPointer>().scroll;
+        public readonly ref Vector2 Scroll => ref entity.GetComponent<IsPointer>().scroll;
 
         readonly uint IEntity.Value => entity.value;
         readonly World IEntity.World => entity.world;

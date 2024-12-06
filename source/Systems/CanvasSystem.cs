@@ -11,8 +11,6 @@ namespace InteractionKit.Systems
 {
     public readonly partial struct CanvasSystem : ISystem
     {
-        private readonly ComponentQuery<IsCanvas, Position, Scale> canvasQuery;
-
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
         }
@@ -24,29 +22,19 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
-        public CanvasSystem()
+        void IDisposable.Dispose()
         {
-            canvasQuery = new();
-        }
-
-        private readonly void CleanUp()
-        {
-            canvasQuery.Dispose();
         }
 
         private readonly void Update(World world)
         {
-            canvasQuery.Update(world);
+            ComponentQuery<IsCanvas, Position, Scale> canvasQuery = new(world);
             foreach (var x in canvasQuery)
             {
                 uint canvasEntity = x.entity;
-                IsCanvas canvas = x.Component1;
+                ref IsCanvas canvas = ref x.component1;
                 rint cameraReference = canvas.cameraReference;
                 uint cameraEntity = world.GetReference(canvasEntity, cameraReference);
                 float distanceFromCamera = 0.1f;
@@ -63,9 +51,10 @@ namespace InteractionKit.Systems
                     distanceFromCamera += camera.Depth.min;
                 }
 
-                ref Position position = ref x.Component2;
+                ref Position position = ref x.component2;
                 position.value = new(0, 0, distanceFromCamera); //todo: wtf: why negative?
-                ref Scale scale = ref x.Component3;
+
+                ref Scale scale = ref x.component3;
                 scale.value = new(size, scale.value.Z);
             }
         }

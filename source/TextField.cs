@@ -26,7 +26,7 @@ namespace InteractionKit
             set => background.Size = value;
         }
 
-        public readonly ref bool Editing => ref background.AsEntity().GetComponentRef<IsTextField>().editing;
+        public readonly ref bool Editing => ref background.AsEntity().GetComponent<IsTextField>().editing;
         public readonly ref Color BackgroundColor => ref background.Color;
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;

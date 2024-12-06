@@ -88,8 +88,8 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponentRef<Pivot>().value;
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
@@ -117,7 +117,7 @@ namespace InteractionKit
 
         public readonly void SetScrollBar(ScrollBar scrollBar)
         {
-            ref ViewScrollBarLink link = ref transform.AsEntity().TryGetComponentRef<ViewScrollBarLink>(out bool contains);
+            ref ViewScrollBarLink link = ref transform.AsEntity().TryGetComponent<ViewScrollBarLink>(out bool contains);
             if (!contains)
             {
                 rint scrollBarReference = transform.AddReference(scrollBar);

@@ -41,8 +41,8 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponentRef<Pivot>().value;
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
         public readonly USpan<SelectedLeaf> Selected => transform.AsEntity().GetArray<SelectedLeaf>();
         public readonly USpan<TreeNodeOption> Nodes => transform.AsEntity().GetArray<TreeNodeOption>();
 

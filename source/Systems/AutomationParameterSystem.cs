@@ -10,9 +10,12 @@ namespace InteractionKit.Systems
 {
     public readonly partial struct AutomationParameterSystem : ISystem
     {
-        private readonly ComponentQuery<IsSelectable, IsStateful> selectablesQuery;
-        private readonly ComponentQuery<IsPointer> pointerQuery;
         private readonly List<Entity> selectedEntities;
+
+        public AutomationParameterSystem()
+        {
+            selectedEntities = new();
+        }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
@@ -20,44 +23,26 @@ namespace InteractionKit.Systems
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            Update(world);
+            FindSelectedEntities(world);
+            UpdateSelectableParameters(world);
         }
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
-        public AutomationParameterSystem()
-        {
-            selectablesQuery = new();
-            pointerQuery = new();
-            selectedEntities = new();
-        }
-
-        private readonly void CleanUp()
+        void IDisposable.Dispose()
         {
             selectedEntities.Dispose();
-            pointerQuery.Dispose();
-            selectablesQuery.Dispose();
-        }
-
-        private readonly void Update(World world)
-        {
-            FindSelectedEntities(world);
-            UpdateSelectableParameters(world);
         }
 
         private readonly void FindSelectedEntities(World world)
         {
             selectedEntities.Clear();
-            pointerQuery.Update(world);
+            ComponentQuery<IsPointer> pointerQuery = new(world);
             foreach (var p in pointerQuery)
             {
-                ref IsPointer pointer = ref p.Component1;
+                ref IsPointer pointer = ref p.component1;
                 if (pointer.hoveringOverReference != default)
                 {
                     uint hoveringOverEntity = world.GetReference(p.entity, pointer.hoveringOverReference);
@@ -68,10 +53,10 @@ namespace InteractionKit.Systems
 
         private readonly void UpdateSelectableParameters(World world)
         {
-            selectablesQuery.Update(world);
+            ComponentQuery<IsSelectable, IsStateful> selectablesQuery = new(world);
             foreach (var x in selectablesQuery)
             {
-                IsSelectable selectable = x.Component1;
+                ref IsSelectable selectable = ref x.component1;
                 bool pressed = (selectable.state & IsSelectable.State.WasPrimaryInteractedWith) != 0;
                 pressed |= (selectable.state & IsSelectable.State.IsPrimaryInteractedWith) != 0;
                 bool selected = selectedEntities.Contains(x.entity);

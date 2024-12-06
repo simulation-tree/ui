@@ -10,12 +10,18 @@ namespace InteractionKit.Systems
 {
     public partial struct PointerDraggingSelectableSystem : ISystem
     {
-        private readonly ComponentQuery<IsPointer> pointerQuery;
-        private readonly ComponentQuery<IsDraggable> draggableQuery;
         private readonly List<Entity> pressedStates;
+        private readonly List<uint> draggableEntities;
+
         private Entity dragTarget;
         private Entity dragPointer;
         private Vector2 lastPosition;
+
+        public PointerDraggingSelectableSystem()
+        {
+            pressedStates = new();
+            draggableEntities = new();
+        }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
@@ -28,54 +34,44 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
-        public PointerDraggingSelectableSystem()
+        void IDisposable.Dispose()
         {
-            pointerQuery = new();
-            draggableQuery = new();
-            pressedStates = new();
-        }
-
-        private readonly void CleanUp()
-        {
+            draggableEntities.Dispose();
             pressedStates.Dispose();
-            draggableQuery.Dispose();
-            pointerQuery.Dispose();
         }
 
         private void Update(World world)
         {
-            draggableQuery.Update(world, true);
-            pointerQuery.Update(world);
-            foreach (var p in pointerQuery)
+            FindDraggableEntities(world);
+
+            ComponentQuery<IsPointer> query = new(world);
+            foreach (var r in query)
             {
-                Entity pointer = new(world, p.entity);
-                bool pressed = p.Component1.HasPrimaryIntent;
+                ref IsPointer pointer = ref r.component1;
+                Entity entity = new(world, r.entity);
+                bool pressed = pointer.HasPrimaryIntent;
                 bool wasPressed = false;
                 if (pressed)
                 {
-                    wasPressed = pressedStates.TryAdd(pointer);
+                    wasPressed = pressedStates.TryAdd(entity);
                 }
                 else
                 {
-                    pressedStates.TryRemoveBySwapping(pointer);
+                    pressedStates.TryRemoveBySwapping(entity);
                 }
 
-                Vector2 position = p.Component1.position;
+                Vector2 position = pointer.position;
                 if (wasPressed && dragTarget == default)
                 {
-                    rint hoveringOverReference = p.Component1.hoveringOverReference;
+                    rint hoveringOverReference = pointer.hoveringOverReference;
                     if (hoveringOverReference != default)
                     {
-                        uint hoveringOverEntity = pointer.GetReference(hoveringOverReference);
-                        if (draggableQuery.TryIndexOf(hoveringOverEntity, out uint index))
+                        uint hoveringOverEntity = entity.GetReference(hoveringOverReference);
+                        if (draggableEntities.Contains(hoveringOverEntity))
                         {
-                            rint targetReference = draggableQuery[index].Component1.targetReference;
+                            rint targetReference = world.GetComponent<IsDraggable>(hoveringOverEntity).targetReference;
                             uint targetEntity = targetReference == default ? default : world.GetReference(hoveringOverEntity, targetReference);
                             if (targetEntity == default)
                             {
@@ -85,13 +81,13 @@ namespace InteractionKit.Systems
                             if (targetEntity != default && world.ContainsEntity(targetEntity))
                             {
                                 dragTarget = new(world, targetEntity);
-                                dragPointer = pointer;
+                                dragPointer = entity;
                                 lastPosition = position;
                             }
                         }
                     }
                 }
-                else if (!pressed && pointer == dragPointer)
+                else if (!pressed && entity == dragPointer)
                 {
                     dragTarget = default;
                 }
@@ -102,10 +98,24 @@ namespace InteractionKit.Systems
                 Vector2 position = dragPointer.GetComponent<IsPointer>().position;
                 Vector2 pointerDelta = position - lastPosition;
                 lastPosition = position;
-                ref Position selectablePosition = ref dragTarget.TryGetComponentRef<Position>(out bool contains);
+
+                ref Position selectablePosition = ref dragTarget.TryGetComponent<Position>(out bool contains);
                 if (contains)
                 {
                     selectablePosition.value += new Vector3(pointerDelta, 0);
+                }
+            }
+        }
+
+        private readonly void FindDraggableEntities(World world)
+        {
+            draggableEntities.Clear();
+            ComponentQuery<IsDraggable> query = new(world);
+            foreach (var r in query)
+            {
+                if (world.IsEnabled(r.entity))
+                {
+                    draggableEntities.Add(r.entity);
                 }
             }
         }

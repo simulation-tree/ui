@@ -109,7 +109,7 @@ namespace InteractionKit
             }
             set
             {
-                ref TextEditState component = ref entity.GetComponentRef<TextEditState>();
+                ref TextEditState component = ref entity.GetComponent<TextEditState>();
                 component.selectionStart = value.start;
                 component.selectionEnd = value.end;
                 component.cursorIndex = value.index;

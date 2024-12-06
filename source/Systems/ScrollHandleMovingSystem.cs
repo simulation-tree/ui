@@ -10,13 +10,17 @@ namespace InteractionKit.Systems
 {
     public partial struct ScrollHandleMovingSystem : ISystem
     {
-        private readonly ComponentQuery<IsPointer> pointerQuery;
-        private readonly ComponentQuery<IsScrollBar> scrollBarQuery;
         private readonly List<uint> scrollHandleEntities;
         private readonly List<uint> scrollRegionEntities;
         private uint currentScrollHandleEntity;
         private uint currentPointer;
         private Vector2 dragOffset;
+
+        public ScrollHandleMovingSystem()
+        {
+            scrollHandleEntities = new();
+            scrollRegionEntities = new();
+        }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
@@ -29,50 +33,40 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
-        public ScrollHandleMovingSystem()
-        {
-            pointerQuery = new();
-            scrollBarQuery = new();
-            scrollHandleEntities = new();
-            scrollRegionEntities = new();
-        }
-
-        private void CleanUp()
+        void IDisposable.Dispose()
         {
             scrollRegionEntities.Dispose();
             scrollHandleEntities.Dispose();
-            scrollBarQuery.Dispose();
-            pointerQuery.Dispose();
         }
 
         private void Update(World world)
         {
-            scrollBarQuery.Update(world, true);
+            ComponentQuery<IsScrollBar> scrollBarQuery = new(world);
             foreach (var s in scrollBarQuery)
             {
                 uint scrollBarEntity = s.entity;
-                rint scrollHandleReference = s.Component1.scrollHandleReference;
-                uint scrollHandleEntity = world.GetReference(scrollBarEntity, scrollHandleReference);
-                uint scrollRegionEntity = world.GetParent(scrollHandleEntity);
-                scrollHandleEntities.Add(scrollHandleEntity);
-                scrollRegionEntities.Add(scrollRegionEntity);
+                if (world.IsEnabled(scrollBarEntity))
+                {
+                    rint scrollHandleReference = s.component1.scrollHandleReference;
+                    uint scrollHandleEntity = world.GetReference(scrollBarEntity, scrollHandleReference);
+                    uint scrollRegionEntity = world.GetParent(scrollHandleEntity);
+                    scrollHandleEntities.Add(scrollHandleEntity);
+                    scrollRegionEntities.Add(scrollRegionEntity);
+                }
             }
 
-            pointerQuery.Update(world);
+            ComponentQuery<IsPointer> pointerQuery = new(world);
             foreach (var p in pointerQuery)
             {
                 uint pointerEntity = p.entity;
-                rint hoveringOverReference = p.Component1.hoveringOverReference;
+                ref IsPointer pointer = ref p.component1;
+                rint hoveringOverReference = pointer.hoveringOverReference;
                 uint hoveringOverEntity = hoveringOverReference == default ? default : world.GetReference(pointerEntity, hoveringOverReference);
-                Vector2 pointerPosition = p.Component1.position;
-                Vector2 pointerScroll = p.Component1.scroll;
-                bool pressed = p.Component1.HasPrimaryIntent;
+                Vector2 pointerPosition = pointer.position;
+                Vector2 pointerScroll = pointer.scroll;
+                bool pressed = pointer.HasPrimaryIntent;
                 if (pressed && currentPointer == default)
                 {
                     if (scrollHandleEntities.Contains(hoveringOverEntity))
@@ -94,7 +88,7 @@ namespace InteractionKit.Systems
                         rint scrollHandleReference = world.GetComponent<IsScrollBar>(scrollBarEntity).scrollHandleReference;
                         uint scrollHandleEntity = world.GetReference(scrollBarEntity, scrollHandleReference);
                         Vector2 value = GetScrollBarValue(world, scrollHandleEntity, pointerPosition);
-                        ref IsScrollBar component = ref world.GetComponentRef<IsScrollBar>(scrollBarEntity);
+                        ref IsScrollBar component = ref world.GetComponent<IsScrollBar>(scrollBarEntity);
                         component.value = value;
                     }
                 }
@@ -105,7 +99,7 @@ namespace InteractionKit.Systems
                         //move scrollbar by scrolling when hovering over the handle
                         uint scrollRegionEntity = world.GetParent(hoveringOverEntity);
                         uint scrollBarEntity = world.GetParent(scrollRegionEntity);
-                        ref IsScrollBar component = ref world.GetComponentRef<IsScrollBar>(scrollBarEntity);
+                        ref IsScrollBar component = ref world.GetComponent<IsScrollBar>(scrollBarEntity);
                         component.value += pointerScroll * component.axis;
                         component.value = Clamp(component.value, Vector2.Zero, Vector2.One);
                     }
@@ -113,7 +107,7 @@ namespace InteractionKit.Systems
                     {
                         //move when hovering over the region
                         uint scrollBarEntity = world.GetParent(hoveringOverEntity);
-                        ref IsScrollBar component = ref world.GetComponentRef<IsScrollBar>(scrollBarEntity);
+                        ref IsScrollBar component = ref world.GetComponent<IsScrollBar>(scrollBarEntity);
                         component.value += pointerScroll * component.axis;
                         component.value = Clamp(component.value, Vector2.Zero, Vector2.One);
                     }
@@ -132,16 +126,16 @@ namespace InteractionKit.Systems
 
                 uint scrollRegionEntity = world.GetParent(currentScrollHandleEntity);
                 uint scrollBarEntity = world.GetParent(scrollRegionEntity);
-                ref IsScrollBar component = ref world.GetComponentRef<IsScrollBar>(scrollBarEntity);
+                ref IsScrollBar component = ref world.GetComponent<IsScrollBar>(scrollBarEntity);
                 component.value = value;
             }
 
             //update scroll bar visuals
             foreach (var s in scrollBarQuery)
             {
-                rint scrollHandleReference = s.Component1.scrollHandleReference;
+                rint scrollHandleReference = s.component1.scrollHandleReference;
                 uint scrollHandleEntity = world.GetReference(s.entity, scrollHandleReference);
-                Vector2 value = s.Component1.value;
+                Vector2 value = s.component1.value;
                 UpdateScrollBarVisual(world, scrollHandleEntity, value);
             }
 
@@ -191,9 +185,9 @@ namespace InteractionKit.Systems
             value.X *= 1 - ((scrollBarSize.X / scrollRegionSize.X) * axis.X);
             value.Y *= 1 - ((scrollBarSize.Y / scrollRegionSize.Y) * axis.Y);
 
-            ref Position position = ref world.GetComponentRef<Position>(scrollHandleEntity);
-            position.value.X = value.X;// * scrollAreaMax.X;
-            position.value.Y = value.Y;// * scrollAreaMax.Y;
+            ref Position position = ref world.GetComponent<Position>(scrollHandleEntity);
+            position.value.X = value.X;
+            position.value.Y = value.Y;
         }
 
         private static Vector2 Clamp(Vector2 input, Vector2 min, Vector2 max)

@@ -17,7 +17,7 @@ namespace InteractionKit.Tests
             ComponentType.Register<IsTrigger>();
             ComponentType.Register<byte>();
             ComponentType.Register<int>();
-            Simulator.AddSystem<InvokeTriggersSystem>();
+            Simulator.AddSystem(new InvokeTriggersSystem());
         }
 
         [Test]
@@ -39,9 +39,9 @@ namespace InteractionKit.Tests
             Assert.That(World.ContainsComponent<byte>(triggerA), Is.True);
             Assert.That(World.ContainsComponent<byte>(triggerB), Is.True);
 
-            World.GetComponentRef<IsTrigger>(triggerA).filter = new(&SelectFirstEntity);
-            World.GetComponentRef<IsTrigger>(triggerB).filter = new(&SelectFirstEntity);
-            World.GetComponentRef<IsTrigger>(triggerC).filter = new(&SelectFirstEntity);
+            World.GetComponent<IsTrigger>(triggerA).filter = new(&SelectFirstEntity);
+            World.GetComponent<IsTrigger>(triggerB).filter = new(&SelectFirstEntity);
+            World.GetComponent<IsTrigger>(triggerC).filter = new(&SelectFirstEntity);
 
             Simulator.Update(TimeSpan.FromSeconds(0.1f));
 

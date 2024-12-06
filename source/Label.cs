@@ -31,6 +31,20 @@ namespace InteractionKit
             }
         }
 
+        public readonly float Z
+        {
+            get
+            {
+                return textRenderer.AsEntity().As<Transform>().LocalPosition.Z;
+            }
+            set
+            {
+                Transform transform = textRenderer.AsEntity().As<Transform>();
+                Vector3 position = transform.LocalPosition;
+                transform.LocalPosition = new(position.X, position.Y, value);
+            }
+        }
+
         public readonly Vector2 Size
         {
             get
@@ -47,9 +61,9 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref textRenderer.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref textRenderer.AsEntity().GetComponentRef<Pivot>().value;
-        public readonly ref Color Color => ref textRenderer.AsEntity().GetComponentRef<BaseColor>().value;
+        public readonly ref Anchor Anchor => ref textRenderer.AsEntity().GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref textRenderer.AsEntity().GetComponent<Pivot>().value;
+        public readonly ref Color Color => ref textRenderer.AsEntity().GetComponent<BaseColor>().value;
 
         public readonly USpan<char> Text
         {

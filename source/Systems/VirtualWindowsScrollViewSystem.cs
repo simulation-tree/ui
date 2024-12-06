@@ -10,8 +10,6 @@ namespace InteractionKit.Systems
 {
     public readonly partial struct VirtualWindowsScrollViewSystem : ISystem
     {
-        private readonly ComponentQuery<IsVirtualWindow> query;
-
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
         }
@@ -23,29 +21,21 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
-        public VirtualWindowsScrollViewSystem()
+        void IDisposable.Dispose()
         {
-            query = new();
-        }
-
-        private readonly void CleanUp()
-        {
-            query.Dispose();
         }
 
         private readonly void Update(World world)
         {
-            query.Update(world, true);
+            ComponentQuery<IsVirtualWindow> query = new(world);
             foreach (var v in query)
             {
                 uint virtualWindowEntity = v.entity;
-                IsVirtualWindow component = v.Component1;
+                if (!world.IsEnabled(virtualWindowEntity)) continue;
+
+                ref IsVirtualWindow component = ref v.component1;
                 VirtualWindow virtualWindow = new Entity(world, virtualWindowEntity).As<VirtualWindow>();
                 rint scrollBarReference = component.scrollBarReference;
                 rint viewReference = component.viewReference;
@@ -60,9 +50,10 @@ namespace InteractionKit.Systems
                 for (uint i = 0; i < children.Length; i++)
                 {
                     Entity child = new(world, children[i]);
-                    if (child.TryGetComponent(out LocalToWorld ltw))
+                    ref LocalToWorld childLtw = ref child.TryGetComponent<LocalToWorld>(out bool contains);
+                    if (contains)
                     {
-                        float y = ltw.Position.Y;
+                        float y = childLtw.Position.Y;
                         if (y < minY)
                         {
                             minY = y;

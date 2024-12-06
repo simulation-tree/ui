@@ -64,8 +64,8 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponentRef<Pivot>().value;
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
 
         public readonly USpan<MenuOption> Options => transform.AsEntity().GetArray<MenuOption>();
 
@@ -73,7 +73,7 @@ namespace InteractionKit
         {
             get
             {
-                ref IsMenu component = ref transform.AsEntity().GetComponentRef<IsMenu>();
+                ref IsMenu component = ref transform.AsEntity().GetComponent<IsMenu>();
                 return ref component.callback;
             }
         }
@@ -141,7 +141,7 @@ namespace InteractionKit
 
                 //todo: for some reason, the buttons in child menus position themselves upwards
                 //while the menus of dropdowns position downwards
-                ref MenuOption addedOption = ref entity.GetArrayElementRef<MenuOption>(optionCount);
+                ref MenuOption addedOption = ref entity.GetArrayElement<MenuOption>(optionCount);
                 Menu newChildMenu = new(world);
                 newChildMenu.SetParent(transform);
                 newChildMenu.Position = new(size.X, 0);
@@ -217,7 +217,7 @@ namespace InteractionKit
             }
 
             Menu menu = menuEntity.As<Menu>();
-            ref MenuOption option = ref menuEntity.GetArrayElementRef<MenuOption>(chosenIndex);
+            ref MenuOption option = ref menuEntity.GetArrayElement<MenuOption>(chosenIndex);
             if (option.childMenuReference != default)
             {
                 option.expanded = !option.expanded;
@@ -244,7 +244,7 @@ namespace InteractionKit
             }
             else
             {
-                ref IsMenu component = ref menuEntity.GetComponentRef<IsMenu>();
+                ref IsMenu component = ref menuEntity.GetComponent<IsMenu>();
                 if (component.callback != default)
                 {
                     component.callback.Invoke(menu, chosenIndex);

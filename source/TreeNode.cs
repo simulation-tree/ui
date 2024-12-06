@@ -43,8 +43,8 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponentRef<Pivot>().value;
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
         public readonly USpan<TreeNodeOption> Nodes => transform.AsEntity().GetArray<TreeNodeOption>();
 
         public readonly Label Label
@@ -261,11 +261,11 @@ namespace InteractionKit
         private static void ToggleExpanded(Entity expandButtonEntity)
         {
             Entity treeNodeEntity = expandButtonEntity.Parent;
-            ref IsTreeNode component = ref treeNodeEntity.GetComponentRef<IsTreeNode>();
+            ref IsTreeNode component = ref treeNodeEntity.GetComponent<IsTreeNode>();
             component.expanded = !component.expanded;
             TreeNode treeNode = treeNodeEntity.As<TreeNode>();
 
-            ref Rotation rotation = ref expandButtonEntity.GetComponentRef<Rotation>();
+            ref Rotation rotation = ref expandButtonEntity.GetComponent<Rotation>();
             rotation.value = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, component.expanded ? MathF.PI : MathF.PI * -0.5f);
 
             Button triangleButton = expandButtonEntity.As<Button>();

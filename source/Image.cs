@@ -31,6 +31,19 @@ namespace InteractionKit
             }
         }
 
+        public readonly float Z
+        {
+            get
+            {
+                return transform.LocalPosition.Z;
+            }
+            set
+            {
+                ref Vector3 position = ref transform.LocalPosition;
+                position.Z = value;
+            }
+        }
+
         public readonly Vector2 Size
         {
             get
@@ -46,9 +59,9 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponentRef<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponentRef<Pivot>().value;
-        public readonly ref Color Color => ref transform.AsEntity().GetComponentRef<BaseColor>().value;
+        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
+        public readonly ref Color Color => ref transform.AsEntity().GetComponent<BaseColor>().value;
 
         public readonly Material Material
         {
@@ -60,7 +73,7 @@ namespace InteractionKit
             }
             set
             {
-                ref IsRenderer renderer = ref transform.AsEntity().GetComponentRef<IsRenderer>();
+                ref IsRenderer renderer = ref transform.AsEntity().GetComponent<IsRenderer>();
                 if (renderer.materialReference != default)
                 {
                     transform.SetReference(renderer.materialReference, value.GetEntityValue());

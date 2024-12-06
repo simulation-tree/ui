@@ -8,7 +8,6 @@ namespace InteractionKit.Systems
 {
     public readonly partial struct InvokeTriggersSystem : ISystem
     {
-        private readonly ComponentQuery<IsTrigger> invokeQuery;
         private readonly Array<Entity> currentEntities;
         private readonly Dictionary<int, List<Entity>> entitiesPerTrigger;
         private readonly Dictionary<int, IsTrigger> functions;
@@ -24,21 +23,16 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
-            if (systemContainer.World == world)
-            {
-                CleanUp();
-            }
         }
 
         public InvokeTriggersSystem()
         {
-            invokeQuery = new();
             currentEntities = new();
             entitiesPerTrigger = new();
             functions = new();
         }
 
-        private void CleanUp()
+        void IDisposable.Dispose()
         {
             foreach (int functionHash in entitiesPerTrigger.Keys)
             {
@@ -48,23 +42,24 @@ namespace InteractionKit.Systems
             functions.Dispose();
             entitiesPerTrigger.Dispose();
             currentEntities.Dispose();
-            invokeQuery.Dispose();
         }
 
-        private void Update(World world)
+        private readonly void Update(World world)
         {
             //find new entities
-            invokeQuery.Update(world, true);
+            ComponentQuery<IsTrigger> invokeQuery = new(world);
             foreach (var x in invokeQuery)
             {
+                if (!world.IsEnabled(x.entity)) continue;
+
                 Entity entity = new(world, x.entity);
-                IsTrigger trigger = x.Component1;
+                ref IsTrigger trigger = ref x.component1;
                 int triggerHash = trigger.GetHashCode();
                 if (!entitiesPerTrigger.TryGetValue(triggerHash, out List<Entity> entities))
                 {
                     entities = new();
-                    entitiesPerTrigger.TryAdd(triggerHash, entities);
-                    functions.TryAdd(triggerHash, trigger);
+                    entitiesPerTrigger.Add(triggerHash, entities);
+                    functions.Add(triggerHash, trigger);
                 }
 
                 entities.Add(entity);
