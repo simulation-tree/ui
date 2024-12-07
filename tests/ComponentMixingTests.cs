@@ -22,7 +22,7 @@ namespace InteractionKit.Tests
             ComponentType.Register<FirstVector>();
             ComponentType.Register<SecondVector>();
             ComponentType.Register<ResultVector>();
-            Simulator.AddSystem(new ComponentMixingSystem());
+            Simulator.AddSystem<ComponentMixingSystem>();
         }
 
         [Test]

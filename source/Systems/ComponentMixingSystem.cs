@@ -32,8 +32,18 @@ namespace InteractionKit.Systems
 
         private readonly List<Request> requests;
 
+        private ComponentMixingSystem(List<Request> requests)
+        {
+            this.requests = requests;
+        }
+
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                List<Request> requests = new();
+                systemContainer.Write(new ComponentMixingSystem(requests));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
@@ -47,11 +57,6 @@ namespace InteractionKit.Systems
             {
                 requests.Dispose();
             }
-        }
-
-        public unsafe ComponentMixingSystem()
-        {
-            requests = new();
         }
 
         private readonly void Update(World world)

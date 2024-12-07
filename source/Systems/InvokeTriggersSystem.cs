@@ -12,38 +12,25 @@ namespace InteractionKit.Systems
         private readonly Dictionary<int, List<Entity>> entitiesPerTrigger;
         private readonly Dictionary<int, IsTrigger> functions;
 
+        private InvokeTriggersSystem(Array<Entity> currentEntities, Dictionary<int, List<Entity>> entitiesPerTrigger, Dictionary<int, IsTrigger> functions)
+        {
+            this.currentEntities = currentEntities;
+            this.entitiesPerTrigger = entitiesPerTrigger;
+            this.functions = functions;
+        }
+
         void ISystem.Start(in SystemContainer systemContainer, in World world)
-        {
-        }
-
-        void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
-        {
-            Update(world);
-        }
-
-        void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
             if (systemContainer.World == world)
             {
-                foreach (int functionHash in entitiesPerTrigger.Keys)
-                {
-                    entitiesPerTrigger[functionHash].Dispose();
-                }
-
-                functions.Dispose();
-                entitiesPerTrigger.Dispose();
-                currentEntities.Dispose();
+                Array<Entity> currentEntities = new();
+                Dictionary<int, List<Entity>> entitiesPerTrigger = new();
+                Dictionary<int, IsTrigger> functions = new();
+                systemContainer.Write(new InvokeTriggersSystem(currentEntities, entitiesPerTrigger, functions));
             }
         }
 
-        public InvokeTriggersSystem()
-        {
-            currentEntities = new();
-            entitiesPerTrigger = new();
-            functions = new();
-        }
-
-        private readonly void Update(World world)
+        void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
             //find new entities
             ComponentQuery<IsTrigger> invokeQuery = new(world);
@@ -92,6 +79,21 @@ namespace InteractionKit.Systems
                 }
 
                 entities.Clear();
+            }
+        }
+
+        void ISystem.Finish(in SystemContainer systemContainer, in World world)
+        {
+            if (systemContainer.World == world)
+            {
+                foreach (int functionHash in entitiesPerTrigger.Keys)
+                {
+                    entitiesPerTrigger[functionHash].Dispose();
+                }
+
+                functions.Dispose();
+                entitiesPerTrigger.Dispose();
+                currentEntities.Dispose();
             }
         }
     }

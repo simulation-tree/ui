@@ -16,14 +16,23 @@ namespace InteractionKit.Systems
         private uint currentPointer;
         private Vector2 dragOffset;
 
-        public ScrollHandleMovingSystem()
+        private ScrollHandleMovingSystem(List<uint> scrollHandleEntities, List<uint> scrollRegionEntities)
         {
-            scrollHandleEntities = new();
-            scrollRegionEntities = new();
+            this.scrollHandleEntities = scrollHandleEntities;
+            this.scrollRegionEntities = scrollRegionEntities;
+            currentScrollHandleEntity = default;
+            currentPointer = default;
+            dragOffset = default;
         }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                List<uint> scrollHandleEntities = new();
+                List<uint> scrollRegionEntities = new();
+                systemContainer.Write(new ScrollHandleMovingSystem(scrollHandleEntities, scrollRegionEntities));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)

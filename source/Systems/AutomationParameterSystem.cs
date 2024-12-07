@@ -12,13 +12,18 @@ namespace InteractionKit.Systems
     {
         private readonly List<Entity> selectedEntities;
 
-        public AutomationParameterSystem()
+        private AutomationParameterSystem(List<Entity> selectedEntities)
         {
-            selectedEntities = new();
+            this.selectedEntities = selectedEntities;
         }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                List<Entity> selectedEntities = new();
+                systemContainer.Write(new AutomationParameterSystem(selectedEntities));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)

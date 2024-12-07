@@ -11,17 +11,17 @@ namespace InteractionKit.Systems
             if (systemContainer.World == world)
             {
                 Simulator simulator = systemContainer.Simulator;
-                simulator.AddSystem(new CanvasSystem());
-                simulator.AddSystem(new SelectionSystem());
-                simulator.AddSystem(new VirtualWindowsScrollViewSystem());
-                simulator.AddSystem(new InvokeTriggersSystem());
-                simulator.AddSystem(new AutomationParameterSystem());
-                simulator.AddSystem(new ComponentMixingSystem());
-                simulator.AddSystem(new PointerDraggingSelectableSystem());
-                simulator.AddSystem(new ToggleSystem());
-                simulator.AddSystem(new ScrollHandleMovingSystem());
-                simulator.AddSystem(new ScrollViewSystem());
-                simulator.AddSystem(new TextFieldEditingSystem());
+                simulator.AddSystem<CanvasSystem>();
+                simulator.AddSystem<SelectionSystem>();
+                simulator.AddSystem<VirtualWindowsScrollViewSystem>();
+                simulator.AddSystem<InvokeTriggersSystem>();
+                simulator.AddSystem<AutomationParameterSystem>();
+                simulator.AddSystem<ComponentMixingSystem>();
+                simulator.AddSystem<PointerDraggingSelectableSystem>();
+                simulator.AddSystem<ToggleSystem>();
+                simulator.AddSystem<ScrollHandleMovingSystem>();
+                simulator.AddSystem<ScrollViewSystem>();
+                simulator.AddSystem<TextFieldEditingSystem>();
             }
         }
 

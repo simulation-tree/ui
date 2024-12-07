@@ -17,15 +17,6 @@ namespace InteractionKit.Systems
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            Update(world);
-        }
-
-        void ISystem.Finish(in SystemContainer systemContainer, in World world)
-        {
-        }
-
-        private readonly void Update(World world)
-        {
             ComponentQuery<IsCanvas, Position, Scale> canvasQuery = new(world);
             foreach (var x in canvasQuery)
             {
@@ -53,6 +44,10 @@ namespace InteractionKit.Systems
                 ref Scale scale = ref x.component3;
                 scale.value = new(size, scale.value.Z);
             }
+        }
+
+        void ISystem.Finish(in SystemContainer systemContainer, in World world)
+        {
         }
     }
 }

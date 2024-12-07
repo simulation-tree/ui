@@ -15,13 +15,18 @@ namespace InteractionKit.Systems
     {
         private readonly List<uint> scrollBarLinkEntities;
 
-        public ScrollViewSystem()
+        private ScrollViewSystem(List<uint> scrollBarLinkEntities)
         {
-            scrollBarLinkEntities = new();
+            this.scrollBarLinkEntities = scrollBarLinkEntities;
         }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                List<uint> scrollBarLinkEntities = new();
+                systemContainer.Write(new ScrollViewSystem(scrollBarLinkEntities));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
@@ -51,7 +56,7 @@ namespace InteractionKit.Systems
                 uint contentEntity = world.GetReference(scrollViewEntity, contentReference);
                 Vector3 viewPosition = ltw.Position;
                 Vector3 viewScale = ltw.Scale;
-                Destination destination = GetCanvas(world, scrollViewEntity).Camera.Destination;
+                Destination destination = new Entity(world, scrollViewEntity).GetCanvas().Camera.Destination;
                 if (destination == default || destination.IsDestroyed()) continue;
 
                 LocalToWorld contentLtw = world.GetComponent<LocalToWorld>(contentEntity);
@@ -67,7 +72,6 @@ namespace InteractionKit.Systems
                     ComponentQuery<IsPointer> pointerQuery = new(world);
                     foreach (var p in pointerQuery)
                     {
-                        uint pointerEntity = p.entity;
                         ref IsPointer pointer = ref p.component1;
                         Vector2 pointerPosition = pointer.position;
                         bool hoveredOver = pointerPosition.X >= viewPosition.X && pointerPosition.X <= viewPosition.X + viewScale.X && pointerPosition.Y >= viewPosition.Y && pointerPosition.Y <= viewPosition.Y + viewScale.Y;
@@ -157,22 +161,7 @@ namespace InteractionKit.Systems
             }
         }
 
-        private readonly Canvas GetCanvas(World world, uint entity)
-        {
-            while (entity != default)
-            {
-                if (world.ContainsComponent<IsCanvas>(entity))
-                {
-                    return new Entity(world, entity).As<Canvas>();
-                }
-
-                entity = world.GetParent(entity);
-            }
-
-            throw new InvalidOperationException($"Entity `{entity}` is not a descendant of a canvas");
-        }
-
-        private readonly void UpdateScissors(World world, uint contentEntity, Vector4 region)
+        private static void UpdateScissors(World world, uint contentEntity, Vector4 region)
         {
             USpan<uint> contentChildren = world.GetChildren(contentEntity);
             foreach (uint child in contentChildren)
@@ -186,7 +175,7 @@ namespace InteractionKit.Systems
                     }
                     else
                     {
-                        scissor.region = region;
+                        scissor.value = region;
                     }
                 }
 

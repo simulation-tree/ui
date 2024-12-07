@@ -11,14 +11,20 @@ namespace InteractionKit.Systems
         private readonly List<uint> pressedPointers;
         private readonly List<uint> toggleEntities;
 
-        public ToggleSystem()
+        private ToggleSystem(List<uint> pressedPointers, List<uint> toggleEntities)
         {
-            pressedPointers = new();
-            toggleEntities = new();
+            this.pressedPointers = pressedPointers;
+            this.toggleEntities = toggleEntities;
         }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                List<uint> pressedPointers = new();
+                List<uint> toggleEntities = new();
+                systemContainer.Write(new ToggleSystem(pressedPointers, toggleEntities));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)

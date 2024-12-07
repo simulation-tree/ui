@@ -17,7 +17,7 @@ namespace InteractionKit.Tests
             ComponentType.Register<IsTrigger>();
             ComponentType.Register<byte>();
             ComponentType.Register<int>();
-            Simulator.AddSystem(new InvokeTriggersSystem());
+            Simulator.AddSystem<InvokeTriggersSystem>();
         }
 
         [Test]

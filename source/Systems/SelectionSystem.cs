@@ -14,15 +14,22 @@ namespace InteractionKit.Systems
         private readonly Dictionary<Entity, PointerAction> pointerStates;
         private readonly List<uint> selectableEntities;
 
-        public SelectionSystem()
+        private SelectionSystem(Dictionary<Entity, uint> selectionStates, Dictionary<Entity, PointerAction> pointerStates, List<uint> selectableEntities)
         {
-            selectionStates = new();
-            pointerStates = new();
-            selectableEntities = new();
+            this.selectionStates = selectionStates;
+            this.pointerStates = pointerStates;
+            this.selectableEntities = selectableEntities;
         }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                Dictionary<Entity, uint> selectionStates = new();
+                Dictionary<Entity, PointerAction> pointerStates = new();
+                List<uint> selectableEntities = new();
+                systemContainer.Write(new SelectionSystem(selectionStates, pointerStates, selectableEntities));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)

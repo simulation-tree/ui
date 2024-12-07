@@ -17,14 +17,23 @@ namespace InteractionKit.Systems
         private Entity dragPointer;
         private Vector2 lastPosition;
 
-        public PointerDraggingSelectableSystem()
+        private PointerDraggingSelectableSystem(List<Entity> pressedStates, List<uint> draggableEntities)
         {
-            pressedStates = new();
-            draggableEntities = new();
+            this.pressedStates = pressedStates;
+            this.draggableEntities = draggableEntities;
+            dragTarget = default;
+            dragPointer = default;
+            lastPosition = default;
         }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                List<Entity> pressedStates = new();
+                List<uint> draggableEntities = new();
+                systemContainer.Write(new PointerDraggingSelectableSystem(pressedStates, draggableEntities));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
