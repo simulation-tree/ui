@@ -1,6 +1,7 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
+using Rendering.Components;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
@@ -81,6 +82,7 @@ namespace InteractionKit
             text.Color = Color.Black;
             text.Position = new(4f, -4f);
             text.Pivot = new(0f, 1f, 0f);
+            text.AddComponent(new RendererScissor());
 
             Image cursor = new(world, canvas);
             cursor.SetParent(background);

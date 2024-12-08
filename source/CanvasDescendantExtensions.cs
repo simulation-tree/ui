@@ -6,6 +6,13 @@ namespace InteractionKit
 {
     public static class CanvasDescendantExtensions
     {
+        /// <summary>
+        /// Retrieves the canvas that this entity is a descendant of.
+        /// <para>
+        /// May throw <see cref="InvalidOperationException"/> if this entity is not part of a canvas.
+        /// </para>
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
         public static Canvas GetCanvas<T>(this T entity) where T : unmanaged, ICanvasDescendant
         {
             World world = entity.GetWorld();
@@ -23,6 +30,13 @@ namespace InteractionKit
             throw new InvalidOperationException($"Entity `{entity}` is not a descendant of a canvas entity");
         }
 
+        /// <summary>
+        /// Retrieves the canvas that this entity is a descendant of.
+        /// <para>
+        /// May throw <see cref="InvalidOperationException"/> if this entity is not part of a canvas.
+        /// </para>
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
         public static Canvas GetCanvas(this Entity entity)
         {
             World world = entity.GetWorld();

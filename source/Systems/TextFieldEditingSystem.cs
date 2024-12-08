@@ -1,7 +1,9 @@
 ﻿using Fonts;
 using InteractionKit.Components;
+using Rendering.Components;
 using Simulation;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -34,6 +36,22 @@ namespace InteractionKit.Systems
 
         private void Update(World world)
         {
+            ComponentQuery<IsLabel, IsTextRenderer, RendererScissor> textLabelQuery = new(world);
+            foreach (var r in textLabelQuery)
+            {
+                Entity entity = new(world, r.entity);
+                Canvas canvas = entity.GetCanvas();
+                uint textFieldParent = world.GetParent(r.entity);
+                LocalToWorld ltw = world.GetComponent<LocalToWorld>(textFieldParent);
+                Vector3 position = ltw.Position;
+                Vector3 scale = ltw.Scale;
+                Vector2 destinationSize = canvas.Size;
+                r.component3.value.X = position.X;
+                r.component3.value.Y = destinationSize.Y - position.Y - scale.Y;
+                r.component3.value.Z = scale.X;
+                r.component3.value.W = scale.Y;
+            }
+
             if (world.TryGetFirst(out Settings settings))
             {
                 ComponentQuery<IsPointer> pointerQuery = new(world);

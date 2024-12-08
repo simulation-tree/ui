@@ -3,6 +3,7 @@ using Data;
 using Fonts;
 using InteractionKit.Components;
 using Rendering;
+using Rendering.Components;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -90,7 +91,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => textRenderer.GetEntityValue();
         readonly World IEntity.World => textRenderer.GetWorld();
-        readonly Definition IEntity.Definition => new([ComponentType.Get<TextRenderer>(), ComponentType.Get<IsSelectable>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsLabel, IsTextRenderer, IsSelectable>();
 
         public Label(World world, uint existingEntity)
         {

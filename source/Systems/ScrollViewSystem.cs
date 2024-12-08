@@ -132,7 +132,17 @@ namespace InteractionKit.Systems
                     region.W = destinationSize.height;
                 }
 
-                UpdateScissors(world, contentEntity, region);
+                //UpdateScissors(world, contentEntity, region);
+                //update scissor only for content entity
+                ref RendererScissor scissor = ref world.TryGetComponent<RendererScissor>(contentEntity, out bool contains);
+                if (!contains)
+                {
+                    world.AddComponent(contentEntity, new RendererScissor(region));
+                }
+                else
+                {
+                    scissor.value = region;
+                }
 
                 Vector2 scrollValue = view.value;
                 if (float.IsNaN(scrollValue.X))

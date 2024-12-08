@@ -1,6 +1,7 @@
 ﻿using Cameras;
 using InteractionKit.Components;
 using System;
+using System.Numerics;
 using Transforms;
 using Worlds;
 
@@ -31,6 +32,18 @@ namespace InteractionKit
                 {
                     transform.AsEntity().SetReference(component.cameraReference, value);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Size of the destination that this camera is rendering to.
+        /// </summary>
+        public readonly Vector2 Size
+        {
+            get
+            {
+                Vector3 scale = transform.LocalScale;
+                return new(scale.X, scale.Y);
             }
         }
 
