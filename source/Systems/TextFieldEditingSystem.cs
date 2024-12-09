@@ -14,7 +14,7 @@ namespace InteractionKit.Systems
 {
     public partial struct TextFieldEditingSystem : ISystem
     {
-        private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/'];
+        private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/', '\n'];
 
         private FixedString lastPressedCharacters;
         private FixedString currentCharacters;
@@ -148,15 +148,15 @@ namespace InteractionKit.Systems
 
                         //update cursor to match position
                         UpdateCursorToMatchPosition(world, textLabel, cursorEntity, settings);
+
+                        rint highlightReference = component.highlightReference;
+                        uint highlightEntity = world.GetReference(textFieldEntity, highlightReference);
+                        UpdateHighlightToMatchPosition(world, textLabel, highlightEntity, settings);
                     }
                     else
                     {
                         world.SetEnabled(cursorEntity, false);
                     }
-
-                    rint highlightReference = component.highlightReference;
-                    uint highlightEntity = world.GetReference(textFieldEntity, highlightReference);
-                    UpdateHighlightToMatchPosition(world, textLabel, highlightEntity, settings);
                 }
 
                 if (!editingAny)
@@ -194,7 +194,7 @@ namespace InteractionKit.Systems
             USpan<char> tempText = stackalloc char[(int)(text.Length + 1)];
             text.CopyTo(tempText);
             tempText[text.Length] = ' ';
-            if (textLabel.Font.TryIndexOf(tempText, 32, pointerPosition / 16f, out uint newIndex))
+            if (textLabel.Font.TryIndexOf(tempText, pointerPosition / 16f, out uint newIndex))
             {
                 bool holdingShift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
                 if (holdingShift)
@@ -223,22 +223,21 @@ namespace InteractionKit.Systems
 
         private static void UpdateCursorToMatchPosition(World world, Label textLabel, uint cursorEntity, Settings settings)
         {
-            uint pixelSize = 32;
             Font font = textLabel.Font;
             USpan<char> text = textLabel.Text;
 
             ref TextSelection range = ref settings.TextSelection;
             USpan<char> textToCursor = text.Slice(0, range.index);
-            USpan<char> tempText = stackalloc char[(int)textToCursor.Length + 1];
-            textToCursor.CopyTo(tempText);
-            tempText[tempText.Length - 1] = ' ';
-            Vector2 totalSize = font.CalulcateSize(tempText, pixelSize);
+            Vector2 totalSize = font.CalulcateSize(textToCursor) * textLabel.Size;
+            Vector3 cursorSize = world.GetComponent<Scale>(cursorEntity).value;
 
             ref Position cursorPosition = ref world.GetComponent<Position>(cursorEntity);
             LocalToWorld ltw = world.GetComponent<LocalToWorld>(cursorEntity);
-            Vector3 worldPosition = ltw.Position + new Vector3(totalSize.X, 0, 0);
+            Vector3 offset = world.GetComponent<Position>(textLabel.GetEntityValue()).value;
+            Vector3 worldPosition = ltw.Position + new Vector3(totalSize.X + offset.X, -(totalSize.Y + cursorSize.Y - offset.Y), 0) * cursorSize;
             Matrix4x4.Invert(ltw.value, out Matrix4x4 inverseLtw);
             Vector3 localPosition = Vector3.Transform(worldPosition, inverseLtw);
+
             localPosition.Z = cursorPosition.value.Z;
             cursorPosition.value = localPosition;
         }
@@ -253,20 +252,20 @@ namespace InteractionKit.Systems
             {
                 world.SetEnabled(highlightEntity, true);
 
+                Vector2 fontSize = textLabel.Size;
                 Font font = textLabel.Font;
                 USpan<char> text = textLabel.Text;
                 USpan<char> textToStart = text.Slice(0, start);
                 USpan<char> textToEnd = text.Slice(0, end);
-                uint pixelSize = 32;
-                Vector2 startPosition = font.CalulcateSize(textToStart, pixelSize);
-                Vector2 endPosition = font.CalulcateSize(textToEnd, pixelSize);
+                Vector2 startPosition = font.CalulcateSize(textToStart) * fontSize;
+                Vector2 endPosition = font.CalulcateSize(textToEnd) * fontSize;
                 Vector2 totalSize = endPosition - startPosition;
 
                 ref Position highlightPosition = ref world.GetComponent<Position>(highlightEntity);
-                highlightPosition.value.X = (startPosition.X * 0.5f) + 2;
+                highlightPosition.value.X = startPosition.X + 2;
 
                 ref Scale highlightScale = ref world.GetComponent<Scale>(highlightEntity);
-                highlightScale.value.X = (totalSize.X * 0.5f) + 2; //dividing by 2 because pixelSize/16???
+                highlightScale.value.X = totalSize.X + 2;
             }
             else
             {
@@ -357,8 +356,6 @@ namespace InteractionKit.Systems
                             range.end = range.index;
                         }
                     }
-
-                    Trace.WriteLine(range);
                 }
 
                 if (!shift)
@@ -406,8 +403,6 @@ namespace InteractionKit.Systems
                             range.end = range.index;
                         }
                     }
-
-                    Trace.WriteLine(range);
                 }
 
                 if (!shift)
@@ -614,6 +609,7 @@ namespace InteractionKit.Systems
 
                 textLabel.SetText(newText);
                 range.index++;
+                Trace.WriteLine(newText.ToString());
             }
 
             settings.TextSelection = range;

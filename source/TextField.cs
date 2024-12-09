@@ -86,15 +86,15 @@ namespace InteractionKit
 
             Image cursor = new(world, canvas);
             cursor.SetParent(background);
+            cursor.Anchor = Anchor.TopLeft;
             cursor.Color = Color.Black;
-            cursor.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
-            cursor.Size = new(2f, 1f);
+            cursor.Size = new(2f, 16f);
             cursor.Position = new(16f, 0f);
             cursor.AddComponent(new RendererScissor());
 
             Image highlight = new(world, canvas);
             highlight.SetParent(background);
-            highlight.Color = new Color(0.3f, 0.3f, 0.3f, 1f);
+            highlight.Color = new Color(0f, 0.4f, 1f, 0.5f);
             highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
             highlight.Size = new(0f, 1f);
             highlight.SetEnabled(false);

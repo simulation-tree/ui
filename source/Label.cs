@@ -98,7 +98,7 @@ namespace InteractionKit
             textRenderer = new(world, existingEntity);
         }
 
-        public Label(World world, Canvas canvas, FixedString text, Font font = default)
+        public Label(World world, Canvas canvas, FixedString text, Font font = default, float size = 16f)
         {
             Settings settings = world.GetFirst<Settings>();
             if (font == default)
@@ -125,7 +125,7 @@ namespace InteractionKit
 
             textRenderer.AddComponent(new IsLabel());
 
-            transform.LocalScale = Vector3.One * 16f;
+            transform.LocalScale = Vector3.One * size;
             transform.LocalPosition = new(0f, 0f, 0.1f);
         }
 
