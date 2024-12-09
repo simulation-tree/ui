@@ -27,7 +27,7 @@ namespace InteractionKit
         public const char MoveDownCharacter = (char)20;
         public const char StartOfTextCharacter = (char)2;
         public const char EndOfTextCharacter = (char)3;
-        public const char GroupSeparatorCharacter = (char)29;
+        public const char ControlCharacter = (char)29;
         public const char EscapeCharacter = (char)27;
 
         private readonly Entity entity;

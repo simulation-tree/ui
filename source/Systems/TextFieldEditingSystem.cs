@@ -1,4 +1,5 @@
-﻿using Fonts;
+﻿using Clipboard;
+using Fonts;
 using InteractionKit.Components;
 using Rendering.Components;
 using Simulation;
@@ -20,9 +21,23 @@ namespace InteractionKit.Systems
         private FixedString currentCharacters;
         private DateTime nextPress;
         private bool lastAnyPointerPressed;
+        private readonly Library clipboard;
+
+        private TextFieldEditingSystem(Library clipboard)
+        {
+            this.clipboard = clipboard;
+            lastPressedCharacters = default;
+            currentCharacters = default;
+            nextPress = DateTime.UtcNow;
+            lastAnyPointerPressed = false;
+        }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                systemContainer.Write(new TextFieldEditingSystem(new Library()));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
@@ -32,6 +47,10 @@ namespace InteractionKit.Systems
 
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                clipboard.Dispose();
+            }
         }
 
         private void Update(World world)
@@ -74,6 +93,7 @@ namespace InteractionKit.Systems
                 FixedString pressedCharacters = default;
                 pressedCharacters.CopyFrom(settings.PressedCharacters);
                 bool pressedEscape = pressedCharacters.Contains(Settings.EscapeCharacter);
+                bool pressedControl = pressedCharacters.Contains(Settings.ControlCharacter);
                 bool editingAny = false;
                 bool startedEditing = false;
                 DateTime now = DateTime.UtcNow;
@@ -111,12 +131,42 @@ namespace InteractionKit.Systems
                     Label textLabel = new(world, textLabelEntity);
                     if (component.editing)
                     {
+                        ref TextSelection selection = ref settings.TextSelection;
                         editingAny = true;
                         bool enableCursor = (ticks + textFieldEntity) % 2 == 0;
                         world.SetEnabled(cursorEntity, enableCursor);
                         bool charactersChanged = false;
                         if (lastPressedCharacters != pressedCharacters)
                         {
+                            if (pressedControl)
+                            {
+                                if (pressedCharacters.Contains('x') || pressedCharacters.Contains('c'))
+                                {
+                                    uint start = Math.Min(selection.start, selection.end);
+                                    uint end = Math.Max(selection.start, selection.end);
+                                    uint length = end - start;
+                                    if (length > 0)
+                                    {
+                                        clipboard.Text = textLabel.Text.Slice(start, length).ToString();
+                                        if (pressedCharacters.Contains('x'))
+                                        {
+                                            RemoveSelection(textLabel, ref selection);
+                                        }
+                                    }
+                                }
+                                else if (pressedCharacters.Contains('v'))
+                                {
+                                    if (clipboard.Text is string clipboardText)
+                                    {
+                                        InsertText(textLabel, clipboardText, ref selection);
+                                    }
+                                }
+                                else if (pressedCharacters.Contains('a'))
+                                {
+                                    settings.TextSelection = new(0, textLabel.Text.Length, textLabel.Text.Length);
+                                }
+                            }
+
                             currentCharacters = default;
                             for (uint i = 0; i < pressedCharacters.Length; i++)
                             {
@@ -137,6 +187,15 @@ namespace InteractionKit.Systems
                             for (uint i = 0; i < currentCharacters.Length; i++)
                             {
                                 char c = currentCharacters[i];
+                                if (pressedControl)
+                                {
+                                    if (c == 'x' || c == 'c' || c == 'v' || c == 'a')
+                                    {
+                                        //skip
+                                        continue;
+                                    }
+                                }
+
                                 HandleCharacter(world, textLabel, c, settings);
                             }
                         }
@@ -175,6 +234,24 @@ namespace InteractionKit.Systems
                     }
                 }
             }
+        }
+
+        private static void InsertText(Label textLabel, string clipboardText, ref TextSelection selection)
+        {
+            uint clipboardLength = (uint)clipboardText.Length;
+            USpan<char> newText = stackalloc char[(int)(textLabel.Text.Length + clipboardLength)];
+            USpan<char> text = textLabel.Text;
+            uint insertIndex = selection.index;
+            if (selection.start != selection.end)
+            {
+                insertIndex = Math.Min(selection.start, selection.end);
+            }
+
+            text.Slice(0, insertIndex).CopyTo(newText);
+            clipboardText.AsUSpan().CopyTo(newText.Slice(insertIndex));
+            text.Slice(insertIndex).CopyTo(newText.Slice(insertIndex + clipboardLength));
+            textLabel.SetText(newText);
+            selection.index += clipboardLength;
         }
 
         private static void StartEditing(World world, uint textFieldEntity)
@@ -311,11 +388,19 @@ namespace InteractionKit.Systems
             uint end = Math.Max(range.start, range.end);
             uint length = end - start;
             bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
-            bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
+            bool groupSeparator = settings.PressedCharacters.Contains(Settings.ControlCharacter);
 
-            if (character == Settings.GroupSeparatorCharacter || character == Settings.ShiftCharacter || character == Settings.EscapeCharacter)
+            if (character == Settings.ControlCharacter || character == Settings.ShiftCharacter || character == Settings.EscapeCharacter)
             {
                 //skip
+            }
+            else if (character == Settings.MoveUpCharacter)
+            {
+
+            }
+            else if (character == Settings.MoveDownCharacter)
+            {
+
             }
             else if (character == Settings.MoveLeftCharacter)
             {

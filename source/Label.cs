@@ -140,6 +140,12 @@ namespace InteractionKit
             textMesh.SetText(text);
         }
 
+        public readonly void SetText(string text)
+        {
+            TextMesh textMesh = textRenderer.TextMesh;
+            textMesh.SetText(text);
+        }
+
         public readonly void SetText(FixedString text)
         {
             USpan<char> buffer = stackalloc char[(int)text.Length];

@@ -8,6 +8,21 @@ namespace InteractionKit
         public uint end;
         public uint index;
 
+        public readonly uint Length
+        {
+            get
+            {
+                if (start > end)
+                {
+                    return start - end;
+                }
+                else
+                {
+                    return end - start;
+                }
+            }
+        }
+
         public TextSelection(uint start, uint end, uint index)
         {
             this.start = start;

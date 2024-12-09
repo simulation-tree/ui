@@ -23,6 +23,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\automations\source\Automations.csproj" />
 		<ProjectReference Include="..\..\cameras\source\Cameras.csproj" />
+		<ProjectReference Include="..\..\clipboard\Clipboard.csproj" />
 		<ProjectReference Include="..\..\default-presentation-assets\source\DefaultPresentationAssets.csproj" />
 		<ProjectReference Include="..\..\rendering\source\Rendering.csproj" />
 		<ProjectReference Include="..\..\text-rendering\source\TextRendering.csproj" />
