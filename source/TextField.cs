@@ -90,6 +90,7 @@ namespace InteractionKit
             cursor.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
             cursor.Size = new(2f, 1f);
             cursor.Position = new(16f, 0f);
+            cursor.AddComponent(new RendererScissor());
 
             Image highlight = new(world, canvas);
             highlight.SetParent(background);
@@ -97,6 +98,7 @@ namespace InteractionKit
             highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
             highlight.Size = new(0f, 1f);
             highlight.SetEnabled(false);
+            highlight.AddComponent(new RendererScissor());
 
             Transform highlightTransform = highlight;
             highlightTransform.LocalPosition = new(0f, 0f, 0.05f);

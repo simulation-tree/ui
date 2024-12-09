@@ -100,19 +100,12 @@ namespace InteractionKit
             }
         }
 
-        public readonly (uint start, uint end, uint index) EditRange
+        public readonly ref TextSelection TextSelection
         {
             get
             {
-                TextEditState component = entity.GetComponent<TextEditState>();
-                return (component.selectionStart, component.selectionEnd, component.cursorIndex);
-            }
-            set
-            {
                 ref TextEditState component = ref entity.GetComponent<TextEditState>();
-                component.selectionStart = value.start;
-                component.selectionEnd = value.end;
-                component.cursorIndex = value.index;
+                return ref component.value;
             }
         }
 

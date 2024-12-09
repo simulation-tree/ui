@@ -36,20 +36,23 @@ namespace InteractionKit.Systems
 
         private void Update(World world)
         {
-            ComponentQuery<IsLabel, IsTextRenderer, RendererScissor> textLabelQuery = new(world);
+            ComponentQuery<IsTextField, LocalToWorld> textLabelQuery = new(world);
             foreach (var r in textLabelQuery)
             {
-                Entity entity = new(world, r.entity);
-                Canvas canvas = entity.GetCanvas();
-                uint textFieldParent = world.GetParent(r.entity);
-                LocalToWorld ltw = world.GetComponent<LocalToWorld>(textFieldParent);
+                uint entity = r.entity;
+                ref IsTextField component = ref r.component1;
+                ref LocalToWorld ltw = ref r.component2;
+                uint labelEntity = world.GetReference(entity, component.textLabelReference);
+                uint cursorEntity = world.GetReference(entity, component.cursorReference);
+                uint highlightEntity = world.GetReference(entity, component.highlightReference);
+                Canvas canvas = new Entity(world, entity).GetCanvas();
                 Vector3 position = ltw.Position;
                 Vector3 scale = ltw.Scale;
                 Vector2 destinationSize = canvas.Size;
-                r.component3.value.X = position.X;
-                r.component3.value.Y = destinationSize.Y - position.Y - scale.Y;
-                r.component3.value.Z = scale.X;
-                r.component3.value.W = scale.Y;
+                Vector4 region = new(position.X, destinationSize.Y - position.Y - scale.Y, scale.X, scale.Y);
+                world.SetComponent(labelEntity, new RendererScissor(region));
+                world.SetComponent(cursorEntity, new RendererScissor(region));
+                world.SetComponent(highlightEntity, new RendererScissor(region));
             }
 
             if (world.TryGetFirst(out Settings settings))
@@ -158,13 +161,13 @@ namespace InteractionKit.Systems
 
                 if (!editingAny)
                 {
-                    settings.EditRange = default;
+                    settings.TextSelection = default;
                 }
 
                 if (anyPointerPressed && !startedEditing)
                 {
                     //stop editing because we didnt press a text field
-                    settings.EditRange = default;
+                    settings.TextSelection = default;
                     foreach (var t in textFieldQuery)
                     {
                         ref IsTextField component = ref t.component1;
@@ -187,7 +190,7 @@ namespace InteractionKit.Systems
             Label textLabel = textField.TextLabel;
             USpan<char> text = textLabel.Text;
             Settings settings = world.GetFirst<Settings>();
-            (uint start, uint end, uint index) range = settings.EditRange;
+            ref TextSelection range = ref settings.TextSelection;
             USpan<char> tempText = stackalloc char[(int)(text.Length + 1)];
             text.CopyTo(tempText);
             tempText[text.Length] = ' ';
@@ -215,7 +218,7 @@ namespace InteractionKit.Systems
                 range.index = newIndex;
             }
 
-            settings.EditRange = range;
+            settings.TextSelection = range;
         }
 
         private static void UpdateCursorToMatchPosition(World world, Label textLabel, uint cursorEntity, Settings settings)
@@ -224,7 +227,7 @@ namespace InteractionKit.Systems
             Font font = textLabel.Font;
             USpan<char> text = textLabel.Text;
 
-            (uint start, uint end, uint index) range = settings.EditRange;
+            ref TextSelection range = ref settings.TextSelection;
             USpan<char> textToCursor = text.Slice(0, range.index);
             USpan<char> tempText = stackalloc char[(int)textToCursor.Length + 1];
             textToCursor.CopyTo(tempText);
@@ -242,7 +245,7 @@ namespace InteractionKit.Systems
 
         private static void UpdateHighlightToMatchPosition(World world, Label textLabel, uint highlightEntity, Settings settings)
         {
-            (uint start, uint end, uint index) range = settings.EditRange;
+            ref TextSelection range = ref settings.TextSelection;
             uint start = Math.Min(range.start, range.end);
             uint end = Math.Max(range.start, range.end);
             uint length = end - start;
@@ -304,10 +307,12 @@ namespace InteractionKit.Systems
         private static void HandleCharacter(World world, Label textLabel, char character, Settings settings)
         {
             USpan<char> text = textLabel.Text;
-            (uint start, uint end, uint index) range = settings.EditRange;
+            ref TextSelection range = ref settings.TextSelection;
             uint start = Math.Min(range.start, range.end);
             uint end = Math.Max(range.start, range.end);
             uint length = end - start;
+            bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
+            bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
 
             if (character == Settings.GroupSeparatorCharacter || character == Settings.ShiftCharacter || character == Settings.EscapeCharacter)
             {
@@ -315,10 +320,8 @@ namespace InteractionKit.Systems
             }
             else if (character == Settings.MoveLeftCharacter)
             {
-                bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
                 if (range.index > 0)
                 {
-                    bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
                     if (groupSeparator)
                     {
                         if (shift && length == 0)
@@ -337,7 +340,7 @@ namespace InteractionKit.Systems
 
                         if (shift)
                         {
-                            range.end = index;
+                            range.end = range.index;
                         }
                     }
                     else
@@ -354,6 +357,8 @@ namespace InteractionKit.Systems
                             range.end = range.index;
                         }
                     }
+
+                    Trace.WriteLine(range);
                 }
 
                 if (!shift)
@@ -364,10 +369,8 @@ namespace InteractionKit.Systems
             }
             else if (character == Settings.MoveRightCharacter)
             {
-                bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
                 if (range.index < text.Length)
                 {
-                    bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
                     if (groupSeparator)
                     {
                         if (shift && length == 0)
@@ -386,7 +389,7 @@ namespace InteractionKit.Systems
 
                         if (shift)
                         {
-                            range.end = index;
+                            range.end = range.index;
                         }
                     }
                     else
@@ -403,6 +406,8 @@ namespace InteractionKit.Systems
                             range.end = range.index;
                         }
                     }
+
+                    Trace.WriteLine(range);
                 }
 
                 if (!shift)
@@ -414,8 +419,6 @@ namespace InteractionKit.Systems
             else if (character == Settings.StartOfTextCharacter)
             {
                 //move cursor to start
-                bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
-                bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
                 if (shift && length == 0)
                 {
                     range.start = range.index;
@@ -436,8 +439,6 @@ namespace InteractionKit.Systems
             else if (character == Settings.EndOfTextCharacter)
             {
                 //move cursor to end
-                bool groupSeparator = settings.PressedCharacters.Contains(Settings.GroupSeparatorCharacter);
-                bool shift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
                 if (shift && length == 0)
                 {
                     range.start = range.index;
@@ -464,7 +465,7 @@ namespace InteractionKit.Systems
 
                 if (length > 0)
                 {
-                    range = RemoveSelection(textLabel, range);
+                    RemoveSelection(textLabel, ref range);
                 }
                 else
                 {
@@ -502,7 +503,7 @@ namespace InteractionKit.Systems
             {
                 if (length > 0)
                 {
-                    range = RemoveSelection(textLabel, range);
+                    RemoveSelection(textLabel, ref range);
                     text = textLabel.Text;
                 }
 
@@ -615,10 +616,10 @@ namespace InteractionKit.Systems
                 range.index++;
             }
 
-            settings.EditRange = range;
+            settings.TextSelection = range;
         }
 
-        private static (uint start, uint end, uint index) RemoveSelection(Label textLabel, (uint start, uint end, uint index) range)
+        private static void RemoveSelection(Label textLabel, ref TextSelection range)
         {
             uint start = Math.Min(range.start, range.end);
             uint end = Math.Max(range.start, range.end);
@@ -633,14 +634,14 @@ namespace InteractionKit.Systems
 
             if (end < text.Length)
             {
-                text.Slice(end).CopyTo(newText.Slice(range.start));
+                USpan<char> endText = text.Slice(end);
+                endText.CopyTo(newText.Slice(start));
             }
 
             textLabel.SetText(newText);
             range.start = 0;
             range.end = 0;
             range.index = start;
-            return range;
         }
     }
 }
