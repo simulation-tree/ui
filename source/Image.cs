@@ -116,10 +116,10 @@ namespace InteractionKit
             transform = new(world, existingEntity);
         }
 
-        public Image(World world, Canvas canvas)
+        public Image(Canvas canvas)
         {
-            Settings.ThrowIfMissing(world);
-            Settings settings = world.GetFirst<Settings>();
+            World world = canvas.GetWorld();
+            Settings settings = canvas.GetSettings();
 
             transform = new(world);
             transform.LocalPosition = new(0f, 0f, 0.1f);

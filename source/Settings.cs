@@ -33,12 +33,13 @@ namespace InteractionKit
         private readonly Entity entity;
 
         public readonly USpan<char> PressedCharacters => entity.GetArray<TextCharacter>().As<char>();
+        public readonly ref float SingleLineHeight => ref entity.GetComponent<UISettings>().singleLineHeight;
 
         public readonly StateMachine ControlStateMachine
         {
             get
             {
-                AutomationSettings component = entity.GetComponent<AutomationSettings>();
+                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
                 rint stateMachineReference = component.stateMachineReference;
                 uint stateMachineEntity = entity.GetReference(stateMachineReference);
                 return new Entity(entity.GetWorld(), stateMachineEntity).As<StateMachine>();
@@ -49,7 +50,7 @@ namespace InteractionKit
         {
             get
             {
-                AutomationSettings component = entity.GetComponent<AutomationSettings>();
+                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
                 rint idleAutomationReference = component.idleAutomationReference;
                 uint idleAutomationEntity = entity.GetReference(idleAutomationReference);
                 return new Entity(entity.GetWorld(), idleAutomationEntity).As<Automation<Vector4>>();
@@ -60,7 +61,7 @@ namespace InteractionKit
         {
             get
             {
-                AutomationSettings component = entity.GetComponent<AutomationSettings>();
+                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
                 rint selectedAutomationReference = component.selectedAutomationReference;
                 uint selectedAutomationEntity = entity.GetReference(selectedAutomationReference);
                 return new Entity(entity.GetWorld(), selectedAutomationEntity).As<Automation<Vector4>>();
@@ -71,7 +72,7 @@ namespace InteractionKit
         {
             get
             {
-                AutomationSettings component = entity.GetComponent<AutomationSettings>();
+                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
                 rint pressedAutomationReference = component.pressedAutomationReference;
                 uint pressedAutomationEntity = entity.GetReference(pressedAutomationReference);
                 return new Entity(entity.GetWorld(), pressedAutomationEntity).As<Automation<Vector4>>();
@@ -82,7 +83,7 @@ namespace InteractionKit
         {
             get
             {
-                MeshSettings component = entity.GetComponent<MeshSettings>();
+                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
                 rint quadMeshReference = component.quadMeshReference;
                 uint quadMeshEntity = entity.GetReference(quadMeshReference);
                 return new Entity(entity.GetWorld(), quadMeshEntity).As<Mesh>();
@@ -93,7 +94,7 @@ namespace InteractionKit
         {
             get
             {
-                FontSettings component = entity.GetComponent<FontSettings>();
+                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
                 rint fontReference = component.fontReference;
                 uint fontEntity = entity.GetReference(fontReference);
                 return new Entity(entity.GetWorld(), fontEntity).As<Font>();
@@ -111,7 +112,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<MeshSettings, FontSettings, AutomationSettings, TextEditState>().AddArrayTypes<TextCharacter, MaterialSettings>();
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<AssetReferences, UISettings, TextEditState>().AddArrayTypes<TextCharacter, MaterialSettings>();
 
 #if NET
         [Obsolete("Default constructor not supported", true)]
@@ -203,17 +204,24 @@ namespace InteractionKit
             rint selectedAutomationReference = entity.AddReference(selectedAutomation);
             rint pressedAutomationReference = entity.AddReference(pressedAutomation);
 
-            MaterialSettings materialSettings = new(default, squareMaterialReference, triangleMaterialReference, textMaterialReference);
-            MeshSettings meshSettings = new(quadMeshReference);
-            FontSettings fontSettings = new(fontReference);
-            AutomationSettings automationSettings = new(stateMachineReference, idleAutomationReference, selectedAutomationReference, pressedAutomationReference);
+            AssetReferences assetReferences = new();
+            assetReferences.stateMachineReference = stateMachineReference;
+            assetReferences.idleAutomationReference = idleAutomationReference;
+            assetReferences.selectedAutomationReference = selectedAutomationReference;
+            assetReferences.pressedAutomationReference = pressedAutomationReference;
+            assetReferences.quadMeshReference = quadMeshReference;
+            assetReferences.fontReference = fontReference;
 
-            entity.AddComponent(meshSettings);
-            entity.AddComponent(fontSettings);
-            entity.AddComponent(automationSettings);
+            UISettings uiSettings = new();
+            uiSettings.singleLineHeight = 24f;
+
+            entity.AddComponent(assetReferences);
+            entity.AddComponent(uiSettings);
             entity.AddComponent(new TextEditState());
             entity.CreateArray<TextCharacter>();
-            entity.CreateArray<MaterialSettings>(1)[0] = materialSettings;
+
+            MaterialSettings materialSettings = new(default, squareMaterialReference, triangleMaterialReference, textMaterialReference);
+            entity.CreateArray([materialSettings]);
         }
 
         public readonly void Dispose()
@@ -298,7 +306,7 @@ namespace InteractionKit
         {
             if (world.TryGetFirst<Settings>(out _))
             {
-                throw new InvalidOperationException($"An entity with the {nameof(Settings)} already exists in world, only 1 is permitted");
+                throw new InvalidOperationException($"An entity with `{nameof(Settings)}` already exists in world, only 1 is permitted");
             }
         }
 
@@ -307,7 +315,7 @@ namespace InteractionKit
         {
             if (!world.TryGetFirst<Settings>(out _))
             {
-                throw new InvalidOperationException($"An entity with the {nameof(Settings)} component is missing from the world");
+                throw new InvalidOperationException($"An entity with `{nameof(Settings)}` component is missing from the world");
             }
         }
 

@@ -50,8 +50,9 @@ namespace InteractionKit
         readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentType<IsTree>().AddArrayTypes<SelectedLeaf, TreeNodeOption>();
 
-        public Tree(World world, Canvas canvas)
+        public Tree(Canvas canvas)
         {
+            World world = canvas.GetWorld();
             transform = new(world);
             transform.SetParent(canvas);
             transform.LocalPosition = new(0, 0, 0.1f);
@@ -71,7 +72,7 @@ namespace InteractionKit
         {
             Vector2 size = Size;
             uint nodeCount = transform.AsEntity().GetArrayLength<TreeNodeOption>();
-            TreeNode node = new(transform.GetWorld(), text, this.GetCanvas());
+            TreeNode node = new(text, this.GetCanvas());
             node.SetParent(transform);
             node.Position = new(0, -nodeCount * size.Y);
             node.Size = size;

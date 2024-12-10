@@ -1,25 +1,27 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Unmanaged;
 
 namespace InteractionKit
 {
-    [StructLayout(LayoutKind.Sequential, Size = (int)MaxDepth * sizeof(ushort))]
     public unsafe struct OptionPath
     {
         public const uint MaxDepth = 32;
 
         private fixed ushort path[(int)MaxDepth];
-        private byte length;
+        private byte depth;
 
-        public readonly ushort this[uint index] => path[index];
-        public readonly byte Length => length;
+        public readonly ushort this[byte depth] => path[depth];
+
+        /// <summary>
+        /// How deep this option is.
+        /// </summary>
+        public readonly byte Depth => depth;
 
         public OptionPath(USpan<ushort> path)
         {
             ThrowIfTooDeep((ushort)path.Length);
-            length = (byte)path.Length;
+            depth = (byte)path.Length;
             for (uint i = 0; i < path.Length; i++)
             {
                 this.path[i] = path[i];
@@ -33,13 +35,13 @@ namespace InteractionKit
             return buffer.Slice(0, length).ToString();
         }
 
-        public readonly uint ToString(USpan<char> buffer)
+        public readonly byte ToString(USpan<char> buffer)
         {
-            uint length = 0;
-            for (uint i = 0; i < this.length; i++)
+            byte length = 0;
+            for (uint i = 0; i < depth; i++)
             {
                 ushort index = path[i];
-                length += index.ToString(buffer.Slice(length));
+                length += (byte)index.ToString(buffer.Slice(length));
                 buffer[length] = '/';
                 length++;
             }
@@ -54,65 +56,65 @@ namespace InteractionKit
 
         public readonly uint CopyTo(USpan<ushort> path)
         {
-            for (uint i = 0; i < length; i++)
+            for (uint i = 0; i < depth; i++)
             {
                 path[i] = this.path[i];
             }
 
-            return length;
+            return depth;
         }
 
         public readonly OptionPath Append(uint value)
         {
-            ThrowIfTooDeep(length);
+            ThrowIfTooDeep(depth);
             OptionPath newPath = this;
-            newPath.path[length] = (ushort)value;
-            newPath.length++;
+            newPath.path[depth] = (ushort)value;
+            newPath.depth++;
             return newPath;
         }
 
         public readonly OptionPath Append(OptionPath path)
         {
-            ThrowIfTooDeep((ushort)(length + path.length));
+            ThrowIfTooDeep((ushort)(depth + path.depth));
             OptionPath newPath = this;
-            for (uint i = 0; i < path.length; i++)
+            for (uint i = 0; i < path.depth; i++)
             {
-                newPath.path[length + i] = path.path[i];
+                newPath.path[depth + i] = path.path[i];
             }
 
-            newPath.length += path.length;
+            newPath.depth += path.depth;
             return newPath;
         }
 
-        public readonly OptionPath Insert(uint index, uint value)
+        public readonly OptionPath Insert(byte index, uint value)
         {
-            if (index >= length)
+            if (index >= depth)
             {
                 return Append(value);
             }
 
-            ThrowIfTooDeep(length);
+            ThrowIfTooDeep(depth);
             OptionPath newPath = this;
-            for (uint i = length; i > index; i--)
+            for (uint i = depth; i > index; i--)
             {
                 newPath.path[i] = newPath.path[i - 1];
             }
 
             newPath.path[index] = (ushort)value;
-            newPath.length++;
+            newPath.depth++;
             return newPath;
         }
 
-        public readonly OptionPath Slice(uint start)
+        public readonly OptionPath Slice(byte start)
         {
-            if (start >= length)
+            if (start >= depth)
             {
                 return default;
             }
 
             OptionPath newPath = this;
-            newPath.length -= (byte)start;
-            for (uint i = 0; i < newPath.length; i++)
+            newPath.depth -= start;
+            for (uint i = 0; i < newPath.depth; i++)
             {
                 newPath.path[i] = path[start + i];
             }
@@ -125,7 +127,7 @@ namespace InteractionKit
         {
             if (index >= MaxDepth)
             {
-                throw new IndexOutOfRangeException("Menu option path is too deep.");
+                throw new IndexOutOfRangeException("Menu option path is too deep");
             }
         }
     }

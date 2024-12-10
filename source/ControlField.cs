@@ -88,7 +88,7 @@ namespace InteractionKit
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
 
-            Label labelEntity = new(world, canvas, label);
+            Label labelEntity = new(canvas, label);
             labelEntity.SetParent(transform);
             labelEntity.Anchor = Anchor.TopLeft;
             labelEntity.Color = Color.White;
@@ -99,7 +99,7 @@ namespace InteractionKit
             if (componentType == ComponentType.Get<bool>())
             {
                 bool initialValue = world.GetComponent<bool>(entity);
-                Toggle toggle = new(world, canvas, initialValue);
+                Toggle toggle = new(canvas, initialValue);
                 toggle.SetParent(transform);
                 //toggle.Position = new(100f, 0f);
                 toggle.Size = new(24, 24f);

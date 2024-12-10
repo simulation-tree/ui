@@ -62,11 +62,11 @@ namespace InteractionKit
             background = new(world, existingEntity);
         }
 
-        public Toggle(World world, Canvas canvas, bool initialValue = false)
+        public Toggle(Canvas canvas, bool initialValue = false)
         {
-            background = new(world, canvas);
+            background = new(canvas);
 
-            Image checkmarkBox = new(world, canvas);
+            Image checkmarkBox = new(canvas);
             checkmarkBox.SetParent(background);
             checkmarkBox.Anchor = new(new(4, true), new(4, true), default, new(4, true), new(4, true), default);
             checkmarkBox.Color = Color.Black;

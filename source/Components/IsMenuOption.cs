@@ -4,7 +4,7 @@ using Worlds;
 namespace InteractionKit.Components
 {
     [Array]
-    public struct MenuOption
+    public struct IsMenuOption
     {
         public FixedString text;
         public rint buttonReference;
@@ -12,7 +12,9 @@ namespace InteractionKit.Components
         public rint childMenuReference;
         public bool expanded;
 
-        public MenuOption(FixedString label, rint buttonReference, rint buttonLabelReference, rint childMenuReference)
+        public readonly bool HasChildMenu => childMenuReference != default;
+
+        public IsMenuOption(FixedString label, rint buttonReference, rint buttonLabelReference, rint childMenuReference)
         {
             this.text = label;
             this.buttonReference = buttonReference;

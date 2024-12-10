@@ -5,24 +5,24 @@ namespace InteractionKit.Functions
     public unsafe readonly struct MenuCallbackFunction : IEquatable<MenuCallbackFunction>
     {
 #if NET
-        private readonly delegate* unmanaged<Menu, uint, void> function;
+        private readonly delegate* unmanaged<MenuOption, void> function;
 
-        public MenuCallbackFunction(delegate* unmanaged<Menu, uint, void> function)
+        public MenuCallbackFunction(delegate* unmanaged<MenuOption, void> function)
         {
             this.function = function;
         }
 #else
-        private readonly delegate*<Menu, uint, void> function;
+        private readonly delegate*<MenuOption, void> function;
 
-        public MenuCallbackFunction(delegate*<Menu, uint, void> function)
+        public MenuCallbackFunction(delegate*<MenuOption, void> function)
         {
             this.function = function;
         }
 #endif
 
-        public readonly void Invoke(Menu menu, uint selected)
+        public readonly void Invoke(MenuOption option)
         {
-            function(menu, selected);
+            function(option);
         }
 
         public readonly override int GetHashCode()

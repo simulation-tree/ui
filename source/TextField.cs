@@ -71,12 +71,12 @@ namespace InteractionKit
         readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTextField, IsSelectable>();
 
-        public unsafe TextField(World world, Canvas canvas, FixedString defaultValue = default)
+        public unsafe TextField(Canvas canvas, FixedString defaultValue = default)
         {
-            background = new(world, canvas);
+            background = new(canvas);
             background.AddComponent(new IsSelectable());
 
-            Label text = new(world, canvas, defaultValue);
+            Label text = new(canvas, defaultValue);
             text.SetParent(background);
             text.Anchor = Anchor.TopLeft;
             text.Color = Color.Black;
@@ -84,7 +84,7 @@ namespace InteractionKit
             text.Pivot = new(0f, 1f, 0f);
             text.AddComponent(new RendererScissor());
 
-            Image cursor = new(world, canvas);
+            Image cursor = new(canvas);
             cursor.SetParent(background);
             cursor.Anchor = Anchor.TopLeft;
             cursor.Color = Color.Black;
@@ -92,7 +92,7 @@ namespace InteractionKit
             cursor.Position = new(16f, 0f);
             cursor.AddComponent(new RendererScissor());
 
-            Image highlight = new(world, canvas);
+            Image highlight = new(canvas);
             highlight.SetParent(background);
             highlight.Color = new Color(0f, 0.4f, 1f, 0.5f);
             highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);

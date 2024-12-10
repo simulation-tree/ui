@@ -65,9 +65,9 @@ namespace InteractionKit
 
         private unsafe VirtualWindow(World world, Canvas canvas, FixedString titleText, VirtualWindowCloseFunction closeCallback)
         {
-            background = new(world, canvas);
+            background = new(canvas);
 
-            Image header = new(world, canvas);
+            Image header = new(canvas);
             header.Anchor = new(new(0f, false), new(1f, false), default, new(1f, false), new(1f, false), default);
             header.Pivot = new(0f, 1f, 0f);
             header.Size = new(1f, 26f);
@@ -81,14 +81,14 @@ namespace InteractionKit
             rint targetReference = header.AddReference(background);
             header.AddComponent(new IsDraggable(targetReference));
 
-            Label title = new(world, canvas, titleText);
+            Label title = new(canvas, titleText);
             title.SetParent(header);
             title.Anchor = Anchor.TopLeft;
             title.Color = Color.White;
             title.Position = new(4f, -4f);
             title.Pivot = new(0f, 1f, 0f);
 
-            Button closeButton = new(world, new(&PressedWindowCloseButton), canvas);
+            Button closeButton = new(new(&PressedWindowCloseButton), canvas);
             closeButton.SetParent(header);
             closeButton.Color = Color.Red;
             closeButton.Anchor = Anchor.TopRight;
@@ -98,7 +98,7 @@ namespace InteractionKit
             Transform closeButtonTransform = closeButton;
             closeButtonTransform.LocalPosition = new(-4f, -4f, 1f);
 
-            ScrollBar scrollBar = new(world, canvas, Vector2.UnitY, 0.5f);
+            ScrollBar scrollBar = new(canvas, Vector2.UnitY, 0.5f);
             scrollBar.SetParent(background);
             scrollBar.Size = new(24f, 1f);
             scrollBar.Anchor = new(new(1f, false), new(0f, false), default, new(1f, false), new(26f, true), default);

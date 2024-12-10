@@ -77,19 +77,20 @@ namespace InteractionKit
             transform = new(world, existingEntity);
         }
 
-        public unsafe TreeNode(World world, FixedString text, Canvas canvas)
+        public unsafe TreeNode(FixedString text, Canvas canvas)
         {
+            World world = canvas.GetWorld();
             transform = new(world);
             transform.AddComponent(new Anchor());
 
-            Image box = new(world, canvas);
+            Image box = new(canvas);
             box.SetParent(transform);
             box.Color = Color.White;
             box.Anchor = new(new(24f, true), new(0f, false), default, new(1f, false), new(1f, false), default);
             box.AddComponent(new IsTrigger(new(&Filter), new(&ToggleSelected)));
             box.AddComponent(new IsSelectable());
 
-            Label label = new(world, canvas, text);
+            Label label = new(canvas, text);
             label.SetParent(box);
             label.Anchor = Anchor.TopLeft;
             label.Color = Color.Black;
@@ -131,7 +132,7 @@ namespace InteractionKit
             {
                 //the button that toggles expanded state
                 float triangleButtonSize = 16f;
-                Button triangle = new(world, new(&ToggleExpanded), canvas);
+                Button triangle = new(new(&ToggleExpanded), canvas);
                 triangle.SetParent(transform);
                 triangle.Anchor = Anchor.TopLeft;
                 triangle.Size = new(triangleButtonSize, triangleButtonSize);
@@ -145,7 +146,7 @@ namespace InteractionKit
                 triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
             }
 
-            TreeNode node = new(world, text, canvas);
+            TreeNode node = new(text, canvas);
             node.SetParent(transform);
             node.Position = new(30, -(nodeCount + 1) * size.Y);
             node.Size = size;

@@ -99,16 +99,17 @@ namespace InteractionKit
         readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsScrollBar, IsSelectable>();
 
-        public ScrollBar(World world, Canvas canvas, Vector2 axis, float handlePercentageSize)
+        public ScrollBar(Canvas canvas, Vector2 axis, float handlePercentageSize)
         {
-            background = new Image(world, canvas);
+            World world = canvas.GetWorld();
+            background = new Image(canvas);
 
             Transform scrollRegion = new(world);
             scrollRegion.SetParent(background);
             scrollRegion.AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
             scrollRegion.AddComponent(new IsSelectable());
 
-            Image scrollHandle = new(world, canvas);
+            Image scrollHandle = new(canvas);
             scrollHandle.SetParent(scrollRegion);
             scrollHandle.Color = Color.Black;
             if (axis.Y > axis.X)

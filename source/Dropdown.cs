@@ -81,21 +81,21 @@ namespace InteractionKit
 
                 World world = background.GetWorld();
                 Menu menu = Menu;
-                USpan<MenuOption> options = menu.Options;
+                USpan<IsMenuOption> options = menu.Options;
                 FixedString text = default;
                 OptionPath path = value;
-                while (path.Length > 0)
+                while (path.Depth > 0)
                 {
                     uint index = path[0];
-                    if (path.Length > 1)
+                    if (path.Depth > 1)
                     {
                         if (index < options.Length)
                         {
-                            MenuOption option = options[index];
+                            IsMenuOption option = options[index];
                             if (option.childMenuReference != default)
                             {
                                 uint childMenuEntity = menu.GetReference(option.childMenuReference);
-                                options = world.GetArray<MenuOption>(childMenuEntity);
+                                options = world.GetArray<IsMenuOption>(childMenuEntity);
                                 path = path.Slice(1);
                                 menu = new Entity(world, childMenuEntity).As<Menu>();
                             }
@@ -109,7 +109,7 @@ namespace InteractionKit
                     {
                         if (index < options.Length)
                         {
-                            MenuOption option = options[index];
+                            IsMenuOption option = options[index];
                             text = option.text;
                         }
 
@@ -140,10 +140,10 @@ namespace InteractionKit
                 menu.Size = Size;
                 menu.SetEnabled(component.expanded);
 
-                USpan<MenuOption> options = menu.Options;
+                USpan<IsMenuOption> options = menu.Options;
                 for (uint i = 0; i < options.Length; i++)
                 {
-                    ref MenuOption option = ref options[i];
+                    ref IsMenuOption option = ref options[i];
                     if (option.childMenuReference != default)
                     {
                         if (!component.expanded)
@@ -159,7 +159,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly USpan<MenuOption> Options => Menu.Options;
+        public readonly USpan<IsMenuOption> Options => Menu.Options;
 
         public readonly ref DropdownCallbackFunction Callback
         {
@@ -187,22 +187,23 @@ namespace InteractionKit
             background = new(world, existingEntity);
         }
 
-        public unsafe Dropdown(World world, Canvas canvas, DropdownCallbackFunction callback = default)
+        public unsafe Dropdown(Canvas canvas, DropdownCallbackFunction callback = default)
         {
-            background = new(world, canvas);
+            World world = canvas.GetWorld();
+            background = new(canvas);
             background.AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
             background.AddComponent(new IsSelectable());
 
-            Label label = new(world, canvas, "");
+            Label label = new(canvas, "");
             label.SetParent(background);
             label.Anchor = Anchor.TopLeft;
             label.Color = Color.Black;
             label.Position = new(4f, -4f);
             label.Pivot = new(0f, 1f, 0f);
 
-            Image triangle = new(world, canvas);
+            Image triangle = new(canvas);
             triangle.SetParent(background);
-            triangle.Material = GetTriangleMaterialFromSettings(world, canvas.Camera);
+            triangle.Material = GetTriangleMaterialFromSettings(canvas.Camera);
             triangle.Anchor = Anchor.TopRight;
             triangle.Size = new(16f, 16f);
             triangle.Color = Color.Black;
@@ -211,7 +212,7 @@ namespace InteractionKit
             Transform triangleTransform = triangle;
             triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
 
-            Menu menu = new(world, new(&ChosenOption));
+            Menu menu = new(world);
             menu.SetParent(background);
             menu.Anchor = Anchor.BottomLeft;
             menu.Size = background.Size;
@@ -227,55 +228,6 @@ namespace InteractionKit
         public readonly void Dispose()
         {
             background.Dispose();
-        }
-
-        [UnmanagedCallersOnly]
-        private static void ChosenOption(Menu menu, uint chosenOption)
-        {
-            OptionPath path = default;
-            path = path.Append(chosenOption);
-
-            World world = menu.GetWorld();
-            uint childEntity = menu.GetEntityValue();
-            uint parentEntity = menu.GetParent().GetEntityValue();
-            while (parentEntity != default)
-            {
-                if (world.ContainsComponent<IsDropdown>(parentEntity))
-                {
-                    break;
-                }
-                else if (world.ContainsComponent<IsMenu>(parentEntity))
-                {
-                    USpan<MenuOption> parentOptions = world.GetArray<MenuOption>(parentEntity);
-                    bool found = false;
-                    for (uint i = 0; i < parentOptions.Length; i++)
-                    {
-                        rint menuReference = parentOptions[i].childMenuReference;
-                        uint menuEntity = world.GetReference(parentEntity, menuReference);
-                        if (menuEntity == childEntity)
-                        {
-                            path = path.Insert(0, i);
-                            childEntity = parentEntity;
-                            parentEntity = world.GetParent(parentEntity);
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        throw new Exception();
-                    }
-                }
-                else
-                {
-                    throw new Exception();
-                }
-            }
-
-            Dropdown dropdown = new Entity(world, parentEntity).As<Dropdown>();
-            dropdown.SelectedOption = path;
-            dropdown.IsExpanded = false;
         }
 
         [UnmanagedCallersOnly]
@@ -298,9 +250,9 @@ namespace InteractionKit
             dropdown.IsExpanded = !dropdown.IsExpanded;
         }
 
-        private static Material GetTriangleMaterialFromSettings(World world, Camera camera)
+        private static Material GetTriangleMaterialFromSettings(Camera camera)
         {
-            Settings settings = world.GetFirst<Settings>();
+            Settings settings = camera.GetSettings();
             return settings.GetTriangleMaterial(camera);
         }
     }

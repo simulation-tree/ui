@@ -98,9 +98,10 @@ namespace InteractionKit
             textRenderer = new(world, existingEntity);
         }
 
-        public Label(World world, Canvas canvas, FixedString text, Font font = default, float size = 16f)
+        public Label(Canvas canvas, FixedString text, Font font = default, float size = 16f)
         {
-            Settings settings = world.GetFirst<Settings>();
+            World world = canvas.GetWorld();
+            Settings settings = canvas.GetSettings();
             if (font == default)
             {
                 font = settings.Font;
