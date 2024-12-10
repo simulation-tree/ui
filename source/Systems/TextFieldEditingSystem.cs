@@ -1,11 +1,15 @@
 ﻿using Clipboard;
+using Collections;
+using Data;
 using Fonts;
 using InteractionKit.Components;
+using Meshes;
 using Rendering.Components;
 using Simulation;
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Text;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
@@ -17,6 +21,7 @@ namespace InteractionKit.Systems
     {
         private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/', '\n'];
 
+        private readonly Dictionary<uint, TextSelection> lastSelections;
         private FixedString lastPressedCharacters;
         private FixedString currentCharacters;
         private DateTime nextPress;
@@ -25,6 +30,7 @@ namespace InteractionKit.Systems
 
         private TextFieldEditingSystem(Library clipboard)
         {
+            lastSelections = new();
             this.clipboard = clipboard;
             lastPressedCharacters = default;
             currentCharacters = default;
@@ -50,6 +56,7 @@ namespace InteractionKit.Systems
             if (systemContainer.World == world)
             {
                 clipboard.Dispose();
+                lastSelections.Dispose();
             }
         }
 
@@ -319,34 +326,137 @@ namespace InteractionKit.Systems
             cursorPosition.value = localPosition;
         }
 
-        private static void UpdateHighlightToMatchPosition(World world, Label textLabel, uint highlightEntity, Settings settings)
+        private readonly void UpdateHighlightToMatchPosition(World world, Label textLabel, uint highlightEntity, Settings settings)
         {
             ref TextSelection range = ref settings.TextSelection;
-            uint start = Math.Min(range.start, range.end);
-            uint end = Math.Max(range.start, range.end);
-            uint length = end - start;
-            if (length > 0)
+            ref TextSelection lastRange = ref lastSelections.TryGetValue(highlightEntity, out bool contains);
+            if (contains && lastRange == range)
             {
-                world.SetEnabled(highlightEntity, true);
-
-                Vector2 fontSize = textLabel.Size;
-                Font font = textLabel.Font;
-                USpan<char> text = textLabel.Text;
-                USpan<char> textToStart = text.Slice(0, start);
-                USpan<char> textToEnd = text.Slice(0, end);
-                Vector2 startPosition = font.CalulcateSize(textToStart) * fontSize;
-                Vector2 endPosition = font.CalulcateSize(textToEnd) * fontSize;
-                Vector2 totalSize = endPosition - startPosition;
-
-                ref Position highlightPosition = ref world.GetComponent<Position>(highlightEntity);
-                highlightPosition.value.X = startPosition.X + 2;
-
-                ref Scale highlightScale = ref world.GetComponent<Scale>(highlightEntity);
-                highlightScale.value.X = totalSize.X + 2;
+                return;
+            }
+            else if (!contains)
+            {
+                lastSelections.Add(highlightEntity, range);
             }
             else
             {
-                world.SetEnabled(highlightEntity, false);
+                lastRange = range;
+            }
+
+            uint start = Math.Min(range.start, range.end);
+            uint end = Math.Max(range.start, range.end);
+            uint length = end - start;
+            bool showHighlight = length > 0;
+            world.SetEnabled(highlightEntity, showHighlight);
+            if (showHighlight)
+            {
+                //unique mesh per highlight
+                Vector2 fontSize = textLabel.Size;
+                Font font = textLabel.Font;
+                USpan<char> text = textLabel.Text;
+                Vector2 offset = new(4f, -4f);
+                Vector2 padding = new(2f, 2f);
+                ref IsRenderer renderer = ref world.GetComponent<IsRenderer>(highlightEntity);
+                rint meshReference = renderer.meshReference;
+                uint meshEntity = world.GetReference(highlightEntity, meshReference);
+                uint lineStart = 0;
+                using Array<Vector3> verticesList = new(text.Length * 4);
+                using Array<uint> indicesList = new(text.Length * 6);
+                using Array<Vector2> uvList = new(text.Length * 4);
+                using Array<Vector3> normalsList = new(text.Length * 4);
+                using Array<Color> colorsList = new(text.Length * 4);
+                float pixelSize = font.PixelSize;
+                float lineHeight = (font.LineHeight * (pixelSize / 32f)) / Font.FixedPointScale / pixelSize;
+                fontSize.Y *= lineHeight;
+                uint faceCount = 0;
+                bool atEnd = false;
+                uint lineIndex = 0;
+                while (!atEnd)
+                {
+                    if (!text.Slice(lineStart).TryIndexOf('\n', out uint lineLength))
+                    {
+                        lineLength = text.Length - lineStart;
+                        atEnd = true;
+                    }
+
+                    USpan<char> line = text.Slice(lineStart, lineLength);
+                    uint lineEnd = lineStart + lineLength;
+                    Vector2 minPosition = default;
+                    Vector2 maxPosition = default;
+                    if (start >= lineStart && end <= lineEnd)
+                    {
+                        //selection starts and ends on this line
+                        USpan<char> textToStart = line.Slice(0, start - lineStart);
+                        USpan<char> textToEnd = line.Slice(0, end - lineStart);
+                        minPosition = font.CalulcateSize(textToStart) * fontSize;
+                        maxPosition = font.CalulcateSize(textToEnd) * fontSize;
+                    }
+                    else if (end >= lineStart && end <= lineEnd)
+                    {
+                        //selection starts on previous line and ends on this one
+                        USpan<char> textToEnd = line.Slice(0, end - lineStart);
+                        maxPosition = font.CalulcateSize(textToEnd) * fontSize;
+                    }
+                    else if (start >= lineStart && start <= lineEnd)
+                    {
+                        //selection starts on this line, and ends later
+                        USpan<char> textToStart = line.Slice(0, start - lineStart);
+                        minPosition = font.CalulcateSize(textToStart) * fontSize;
+                        maxPosition = font.CalulcateSize(line) * fontSize;
+                    }
+                    else if (lineStart >= start && end >= lineEnd)
+                    {
+                        //selection encompasses this line 
+                        maxPosition = font.CalulcateSize(line) * fontSize;
+                    }
+
+                    if (minPosition != default || maxPosition != default)
+                    {
+                        minPosition.Y -= lineIndex * fontSize.Y;
+                        maxPosition.Y -= lineIndex * fontSize.Y;
+                        minPosition.Y -= fontSize.Y;
+                        minPosition += offset - padding;
+                        maxPosition += offset + padding;
+                        verticesList[(faceCount * 4) + 0] = new(minPosition.X, minPosition.Y, 0);
+                        verticesList[(faceCount * 4) + 1] = new(maxPosition.X, minPosition.Y, 0);
+                        verticesList[(faceCount * 4) + 2] = new(maxPosition.X, maxPosition.Y, 0);
+                        verticesList[(faceCount * 4) + 3] = new(minPosition.X, maxPosition.Y, 0);
+                        uvList[(faceCount * 4) + 0] = new(0, 0);
+                        uvList[(faceCount * 4) + 1] = new(1, 0);
+                        uvList[(faceCount * 4) + 2] = new(1, 1);
+                        uvList[(faceCount * 4) + 3] = new(0, 1);
+                        normalsList[(faceCount * 4) + 0] = new(0, 0, 1);
+                        normalsList[(faceCount * 4) + 1] = new(0, 0, 1);
+                        normalsList[(faceCount * 4) + 2] = new(0, 0, 1);
+                        normalsList[(faceCount * 4) + 3] = new(0, 0, 1);
+                        colorsList[(faceCount * 4) + 0] = new(1, 1, 1, 1);
+                        colorsList[(faceCount * 4) + 1] = new(1, 1, 1, 1);
+                        colorsList[(faceCount * 4) + 2] = new(1, 1, 1, 1);
+                        colorsList[(faceCount * 4) + 3] = new(1, 1, 1, 1);
+                        indicesList[(faceCount * 6) + 0] = (faceCount * 4) + 0;
+                        indicesList[(faceCount * 6) + 1] = (faceCount * 4) + 1;
+                        indicesList[(faceCount * 6) + 2] = (faceCount * 4) + 2;
+                        indicesList[(faceCount * 6) + 3] = (faceCount * 4) + 2;
+                        indicesList[(faceCount * 6) + 4] = (faceCount * 4) + 3;
+                        indicesList[(faceCount * 6) + 5] = (faceCount * 4) + 0;
+                        faceCount++;
+                    }
+
+                    lineStart = lineEnd + 1;
+                    lineIndex++;
+                }
+
+                Mesh highlightMesh = new(world, meshEntity);
+                USpan<Vector3> positions = highlightMesh.ResizePositions(faceCount * 4);
+                USpan<uint> indices = highlightMesh.ResizeIndices(faceCount * 6);
+                USpan<Vector2> uvs = highlightMesh.ResizeUVs(faceCount * 4);
+                USpan<Vector3> normals = highlightMesh.ResizeNormals(faceCount * 4);
+                USpan<Color> colors = highlightMesh.ResizeColors(faceCount * 4);
+                verticesList.AsSpan().Slice(0, faceCount * 4).CopyTo(positions);
+                indicesList.AsSpan().Slice(0, faceCount * 6).CopyTo(indices);
+                uvList.AsSpan().Slice(0, faceCount * 4).CopyTo(uvs);
+                normalsList.AsSpan().Slice(0, faceCount * 4).CopyTo(normals);
+                colorsList.AsSpan().Slice(0, faceCount * 4).CopyTo(colors);
             }
         }
 

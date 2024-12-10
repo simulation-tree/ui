@@ -6,15 +6,6 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>preview</LangVersion>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<IsAotCompatible>True</IsAotCompatible>
-		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-		<WarningLevel>9999</WarningLevel>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<IsAotCompatible>True</IsAotCompatible>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<WarningLevel>9999</WarningLevel>

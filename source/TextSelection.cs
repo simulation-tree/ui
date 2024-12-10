@@ -1,8 +1,9 @@
-﻿using Unmanaged;
+﻿using System;
+using Unmanaged;
 
 namespace InteractionKit
 {
-    public struct TextSelection
+    public struct TextSelection : IEquatable<TextSelection>
     {
         public uint start;
         public uint end;
@@ -50,6 +51,31 @@ namespace InteractionKit
             length += index.ToString(buffer.Slice(length));
             buffer[length++] = ']';
             return length;
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is TextSelection selection && Equals(selection);
+        }
+
+        public readonly bool Equals(TextSelection other)
+        {
+            return start == other.start && end == other.end && index == other.index;
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(start, end, index);
+        }
+
+        public static bool operator ==(TextSelection left, TextSelection right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TextSelection left, TextSelection right)
+        {
+            return !(left == right);
         }
     }
 }

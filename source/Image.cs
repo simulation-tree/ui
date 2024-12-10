@@ -159,5 +159,10 @@ namespace InteractionKit
         {
             return box.transform;
         }
+
+        public static implicit operator MeshRenderer(Image box)
+        {
+            return box.AsEntity().As<MeshRenderer>();
+        }
     }
 }

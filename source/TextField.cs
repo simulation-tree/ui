@@ -1,6 +1,7 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
+using Rendering;
 using Rendering.Components;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -95,10 +96,15 @@ namespace InteractionKit
             Image highlight = new(canvas);
             highlight.SetParent(background);
             highlight.Color = new Color(0f, 0.4f, 1f, 0.5f);
-            highlight.Anchor = new(new(0f, false), new(0f, false), default, new(0f, false), new(1f, false), default);
-            highlight.Size = new(0f, 1f);
+            highlight.Anchor = Anchor.TopLeft;
+            highlight.Position = new(4f, -4f);
+            highlight.Size = new(1, 1);
             highlight.SetEnabled(false);
             highlight.AddComponent(new RendererScissor());
+
+            MeshRenderer highlightRenderer = highlight;
+            highlightRenderer.Mesh = highlightRenderer.Mesh.Clone();
+            highlightRenderer.Mesh.CreateColors(0);
 
             Transform highlightTransform = highlight;
             highlightTransform.LocalPosition = new(0f, 0f, 0.05f);
