@@ -22,6 +22,7 @@ namespace InteractionKit.Systems
                 simulator.AddSystem<ScrollHandleMovingSystem>();
                 simulator.AddSystem<ScrollViewSystem>();
                 simulator.AddSystem<TextFieldEditingSystem>();
+                simulator.AddSystem<DropdownMenusSystem>();
             }
         }
 
@@ -34,6 +35,7 @@ namespace InteractionKit.Systems
             if (systemContainer.World == world)
             {
                 Simulator simulator = systemContainer.Simulator;
+                simulator.RemoveSystem<DropdownMenusSystem>();
                 simulator.RemoveSystem<TextFieldEditingSystem>();
                 simulator.RemoveSystem<ScrollViewSystem>();
                 simulator.RemoveSystem<ScrollHandleMovingSystem>();

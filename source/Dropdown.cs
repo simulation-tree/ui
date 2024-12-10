@@ -212,12 +212,14 @@ namespace InteractionKit
             Transform triangleTransform = triangle;
             triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
 
-            Menu menu = new(world);
-            menu.SetParent(background);
+            Menu menu = new(canvas, new(&ChosenOption));
             menu.Anchor = Anchor.BottomLeft;
             menu.Size = background.Size;
             menu.Pivot = new(0f, 1f, 0f);
             menu.SetEnabled(false);
+
+            rint dropdownReference = menu.AddReference(this);
+            menu.AddComponent(new DropdownMenu(dropdownReference));
 
             rint labelReference = background.AddReference(label);
             rint triangleReference = background.AddReference(triangle);
@@ -248,6 +250,17 @@ namespace InteractionKit
         {
             Dropdown dropdown = dropdownEntity.As<Dropdown>();
             dropdown.IsExpanded = !dropdown.IsExpanded;
+        }
+
+        [UnmanagedCallersOnly]
+        private static void ChosenOption(MenuOption option)
+        {
+            World world = option.rootMenu.GetWorld();
+            rint dropdownReference = option.rootMenu.AsEntity().GetComponent<DropdownMenu>().dropdownReference;
+            uint dropdownEntity = option.rootMenu.GetReference(dropdownReference);
+            Dropdown dropdown = new Entity(world, dropdownEntity).As<Dropdown>();
+            dropdown.SelectedOption = option.optionPath;
+            dropdown.IsExpanded = false;
         }
 
         private static Material GetTriangleMaterialFromSettings(Camera camera)

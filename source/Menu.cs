@@ -138,9 +138,11 @@ namespace InteractionKit
         readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentType<IsMenu>().AddArrayType<IsMenuOption>();
 
-        public Menu(World world, MenuCallbackFunction callback = default)
+        public Menu(Canvas canvas, MenuCallbackFunction callback = default)
         {
+            World world = canvas.GetWorld();
             transform = new(world);
+            transform.SetParent(canvas);
             transform.LocalPosition = new(0, 0, 0.1f);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
@@ -157,10 +159,11 @@ namespace InteractionKit
         /// Adds a new option.
         /// </summary>
         /// <returns>Index path towards this specific option local to this menu.</returns>
-        public unsafe readonly OptionPath AddOption(FixedString label, Canvas canvas)
+        public unsafe readonly OptionPath AddOption(FixedString label)
         {
             Vector2 size = Size;
             Entity entity = transform;
+            Canvas canvas = entity.GetCanvas();
             uint optionCount = entity.GetArrayLength<IsMenuOption>();
             World world = transform.GetWorld();
             bool hasPath = label.TryIndexOf('/', out uint slashIndex);
@@ -181,7 +184,7 @@ namespace InteractionKit
                             path = path.Append(i);
                             uint existingChildMenuEntity = entity.GetReference(existingOption.childMenuReference);
                             Menu existingChildMenu = new Entity(world, existingChildMenuEntity).As<Menu>();
-                            OptionPath pathInExisting = existingChildMenu.AddOption(remainder, canvas);
+                            OptionPath pathInExisting = existingChildMenu.AddOption(remainder);
                             path = path.Append(pathInExisting);
                             return path;
                         }
@@ -192,13 +195,13 @@ namespace InteractionKit
                     }
                 }
 
-                OptionPath firstPath = AddOption(label, canvas);
+                OptionPath firstPath = AddOption(label);
                 path = path.Append(firstPath);
 
                 //todo: for some reason, the buttons in child menus position themselves upwards
                 //while the menus of dropdowns position downwards
                 ref IsMenuOption addedOption = ref entity.GetArrayElement<IsMenuOption>(optionCount);
-                Menu newChildMenu = new(world);
+                Menu newChildMenu = new(canvas);
                 newChildMenu.SetParent(transform);
                 newChildMenu.Position = new(size.X, 0);
                 newChildMenu.Size = size;
@@ -220,7 +223,7 @@ namespace InteractionKit
                 triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
 
                 addedOption.childMenuReference = transform.AddReference(newChildMenu);
-                OptionPath pathInNew = newChildMenu.AddOption(remainder, canvas);
+                OptionPath pathInNew = newChildMenu.AddOption(remainder);
                 path = path.Append(pathInNew);
                 return path;
             }
@@ -294,8 +297,6 @@ namespace InteractionKit
                     MenuOption chosenOption = new(rootMenu, optionPath);
                     component.callback.Invoke(chosenOption);
                 }
-
-                ChosenOption(menu, chosenIndex);
             }
         }
 
@@ -303,58 +304,6 @@ namespace InteractionKit
         {
             Settings settings = world.GetFirst<Settings>();
             return settings.GetTriangleMaterial(camera);
-        }
-
-        private static void ChosenOption(Menu menu, uint chosenOption)
-        {
-            //todo: this should be dissovled because some of this code is already done by other neater functions
-            OptionPath path = default;
-            path = path.Append(chosenOption);
-
-            World world = menu.GetWorld();
-            uint childEntity = menu.GetEntityValue();
-            uint parentEntity = menu.GetParent().GetEntityValue();
-            while (parentEntity != default)
-            {
-                if (world.ContainsComponent<IsDropdown>(parentEntity))
-                {
-                    break;
-                }
-                else if (world.ContainsComponent<IsMenu>(parentEntity))
-                {
-                    USpan<IsMenuOption> parentOptions = world.GetArray<IsMenuOption>(parentEntity);
-                    bool found = false;
-                    for (uint i = 0; i < parentOptions.Length; i++)
-                    {
-                        rint menuReference = parentOptions[i].childMenuReference;
-                        if (menuReference == default) continue;
-
-                        uint menuEntity = world.GetReference(parentEntity, menuReference);
-                        if (menuEntity == childEntity)
-                        {
-                            path = path.Insert(0, i);
-                            childEntity = parentEntity;
-                            parentEntity = world.GetParent(parentEntity);
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        throw new Exception();
-                    }
-                }
-                else
-                {
-                    //this menu is a detached one
-                    return;
-                }
-            }
-
-            Dropdown dropdown = new Entity(world, parentEntity).As<Dropdown>();
-            dropdown.SelectedOption = path;
-            dropdown.IsExpanded = false;
         }
 
         /// <summary>
