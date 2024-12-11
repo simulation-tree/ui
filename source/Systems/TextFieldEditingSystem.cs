@@ -1,6 +1,5 @@
 ﻿using Clipboard;
 using Collections;
-using Data;
 using Fonts;
 using InteractionKit.Components;
 using Meshes;
@@ -9,7 +8,6 @@ using Simulation;
 using System;
 using System.Diagnostics;
 using System.Numerics;
-using System.Text;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
@@ -364,7 +362,7 @@ namespace InteractionKit.Systems
                 using Array<uint> indicesList = new(text.Length * 6);
                 using Array<Vector2> uvList = new(text.Length * 4);
                 using Array<Vector3> normalsList = new(text.Length * 4);
-                using Array<Color> colorsList = new(text.Length * 4);
+                using Array<Vector4> colorsList = new(text.Length * 4);
                 float pixelSize = font.PixelSize;
                 float lineHeight = (font.LineHeight * (pixelSize / 32f)) / Font.FixedPointScale / pixelSize;
                 fontSize.Y *= lineHeight;
@@ -451,7 +449,7 @@ namespace InteractionKit.Systems
                 USpan<uint> indices = highlightMesh.ResizeIndices(faceCount * 6);
                 USpan<Vector2> uvs = highlightMesh.ResizeUVs(faceCount * 4);
                 USpan<Vector3> normals = highlightMesh.ResizeNormals(faceCount * 4);
-                USpan<Color> colors = highlightMesh.ResizeColors(faceCount * 4);
+                USpan<Vector4> colors = highlightMesh.ResizeColors(faceCount * 4);
                 verticesList.AsSpan().Slice(0, faceCount * 4).CopyTo(positions);
                 indicesList.AsSpan().Slice(0, faceCount * 6).CopyTo(indices);
                 uvList.AsSpan().Slice(0, faceCount * 4).CopyTo(uvs);
