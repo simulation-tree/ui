@@ -20,6 +20,7 @@ namespace InteractionKit
 {
     public readonly struct Settings : IEntity
     {
+        public const float ZScale = 0.2f;
         public const char ShiftCharacter = (char)14;
         public const char MoveLeftCharacter = (char)17;
         public const char MoveRightCharacter = (char)18;
@@ -173,6 +174,7 @@ namespace InteractionKit
 
             Texture squareTexture = new(world, Address.Get<SquareTexture>());
             Texture triangleTexture = new(world, Address.Get<TriangleTexture>());
+            Texture radialGradientTexture = new(world, Address.Get<RadialGradientAlphaTexture>());
 
             //create default coloured unlit material
             Material squareMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
@@ -192,12 +194,19 @@ namespace InteractionKit
             textMaterial.AddPushBinding<Color>();
             textMaterial.AddPushBinding<LocalToWorld>();
 
+            Material dropShadowMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            dropShadowMaterial.AddPushBinding<Color>();
+            dropShadowMaterial.AddPushBinding<LocalToWorld>();
+            dropShadowMaterial.AddComponentBinding<CameraMatrices>(0, 0, default(Entity));
+            dropShadowMaterial.AddTextureBinding(1, 0, radialGradientTexture);
+
             Font defaultFont = new(world, Address.Get<CascadiaMonoFont>());
 
             rint quadMeshReference = entity.AddReference(quadMesh);
             rint squareMaterialReference = entity.AddReference(squareMaterial);
             rint triangleMaterialReference = entity.AddReference(triangleMaterial);
             rint textMaterialReference = entity.AddReference(textMaterial);
+            rint dropShadowMaterialReference = entity.AddReference(dropShadowMaterial);
             rint fontReference = entity.AddReference(defaultFont);
             rint stateMachineReference = entity.AddReference(controlStateMachine);
             rint idleAutomationReference = entity.AddReference(idleAutomation);
@@ -220,7 +229,7 @@ namespace InteractionKit
             entity.AddComponent(new TextEditState());
             entity.CreateArray<TextCharacter>();
 
-            MaterialSettings materialSettings = new(default, squareMaterialReference, triangleMaterialReference, textMaterialReference);
+            MaterialSettings materialSettings = new(default, squareMaterialReference, triangleMaterialReference, textMaterialReference, dropShadowMaterialReference);
             entity.CreateArray([materialSettings]);
         }
 
@@ -259,6 +268,14 @@ namespace InteractionKit
             return new Entity(entity.GetWorld(), textMaterialEntity).As<Material>();
         }
 
+        public readonly Material GetDropShadowMaterial(Camera camera)
+        {
+            MaterialSettings component = GetMaterialSettings(camera);
+            rint dropShadowMaterialReference = component.dropShadowMaterialReference;
+            uint dropShadowMaterialEntity = entity.GetReference(dropShadowMaterialReference);
+            return new Entity(entity.GetWorld(), dropShadowMaterialEntity).As<Material>();
+        }
+
         private readonly MaterialSettings GetMaterialSettings(Camera camera)
         {
             World world = entity.GetWorld();
@@ -279,23 +296,31 @@ namespace InteractionKit
             rint squareMaterialReference = defaultSettings.squareMaterialReference;
             rint triangleMaterialReference = defaultSettings.triangleMaterialReference;
             rint textMaterialReference = defaultSettings.textMaterialReference;
+            rint dropShadowMaterialReference = defaultSettings.dropShadowMaterialReference;
             uint squareMaterialEntity = entity.GetReference(squareMaterialReference);
             uint triangleMaterialEntity = entity.GetReference(triangleMaterialReference);
             uint textMaterialEntity = entity.GetReference(textMaterialReference);
+            uint dropShadowMaterialEntity = entity.GetReference(dropShadowMaterialReference);
             Material squareMaterial = new(world, squareMaterialEntity);
             Material triangleMaterial = new(world, triangleMaterialEntity);
             Material textMaterial = new(world, textMaterialEntity);
+            Material dropShadowMaterial = new(world, dropShadowMaterialEntity);
+            //todo: why exactly are these being cloned? its wasteful isnt it?
+            //i guess its because it will be different cameras
             squareMaterial = squareMaterial.Clone();
             triangleMaterial = triangleMaterial.Clone();
             textMaterial = textMaterial.Clone();
+            dropShadowMaterial = dropShadowMaterial.Clone();
             squareMaterial.SetComponentBinding<CameraMatrices>(0, 0, camera);
             triangleMaterial.SetComponentBinding<CameraMatrices>(0, 0, camera);
             textMaterial.SetComponentBinding<CameraMatrices>(1, 0, camera);
+            dropShadowMaterial.SetComponentBinding<CameraMatrices>(0, 0, camera);
             MaterialSettings newSettings = defaultSettings;
             newSettings.cameraReference = entity.AddReference(camera);
             newSettings.squareMaterialReference = entity.AddReference(squareMaterial);
             newSettings.triangleMaterialReference = entity.AddReference(triangleMaterial);
             newSettings.textMaterialReference = entity.AddReference(textMaterial);
+            newSettings.dropShadowMaterialReference = entity.AddReference(dropShadowMaterial);
             settings = entity.ResizeArray<MaterialSettings>(settingsCount + 1);
             settings[settingsCount] = newSettings;
             return newSettings;

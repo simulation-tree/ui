@@ -122,7 +122,7 @@ namespace InteractionKit
             Settings settings = canvas.GetSettings();
 
             transform = new(world);
-            transform.LocalPosition = new(0f, 0f, 0.1f);
+            transform.LocalPosition = new(0f, 0f, Settings.ZScale);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
             transform.AddComponent(new ColorTint(new Vector4(1f)));

@@ -143,7 +143,7 @@ namespace InteractionKit
             World world = canvas.GetWorld();
             transform = new(world);
             transform.SetParent(canvas);
-            transform.LocalPosition = new(0, 0, 0.1f);
+            transform.LocalPosition = new(0, 0, Settings.ZScale);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
             transform.AddComponent(new IsMenu(callback));

@@ -72,7 +72,7 @@ namespace InteractionKit
             checkmarkBox.Color = Color.Black;
 
             Transform checkmarkTransform = checkmarkBox;
-            checkmarkTransform.LocalPosition = new(0f, 0f, 0.1f);
+            checkmarkTransform.LocalPosition = new(0f, 0f, Settings.ZScale);
 
             rint checkmarkReference = background.AddReference(checkmarkBox);
             background.AddComponent(new IsToggle(checkmarkReference, initialValue, default));

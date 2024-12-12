@@ -56,7 +56,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
-        readonly Definition IEntity.Definition => new([ComponentType.Get<IsVirtualWindow>()], []);
+        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsVirtualWindow>();
 
         public VirtualWindow(World world, uint existingEntity)
         {
@@ -120,6 +120,8 @@ namespace InteractionKit
             rint scrollBarReference = background.AddReference(scrollBar);
             rint viewReference = background.AddReference(view);
             background.AddComponent(new IsVirtualWindow(headerReference, titleLabelReference, closeButtonReference, scrollBarReference, viewReference, closeCallback));
+
+            DropShadow dropShadow = new(canvas, background);
         }
 
         public readonly void Dispose()

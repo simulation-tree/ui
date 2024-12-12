@@ -24,7 +24,7 @@ namespace InteractionKit.Systems
                 ref IsCanvas canvas = ref x.component1;
                 rint cameraReference = canvas.cameraReference;
                 uint cameraEntity = world.GetReference(canvasEntity, cameraReference);
-                float distanceFromCamera = 0.1f;
+                float distanceFromCamera = Settings.ZScale;
                 Vector2 size = default;
                 if (cameraEntity != default && world.ContainsEntity(cameraEntity))
                 {

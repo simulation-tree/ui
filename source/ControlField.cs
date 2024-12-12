@@ -83,7 +83,7 @@ namespace InteractionKit
             ThrowIfEntityIsMissingComponent(world, entity, componentType);
 
             transform = new(world);
-            transform.LocalPosition = new(0f, 0f, 0.1f);
+            transform.LocalPosition = new(0f, 0f, Settings.ZScale);
             transform.SetParent(canvas);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());

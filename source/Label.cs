@@ -127,7 +127,7 @@ namespace InteractionKit
             textRenderer.AddComponent(new IsLabel());
 
             transform.LocalScale = Vector3.One * size;
-            transform.LocalPosition = new(0f, 0f, 0.1f);
+            transform.LocalPosition = new(0f, 0f, Settings.ZScale);
         }
 
         public readonly void Dispose()
