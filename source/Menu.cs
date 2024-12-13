@@ -148,6 +148,8 @@ namespace InteractionKit
             transform.AddComponent(new Pivot());
             transform.AddComponent(new IsMenu(callback));
             transform.AsEntity().CreateArray<IsMenuOption>();
+
+            DropShadow dropShadow = new(canvas, transform);
         }
 
         public readonly void Dispose()

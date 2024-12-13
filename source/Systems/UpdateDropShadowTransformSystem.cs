@@ -19,12 +19,6 @@ namespace InteractionKit.Systems
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
-            bool stop = true;
-            if (stop)
-            {
-                //return;
-            }
-
             ComponentQuery<IsDropShadow> query = new(world);
             using Operation destroyOperation = new();
             foreach (var r in query)
@@ -51,6 +45,8 @@ namespace InteractionKit.Systems
             ComponentQuery<IsDropShadow, Position, Scale> queryWihtPositionAndScale = new(world);
             foreach (var r in queryWihtPositionAndScale)
             {
+                if (!world.IsEnabled(r.entity)) continue;
+
                 ref IsDropShadow component = ref r.component1;
                 ref Position position = ref r.component2;
                 ref Scale scale = ref r.component3;
@@ -59,14 +55,25 @@ namespace InteractionKit.Systems
                 rint foregroundReference = component.foregroundReference;
                 uint foregroundEntity = world.GetReference(r.entity, foregroundReference);
                 ref LocalToWorld foregroundLtw = ref world.GetComponent<LocalToWorld>(foregroundEntity);
-                position.value = foregroundLtw.Position + new Vector3(-ShadowDistance, -ShadowDistance, Settings.ZScale * -2f);
-                scale.value = foregroundLtw.Scale + new Vector3(ShadowDistance * 2f, ShadowDistance * 2f, 1f);
+                Vector3 positionValue = foregroundLtw.Position;
+                Vector3 scaleValue = foregroundLtw.Scale;
+                if (world.ContainsComponent<IsMenu>(foregroundEntity))
+                {
+                    uint optionCount = world.GetArrayLength<IsMenuOption>(foregroundEntity);
+                    float originalHeight = 24f;
+                    scaleValue.Y = originalHeight * optionCount;
+                    positionValue.Y -= (originalHeight * optionCount);
+                    positionValue.Y += originalHeight;
+                }
+
+                position.value = positionValue + new Vector3(-ShadowDistance, -ShadowDistance, Settings.ZScale * -2f);
+                scale.value = scaleValue + new Vector3(ShadowDistance * 2f, ShadowDistance * 2f, 1f);
 
                 //update the ltw of the mesh to match foreground
                 rint meshReference = component.meshReference;
                 uint meshEntity = world.GetReference(r.entity, meshReference);
                 ref LocalToWorld meshLtw = ref world.GetComponent<LocalToWorld>(meshEntity);
-                meshLtw = foregroundLtw;
+                meshLtw = new(positionValue, Quaternion.Identity, scaleValue);
             }
         }
     }
