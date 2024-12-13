@@ -68,6 +68,11 @@ namespace InteractionKit.Systems
                 {
                     //horizontal
                     float handlePercentageSize = windowSize.X / (maxY - minY);
+                    if (float.IsNaN(handlePercentageSize) || float.IsInfinity(handlePercentageSize))
+                    {
+                        handlePercentageSize = 1f;
+                    }
+
                     view.ContentSize = new(maxY - minY, windowSize.Y);
                     scrollBar.HandlePercentageSize = handlePercentageSize;
                 }
@@ -75,6 +80,11 @@ namespace InteractionKit.Systems
                 {
                     //vertical
                     float handlePercentageSize = windowSize.Y / (maxY - minY);
+                    if (float.IsNaN(handlePercentageSize) || float.IsInfinity(handlePercentageSize))
+                    {
+                        handlePercentageSize = 1f;
+                    }
+
                     view.ContentSize = new(windowSize.X, maxY - minY);
                     scrollBar.HandlePercentageSize = handlePercentageSize;
                 }
