@@ -59,6 +59,11 @@ namespace InteractionKit
         }
 #endif
 
+        public Canvas(World world, uint existingEntity)
+        {
+            transform = new(world, existingEntity);
+        }
+
         public Canvas(World world, Camera camera)
         {
             Settings.ThrowIfMissing(world);

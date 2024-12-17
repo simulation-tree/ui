@@ -72,7 +72,7 @@ namespace InteractionKit
         /// </summary>
         public readonly USpan<IsMenuOption> Options => transform.AsEntity().GetArray<IsMenuOption>();
 
-        public readonly ref MenuCallbackFunction Callback
+        public readonly ref MenuCallback Callback
         {
             get
             {
@@ -138,7 +138,7 @@ namespace InteractionKit
         readonly World IEntity.World => transform.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentType<IsMenu>().AddArrayType<IsMenuOption>();
 
-        public Menu(Canvas canvas, MenuCallbackFunction callback = default)
+        public Menu(Canvas canvas, MenuCallback callback = default)
         {
             World world = canvas.GetWorld();
             transform = new(world);

@@ -9,7 +9,7 @@ using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct Tree : ICanvasDescendant
+    public readonly struct Tree : IEntity
     {
         private readonly Transform transform;
 

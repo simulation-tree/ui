@@ -11,9 +11,9 @@ namespace InteractionKit.Components
         public rint closeButtonReference;
         public rint scrollBarReference;
         public rint viewReference;
-        public VirtualWindowCloseFunction closeCallback;
+        public VirtualWindowClose closeCallback;
 
-        public IsVirtualWindow(rint headerReference, rint titleLabelReference, rint closeButtonReference, rint scrollBarReference, rint viewReference, VirtualWindowCloseFunction closeCallback)
+        public IsVirtualWindow(rint headerReference, rint titleLabelReference, rint closeButtonReference, rint scrollBarReference, rint viewReference, VirtualWindowClose closeCallback)
         {
             this.headerReference = headerReference;
             this.titleLabelReference = titleLabelReference;

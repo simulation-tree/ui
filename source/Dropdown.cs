@@ -161,7 +161,7 @@ namespace InteractionKit
 
         public readonly USpan<IsMenuOption> Options => Menu.Options;
 
-        public readonly ref DropdownCallbackFunction Callback
+        public readonly ref DropdownCallback Callback
         {
             get
             {
@@ -187,7 +187,7 @@ namespace InteractionKit
             background = new(world, existingEntity);
         }
 
-        public unsafe Dropdown(Canvas canvas, DropdownCallbackFunction callback = default)
+        public unsafe Dropdown(Canvas canvas, DropdownCallback callback = default)
         {
             World world = canvas.GetWorld();
             background = new(canvas);

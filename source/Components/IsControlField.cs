@@ -3,19 +3,19 @@
 namespace InteractionKit.Components
 {
     [Component]
-    public struct IsControlField
+    public readonly struct IsControlField
     {
-        public rint labelReference;
-        public rint controlReference;
-        public rint entityReference;
-        public ComponentType componentType;
+        public readonly rint labelReference;
+        public readonly rint entityReference;
+        public readonly byte typeIndex;
+        public readonly bool isComponentType;
 
-        public IsControlField(rint labelReference, rint controlReference, rint entityReference, ComponentType componentType)
+        public IsControlField(rint labelReference, rint entityReference, byte typeIndex, bool isComponentType)
         {
             this.labelReference = labelReference;
-            this.controlReference = controlReference;
             this.entityReference = entityReference;
-            this.componentType = componentType;
+            this.typeIndex = typeIndex;
+            this.isComponentType = isComponentType;
         }
     }
 }

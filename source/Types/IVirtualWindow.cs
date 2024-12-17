@@ -6,7 +6,7 @@ namespace InteractionKit
     public interface IVirtualWindow
     {
         FixedString Title { get; }
-        VirtualWindowCloseFunction CloseCallback { get; }
+        VirtualWindowClose CloseCallback { get; }
 
         void OnCreated(VirtualWindow window, Canvas canvas);
     }

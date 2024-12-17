@@ -13,7 +13,7 @@ namespace InteractionKit
         /// </para>
         /// </summary>
         /// <exception cref="InvalidOperationException"></exception>
-        public static Canvas GetCanvas(this Entity entity)
+        public static Canvas GetCanvas<T>(this T entity) where T : unmanaged, IEntity
         {
             World world = entity.GetWorld();
             uint value = entity.GetEntityValue();

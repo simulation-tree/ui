@@ -1,9 +1,9 @@
-﻿using Data;
+﻿using Collections;
+using Data;
 using InteractionKit.Components;
 using System;
 using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
@@ -11,7 +11,7 @@ using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct ControlField : ICanvasDescendant
+    public readonly struct ControlField : IEntity
     {
         public readonly Transform transform;
 
@@ -55,14 +55,43 @@ namespace InteractionKit
             }
         }
 
-        public readonly (Entity entity, ComponentType componentType) Target
+        public readonly Entity Target
         {
             get
             {
-                IsControlField component = transform.AsEntity().GetComponent<IsControlField>();
+                ref IsControlField component = ref transform.AsEntity().GetComponent<IsControlField>();
                 rint entityReference = component.entityReference;
                 uint entity = transform.GetReference(entityReference);
-                return (new Entity(transform.GetWorld(), entity), component.componentType);
+                return new Entity(transform.GetWorld(), entity);
+            }
+        }
+
+        public readonly bool IsComponentType
+        {
+            get
+            {
+                ref IsControlField component = ref transform.AsEntity().GetComponent<IsControlField>();
+                return component.isComponentType;
+            }
+        }
+
+        public readonly bool IsArrayType => !IsComponentType;
+
+        public readonly ComponentType ComponentType
+        {
+            get
+            {
+                ref IsControlField component = ref transform.AsEntity().GetComponent<IsControlField>();
+                return ComponentType.All[component.typeIndex];
+            }
+        }
+
+        public readonly ArrayType ArrayType
+        {
+            get
+            {
+                ref IsControlField component = ref transform.AsEntity().GetComponent<IsControlField>();
+                return ArrayType.All[component.typeIndex];
             }
         }
 
@@ -71,18 +100,28 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsControlField>();
+        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsControlField>().AddArrayType<ControlEntity>();
 
-        public ControlField(World world, Canvas canvas, FixedString label, Entity entity, ComponentType componentType)
-            : this(world, canvas, label, entity.GetEntityValue(), componentType)
+        public ControlField(World world, uint existingEntity)
+        {
+            transform = new(world, existingEntity);
+        }
+
+        public ControlField(Canvas canvas, FixedString label, Entity target, ComponentType componentType, ControlEditor editor, uint offset = 0) :
+            this(canvas, label, target, componentType.index, true, editor, offset)
         {
         }
 
-        public unsafe ControlField(World world, Canvas canvas, FixedString label, uint entity, ComponentType componentType)
+        public ControlField(Canvas canvas, FixedString label, Entity target, ArrayType arrayType, ControlEditor editor, uint offset = 0) :
+            this(canvas, label, target, arrayType.index, false, editor, offset)
         {
-            ThrowIfEntityIsMissingComponent(world, entity, componentType);
+        }
 
-            transform = new(world);
+        private ControlField(Canvas canvas, FixedString label, Entity target, byte typeIndex, bool isComponentType, ControlEditor editor, uint offset)
+        {
+            ThrowIfMissingData(target, typeIndex, isComponentType);
+
+            transform = new(canvas.GetWorld());
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
             transform.SetParent(canvas);
             transform.AddComponent(new Anchor());
@@ -95,29 +134,19 @@ namespace InteractionKit
             labelEntity.Position = new(4f, -4f);
             labelEntity.Pivot = new(0f, 1f, 0f);
 
-            rint controlReference = default;
-            if (componentType == ComponentType.Get<bool>())
+            using List<Entity> createdEntities = new();
+            editor.initializeControlField.Invoke(createdEntities, this, canvas, target, typeIndex, isComponentType, offset);
+            USpan<ControlEntity> referencesArray = transform.AsEntity().CreateArray<ControlEntity>(createdEntities.Count);
+            for (uint i = 0; i < createdEntities.Count; i++)
             {
-                bool initialValue = world.GetComponent<bool>(entity);
-                Toggle toggle = new(canvas, initialValue);
-                toggle.SetParent(transform);
-                //toggle.Position = new(100f, 0f);
-                toggle.Size = new(24, 24f);
-                toggle.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1f);
-                toggle.CheckmarkColor = Color.White;
-                toggle.Anchor = Anchor.Centered;
-                toggle.Pivot = new(0f, 0.5f, 0f);
-                toggle.Callback = new(&BooleanToggled);
-                controlReference = transform.AddReference(toggle);
-            }
-            else
-            {
-                throw new NotImplementedException($"ControlField does not support component type `{componentType}`");
+                Entity createdEntity = createdEntities[i];
+                rint reference = transform.AddReference(createdEntity);
+                referencesArray[i] = new(reference);
             }
 
             rint labelReference = transform.AddReference(labelEntity);
-            rint entityReference = transform.AddReference(entity);
-            transform.AddComponent(new IsControlField(labelReference, controlReference, entityReference, componentType));
+            rint entityReference = transform.AddReference(target);
+            transform.AddComponent(new IsControlField(labelReference, entityReference, typeIndex, isComponentType));
         }
 
         public readonly void Dispose()
@@ -125,31 +154,32 @@ namespace InteractionKit
             transform.Dispose();
         }
 
-        [Conditional("DEBUG")]
-        private readonly void ThrowIfEntityIsMissingComponent(World world, uint entity, ComponentType componentType)
+        public static ControlField Create<C, E>(Canvas canvas, FixedString label, Entity target) where C : unmanaged where E : unmanaged, IControlEditor
         {
-            if (!world.ContainsComponent(entity, componentType))
-            {
-                throw new NullReferenceException($"Entity `{entity}` is missing component {componentType}");
-            }
+            ComponentType componentType = ComponentType.Get<C>();
+            ControlEditor editor = ControlEditor.Get<E>();
+            return new ControlField(canvas, label, target, componentType, editor);
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfTypeMismatches<T>(ComponentType targetType) where T : unmanaged
+        private static void ThrowIfMissingData(Entity entity, byte typeIndex, bool isComponentType)
         {
-            if (targetType != ComponentType.Get<T>())
+            if (isComponentType)
             {
-                throw new ArgumentException($"Type mismatch: {typeof(T)} != {targetType}");
+                ComponentType componentType = new(typeIndex);
+                if (!entity.ContainsComponent(componentType))
+                {
+                    throw new NullReferenceException($"Entity `{entity}` is missing component `{componentType}`");
+                }
             }
-        }
-
-        [UnmanagedCallersOnly]
-        private static void BooleanToggled(Toggle toggle, byte newValue)
-        {
-            ControlField controlField = toggle.GetParent().As<ControlField>();
-            (Entity entity, ComponentType componentType) = controlField.Target;
-            ThrowIfTypeMismatches<bool>(componentType);
-            entity.SetComponent<bool>(newValue == 1);
+            else
+            {
+                ArrayType arrayType = new(typeIndex);
+                if (!entity.ContainsArray(arrayType))
+                {
+                    throw new NullReferenceException($"Entity `{entity}` is missing array `{arrayType}`");
+                }
+            }
         }
 
         public static implicit operator Transform(ControlField controlField)

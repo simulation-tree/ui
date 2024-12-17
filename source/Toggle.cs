@@ -51,7 +51,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref ToggleCallbackFunction Callback => ref background.AsEntity().GetComponent<IsToggle>().callback;
+        public readonly ref ToggleCallback Callback => ref background.AsEntity().GetComponent<IsToggle>().callback;
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();

@@ -6,9 +6,9 @@ namespace InteractionKit.Components
     [Component]
     public struct IsMenu
     {
-        public MenuCallbackFunction callback;
+        public MenuCallback callback;
 
-        public IsMenu(MenuCallbackFunction callback)
+        public IsMenu(MenuCallback callback)
         {
             this.callback = callback;
         }

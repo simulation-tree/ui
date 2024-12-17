@@ -11,7 +11,7 @@ using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct TreeNode : ICanvasDescendant
+    public readonly struct TreeNode : IEntity
     {
         private readonly Transform transform;
 

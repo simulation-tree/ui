@@ -11,9 +11,9 @@ namespace InteractionKit.Components
         public rint menuReference;
         public bool expanded;
         public OptionPath selectedOption;
-        public DropdownCallbackFunction callback;
+        public DropdownCallback callback;
 
-        public IsDropdown(rint labelReference, rint triangleReference, rint menuReference, DropdownCallbackFunction callback)
+        public IsDropdown(rint labelReference, rint triangleReference, rint menuReference, DropdownCallback callback)
         {
             this.labelReference = labelReference;
             this.triangleReference = triangleReference;

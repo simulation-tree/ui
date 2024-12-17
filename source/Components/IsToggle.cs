@@ -8,9 +8,9 @@ namespace InteractionKit.Components
     {
         public rint checkmarkReference;
         public bool value;
-        public ToggleCallbackFunction callback;
+        public ToggleCallback callback;
 
-        public IsToggle(rint checkmarkReference, bool value, ToggleCallbackFunction callback)
+        public IsToggle(rint checkmarkReference, bool value, ToggleCallback callback)
         {
             this.checkmarkReference = checkmarkReference;
             this.value = value;

@@ -63,7 +63,7 @@ namespace InteractionKit
             background = new(world, existingEntity);
         }
 
-        private unsafe VirtualWindow(World world, Canvas canvas, FixedString titleText, VirtualWindowCloseFunction closeCallback)
+        private unsafe VirtualWindow(World world, Canvas canvas, FixedString titleText, VirtualWindowClose closeCallback)
         {
             background = new(canvas);
 
@@ -142,7 +142,7 @@ namespace InteractionKit
         public unsafe static VirtualWindow Create<T>(World world, Canvas canvas) where T : unmanaged, IVirtualWindow
         {
             FixedString title = default(T).Title;
-            VirtualWindowCloseFunction closeCallback = default(T).CloseCallback;
+            VirtualWindowClose closeCallback = default(T).CloseCallback;
             VirtualWindow window = new(world, canvas, title, closeCallback);
             default(T).OnCreated(window, canvas);
             return window;
