@@ -5,7 +5,6 @@ using Meshes;
 using Rendering;
 using Rendering.Components;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
 using Unmanaged;
@@ -13,7 +12,7 @@ using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct TextField : ISelectable, ICanvasDescendant
+    public readonly struct TextField : ISelectable
     {
         private readonly Image background;
 
@@ -67,13 +66,14 @@ namespace InteractionKit
             }
         }
 
+        public readonly ref TextValidation Validation => ref background.AsEntity().GetComponent<IsTextField>().validation;
         public readonly USpan<char> Value => TextLabel.Text;
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTextField, IsSelectable>();
 
-        public unsafe TextField(Canvas canvas, FixedString defaultValue = default)
+        public unsafe TextField(Canvas canvas, FixedString defaultValue = default, TextValidation validation = default)
         {
             background = new(canvas);
             background.AddComponent(new IsSelectable());
@@ -113,7 +113,7 @@ namespace InteractionKit
             rint textReference = background.AddReference(text);
             rint cursorReference = background.AddReference(cursor);
             rint highlightReference = background.AddReference(highlight);
-            background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference));
+            background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference, validation));
         }
 
         public readonly void Dispose()
@@ -121,28 +121,28 @@ namespace InteractionKit
             background.Dispose();
         }
 
-        public readonly void SetText(USpan<char> text)
+        public readonly void SetText(USpan<char> newText)
         {
-            TextLabel.SetText(text);
-        }
-
-        public readonly void SetText(FixedString text)
-        {
-            TextLabel.SetText(text);
-        }
-
-        [UnmanagedCallersOnly]
-        private static void Filter(TriggerFilter.Input input)
-        {
-            foreach (ref Entity entity in input.Entities)
+            ref TextValidation validation = ref Validation;
+            if (validation != default)
             {
-                //todo: efficiency: doing individual calls within a filter function
-                IsSelectable component = entity.GetComponent<IsSelectable>();
-                if (!component.WasPrimaryInteractedWith || !component.IsSelected)
-                {
-                    entity = default;
-                }
+                Allocation newTextContainer = Allocation.Create(newText);
+                uint newLength = newText.Length;
+                validation.Invoke(Value, ref newTextContainer, ref newLength);
+                TextLabel.SetText(newTextContainer.AsSpan<char>(0, newLength));
+                newTextContainer.Dispose();
             }
+            else
+            {
+                TextLabel.SetText(newText);
+            }
+        }
+
+        public readonly void SetText(FixedString newText)
+        {
+            USpan<char> buffer = stackalloc char[(int)newText.Length];
+            uint length = newText.CopyTo(buffer);
+            SetText(buffer.Slice(0, length));
         }
 
         public static implicit operator Entity(TextField textField)

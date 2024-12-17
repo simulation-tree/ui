@@ -2,19 +2,19 @@
 
 namespace InteractionKit.Functions
 {
-    public unsafe readonly struct DropdownCallbackFunction : IEquatable<DropdownCallbackFunction>
+    public unsafe readonly struct DropdownCallback : IEquatable<DropdownCallback>
     {
 #if NET
         private readonly delegate* unmanaged<Dropdown, uint, uint, void> function;
 
-        public DropdownCallbackFunction(delegate* unmanaged<Dropdown, uint, uint, void> function)
+        public DropdownCallback(delegate* unmanaged<Dropdown, uint, uint, void> function)
         {
             this.function = function;
         }
 #else
         private readonly delegate*<Dropdown, uint, uint, void> function;
 
-        public DropdownCallbackFunction(delegate*<Dropdown, uint, uint, void> function)
+        public DropdownCallback(delegate*<Dropdown, uint, uint, void> function)
         {
             this.function = function;
         }
@@ -32,20 +32,20 @@ namespace InteractionKit.Functions
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is DropdownCallbackFunction function && Equals(function);
+            return obj is DropdownCallback function && Equals(function);
         }
 
-        public readonly bool Equals(DropdownCallbackFunction other)
+        public readonly bool Equals(DropdownCallback other)
         {
             return ((nint)function) == ((nint)other.function);
         }
 
-        public static bool operator ==(DropdownCallbackFunction left, DropdownCallbackFunction right)
+        public static bool operator ==(DropdownCallback left, DropdownCallback right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(DropdownCallbackFunction left, DropdownCallbackFunction right)
+        public static bool operator !=(DropdownCallback left, DropdownCallback right)
         {
             return !(left == right);
         }

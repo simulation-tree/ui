@@ -1,18 +1,18 @@
 ﻿namespace InteractionKit.Functions
 {
-    public unsafe readonly struct VirtualWindowCloseFunction
+    public unsafe readonly struct VirtualWindowClose
     {
 #if NET
         private readonly delegate* unmanaged<VirtualWindow, void> function;
 
-        public VirtualWindowCloseFunction(delegate* unmanaged<VirtualWindow, void> function)
+        public VirtualWindowClose(delegate* unmanaged<VirtualWindow, void> function)
         {
             this.function = function;
         }
 #else
         private readonly delegate*<VirtualWindow, void> function;
 
-        public VirtualWindowCloseFunction(delegate*<VirtualWindow, void> function)
+        public VirtualWindowClose(delegate*<VirtualWindow, void> function)
         {
             this.function = function;
         }

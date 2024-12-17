@@ -2,11 +2,11 @@
 using Collections;
 using Fonts;
 using InteractionKit.Components;
+using InteractionKit.Functions;
 using Meshes;
 using Rendering.Components;
 using Simulation;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -155,7 +155,7 @@ namespace InteractionKit.Systems
                                         clipboard.Text = textLabel.Text.Slice(start, length).ToString();
                                         if (pressedCharacters.Contains('x'))
                                         {
-                                            RemoveSelection(textLabel, ref selection);
+                                            RemoveSelection(textLabel, component.validation, ref selection);
                                         }
                                     }
                                 }
@@ -201,7 +201,7 @@ namespace InteractionKit.Systems
                                     }
                                 }
 
-                                HandleCharacter(world, textLabel, c, settings);
+                                HandleCharacter(world, textLabel, component.validation, c, settings);
                             }
                         }
 
@@ -309,6 +309,11 @@ namespace InteractionKit.Systems
             USpan<char> text = textLabel.Text;
 
             ref TextSelection range = ref settings.TextSelection;
+            if (range.index > text.Length)
+            {
+                range.index = text.Length;
+            }
+
             USpan<char> textToCursor = text.Slice(0, range.index);
             Vector2 totalSize = font.CalulcateSize(textToCursor) * textLabel.Size;
             Vector3 cursorSize = world.GetComponent<Scale>(cursorEntity).value;
@@ -488,7 +493,7 @@ namespace InteractionKit.Systems
             return false;
         }
 
-        private static void HandleCharacter(World world, Label textLabel, char character, Settings settings)
+        private static void HandleCharacter(World world, Label textLabel, TextValidation validation, char character, Settings settings)
         {
             USpan<char> text = textLabel.Text;
             ref TextSelection range = ref settings.TextSelection;
@@ -646,6 +651,7 @@ namespace InteractionKit.Systems
             }
             else if (character == '\b')
             {
+                //backspace
                 if (text.Length == 0)
                 {
                     return;
@@ -653,7 +659,7 @@ namespace InteractionKit.Systems
 
                 if (length > 0)
                 {
-                    RemoveSelection(textLabel, ref range);
+                    RemoveSelection(textLabel, validation, ref range);
                 }
                 else
                 {
@@ -667,11 +673,11 @@ namespace InteractionKit.Systems
                         //remove last char
                         USpan<char> newText = stackalloc char[(int)(text.Length - 1)];
                         text.Slice(0, text.Length - 1).CopyTo(newText);
-                        textLabel.SetText(newText);
+                        SetText(textLabel, text, newText, validation);
                     }
                     else if (text.Length == 1)
                     {
-                        textLabel.SetText(default(FixedString));
+                        SetText(textLabel, text, "".AsSpan(), validation);
                     }
                     else
                     {
@@ -681,7 +687,7 @@ namespace InteractionKit.Systems
                         text.Slice(0, range.index - 1).CopyTo(newText);
                         //copy remaining
                         text.Slice(range.index).CopyTo(newText.Slice(range.index - 1));
-                        textLabel.SetText(newText);
+                        SetText(textLabel, text, newText, validation);
                     }
 
                     range.index--;
@@ -691,7 +697,7 @@ namespace InteractionKit.Systems
             {
                 if (length > 0)
                 {
-                    RemoveSelection(textLabel, ref range);
+                    RemoveSelection(textLabel, validation, ref range);
                     text = textLabel.Text;
                 }
 
@@ -800,15 +806,26 @@ namespace InteractionKit.Systems
                     secondPart.CopyTo(newText.Slice(range.index + 1));
                 }
 
-                textLabel.SetText(newText);
-                range.index++;
-                Trace.WriteLine(newText.ToString());
+                if (validation != default)
+                {
+                    Allocation newTextContainer = Allocation.Create(newText);
+                    uint newLength = newText.Length;
+                    validation.Invoke(text, ref newTextContainer, ref newLength);
+                    textLabel.SetText(newTextContainer.AsSpan<char>(0, newLength));
+                    range.index = newLength;
+                    newTextContainer.Dispose();
+                }
+                else
+                {
+                    textLabel.SetText(newText);
+                    range.index++;
+                }
             }
 
             settings.TextSelection = range;
         }
 
-        private static void RemoveSelection(Label textLabel, ref TextSelection range)
+        private static void RemoveSelection(Label textLabel, TextValidation validation, ref TextSelection range)
         {
             uint start = Math.Min(range.start, range.end);
             uint end = Math.Max(range.start, range.end);
@@ -827,10 +844,26 @@ namespace InteractionKit.Systems
                 endText.CopyTo(newText.Slice(start));
             }
 
-            textLabel.SetText(newText);
+            SetText(textLabel, text, newText, validation);
             range.start = 0;
             range.end = 0;
             range.index = start;
+        }
+
+        private static void SetText(Label label, USpan<char> oldText, USpan<char> newText, TextValidation validation)
+        {
+            if (validation != default)
+            {
+                Allocation newTextContainer = Allocation.Create(newText);
+                uint newLength = newText.Length;
+                validation.Invoke(oldText, ref newTextContainer, ref newLength);
+                label.SetText(newTextContainer.AsSpan<char>(0, newLength));
+                newTextContainer.Dispose();
+            }
+            else
+            {
+                label.SetText(newText);
+            }
         }
     }
 }
