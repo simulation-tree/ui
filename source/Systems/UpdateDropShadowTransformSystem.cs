@@ -9,18 +9,32 @@ namespace InteractionKit.Systems
 {
     public readonly partial struct UpdateDropShadowTransformSystem : ISystem
     {
+        private readonly Operation destroyOperation;
+
+        private UpdateDropShadowTransformSystem(Operation destroyOperation)
+        {
+            this.destroyOperation = destroyOperation;
+        }
+
         void ISystem.Finish(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                destroyOperation.Dispose();
+            }
         }
 
         void ISystem.Start(in SystemContainer systemContainer, in World world)
         {
+            if (systemContainer.World == world)
+            {
+                systemContainer.Write(new UpdateDropShadowTransformSystem(new()));
+            }
         }
 
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
             ComponentQuery<IsDropShadow> query = new(world);
-            using Operation destroyOperation = new();
             foreach (var r in query)
             {
                 ref IsDropShadow component = ref r.component1;
@@ -38,12 +52,29 @@ namespace InteractionKit.Systems
             if (destroyOperation.Count > 0)
             {
                 destroyOperation.DestroySelected();
+                destroyOperation.ClearSelection();
+            }
+
+            ComponentQuery<IsDropShadow> queryWithoutScale = new(world, ComponentType.GetBitSet<Scale>());
+            foreach (var r in queryWithoutScale)
+            {
+                destroyOperation.SelectEntity(r.entity);
+            }
+
+            if (destroyOperation.HasSelection)
+            {
+                destroyOperation.AddComponent(Scale.Default);
+            }
+
+            if (destroyOperation.Count > 0)
+            {
                 world.Perform(destroyOperation);
+                destroyOperation.Clear();
             }
 
             const float ShadowDistance = 30f;
-            ComponentQuery<IsDropShadow, Position, Scale> queryWihtPositionAndScale = new(world);
-            foreach (var r in queryWihtPositionAndScale)
+            ComponentQuery<IsDropShadow, Position, Scale> fullQuery = new(world);
+            foreach (var r in fullQuery)
             {
                 if (!world.IsEnabled(r.entity)) continue;
 
