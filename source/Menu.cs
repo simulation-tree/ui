@@ -260,8 +260,8 @@ namespace InteractionKit
         private unsafe static void OptionChosen(Entity optionButtonEntity)
         {
             World world = optionButtonEntity.GetWorld();
-            Entity menuEntity = optionButtonEntity.Parent;
-            USpan<uint> menuChildren = menuEntity.Children;
+            Entity menuEntity = optionButtonEntity.GetParent();
+            USpan<uint> menuChildren = menuEntity.GetChildren();
             uint chosenIndex = 0;
             for (uint i = 0; i < menuChildren.Length; i++)
             {

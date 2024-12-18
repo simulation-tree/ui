@@ -132,8 +132,8 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void PressedWindowCloseButton(Entity closeButtonEntity)
         {
-            Entity headerEntity = closeButtonEntity.Parent;
-            Entity windowEntity = headerEntity.Parent;
+            Entity headerEntity = closeButtonEntity.GetParent();
+            Entity windowEntity = headerEntity.GetParent();
             VirtualWindow window = windowEntity.As<VirtualWindow>();
             IsVirtualWindow component = windowEntity.GetComponent<IsVirtualWindow>();
             component.closeCallback.Invoke(window);

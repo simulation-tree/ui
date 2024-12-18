@@ -216,8 +216,8 @@ namespace InteractionKit
         private static void ToggleSelected(Entity boxEntity)
         {
             World world = boxEntity.GetWorld();
-            Entity nodeEntity = boxEntity.Parent;
-            uint parentEntity = nodeEntity.Parent.GetEntityValue();
+            Entity nodeEntity = boxEntity.GetParent();
+            uint parentEntity = nodeEntity.GetParent();
             while (parentEntity != default)
             {
                 if (world.ContainsComponent<IsTree>(parentEntity))
@@ -261,7 +261,7 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void ToggleExpanded(Entity expandButtonEntity)
         {
-            Entity treeNodeEntity = expandButtonEntity.Parent;
+            Entity treeNodeEntity = expandButtonEntity.GetParent();
             ref IsTreeNode component = ref treeNodeEntity.GetComponent<IsTreeNode>();
             component.expanded = !component.expanded;
             TreeNode treeNode = treeNodeEntity.As<TreeNode>();
@@ -292,7 +292,7 @@ namespace InteractionKit
             }
 
             //ask parent trees to update their positions
-            uint parentEntity = treeNodeEntity.Parent.GetEntityValue();
+            uint parentEntity = treeNodeEntity.GetParent();
             while (parentEntity != default)
             {
                 if (world.ContainsComponent<IsTree>(parentEntity))

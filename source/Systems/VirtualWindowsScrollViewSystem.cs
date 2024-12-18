@@ -42,7 +42,7 @@ namespace InteractionKit.Systems
                 Entity content = view.Content;
                 float minY = float.MaxValue;
                 float maxY = float.MinValue;
-                USpan<uint> children = content.Children;
+                USpan<uint> children = content.GetChildren();
                 for (uint i = 0; i < children.Length; i++)
                 {
                     Entity child = new(world, children[i]);
