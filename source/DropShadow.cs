@@ -38,7 +38,7 @@ namespace InteractionKit
 
             Material dropShadowMaterial = settings.GetDropShadowMaterial(camera);
             MeshRenderer dropShadowRenderer = new(world, dropShadowMesh, dropShadowMaterial);
-            dropShadowRenderer.AddComponent(new Color(0f, 0f, 0f, 0.3f));
+            dropShadowRenderer.AddComponent(new Color(0f, 0f, 0f, 0.5f));
 
             transform = dropShadowRenderer.AsEntity().Become<Transform>();
             transform.LocalPosition = new(0, 0, -0.02f);
