@@ -42,7 +42,21 @@ namespace InteractionKit.ControlEditors
                 }
             }
 
+            textField.Submit = new(&Submit);
             input.AddEntity(textField);
+        }
+
+        [UnmanagedCallersOnly]
+        private static Boolean Submit(Entity textField, Settings settings)
+        {
+            if (settings.PressedCharacters.Contains(Settings.ShiftCharacter))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 }

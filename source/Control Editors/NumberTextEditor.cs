@@ -50,6 +50,7 @@ namespace InteractionKit.ControlEditors
             }
 
             textField.Validation = new(&Validate);
+            textField.Submit = new(&Submit);
             input.AddEntity(textField);
         }
 
@@ -91,6 +92,12 @@ namespace InteractionKit.ControlEditors
             {
                 input.SetText("0");
             }
+        }
+
+        [UnmanagedCallersOnly]
+        private static Boolean Submit(Entity textField, Settings settings)
+        {
+            return true;
         }
     }
 }

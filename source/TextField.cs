@@ -67,13 +67,15 @@ namespace InteractionKit
         }
 
         public readonly ref TextValidation Validation => ref background.AsEntity().GetComponent<IsTextField>().validation;
+        public readonly ref Submit Submit => ref background.AsEntity().GetComponent<IsTextField>().submit;
+        public readonly ref Cancel Cancel => ref background.AsEntity().GetComponent<IsTextField>().cancel;
         public readonly USpan<char> Value => TextLabel.Text;
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTextField, IsSelectable>();
 
-        public unsafe TextField(Canvas canvas, FixedString defaultValue = default, TextValidation validation = default)
+        public unsafe TextField(Canvas canvas, FixedString defaultValue = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
         {
             background = new(canvas);
             background.AddComponent(new IsSelectable());
@@ -111,7 +113,7 @@ namespace InteractionKit
             rint textReference = background.AddReference(text);
             rint cursorReference = background.AddReference(cursor);
             rint highlightReference = background.AddReference(highlight);
-            background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference, validation));
+            background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference, validation, submit, cancel));
         }
 
         public readonly void Dispose()

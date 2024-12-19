@@ -7,7 +7,6 @@ using Meshes;
 using Rendering.Components;
 using Simulation;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -103,7 +102,6 @@ namespace InteractionKit.Systems
 
                 FixedString pressedCharacters = default;
                 pressedCharacters.CopyFrom(settings.PressedCharacters);
-                bool pressedEscape = pressedCharacters.Contains(Settings.EscapeCharacter);
                 bool pressedControl = pressedCharacters.Contains(Settings.ControlCharacter);
                 bool editingAny = false;
                 bool startedEditing = false;
@@ -133,10 +131,6 @@ namespace InteractionKit.Systems
                             StartEditing(world, textFieldEntity, pointer, settings);
                             startedEditing = true;
                         }
-                    }
-                    else if (pressedEscape && component.editing)
-                    {
-                        component.editing = false;
                     }
 
                     rint cursorReference = component.cursorReference;
@@ -207,6 +201,30 @@ namespace InteractionKit.Systems
                                     if (c == 'x' || c == 'c' || c == 'v' || c == 'a')
                                     {
                                         //skip
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    if (c == Settings.EnterCharacter)
+                                    {
+                                        if (component.submit != default)
+                                        {
+                                            if (component.submit.Invoke(new(world, textFieldEntity), settings))
+                                            {
+                                                component.editing = false;
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    else if (c == Settings.EscapeCharacter)
+                                    {
+                                        if (component.cancel != default)
+                                        {
+                                            component.cancel.Invoke(new(world, textFieldEntity));
+                                        }
+
+                                        component.editing = false;
                                         continue;
                                     }
                                 }

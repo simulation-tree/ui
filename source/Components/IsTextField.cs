@@ -11,13 +11,18 @@ namespace InteractionKit.Components
         public rint highlightReference;
         public bool editing;
         public TextValidation validation;
+        public Submit submit;
+        public Cancel cancel;
 
-        public IsTextField(rint textReference, rint cursorReference, rint highlightReference, TextValidation validation)
+        public IsTextField(rint textReference, rint cursorReference, rint highlightReference, TextValidation validation, Submit submit, Cancel cancel)
         {
+            this.editing = false;
             this.textLabelReference = textReference;
             this.cursorReference = cursorReference;
             this.highlightReference = highlightReference;
-            this.editing = false;
+            this.validation = validation;
+            this.submit = submit;
+            this.cancel = cancel;
         }
     }
 }
