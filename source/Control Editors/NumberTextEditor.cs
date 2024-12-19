@@ -90,7 +90,7 @@ namespace InteractionKit.ControlEditors
             }
             else
             {
-                input.SetText("0");
+                input.SetText(['0']);
             }
         }
 
