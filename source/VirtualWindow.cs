@@ -26,6 +26,12 @@ namespace InteractionKit
             set => background.Size = value;
         }
 
+        public readonly float Z
+        {
+            get => background.Z;
+            set => background.Z = value;
+        }
+
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;
 
