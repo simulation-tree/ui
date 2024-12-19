@@ -96,19 +96,17 @@ namespace InteractionKit
 
             Image highlight = new(canvas);
             highlight.SetParent(background);
-            highlight.Color = new Color(0f, 0.4f, 1f, 0.5f);
+            highlight.Color = new Color(0f, 0.4f, 1f, 0.3f);
             highlight.Anchor = Anchor.TopLeft;
             highlight.Position = new(4f, -4f);
             highlight.Size = new(1, 1);
+            highlight.Z = Settings.ZScale * 1.5f;
             highlight.SetEnabled(false);
             highlight.AddComponent(new RendererScissor());
 
             MeshRenderer highlightRenderer = highlight;
             highlightRenderer.Mesh = highlightRenderer.Mesh.Clone();
             highlightRenderer.Mesh.CreateColors(0);
-
-            Transform highlightTransform = highlight;
-            highlightTransform.LocalPosition = new(0f, 0f, 0.05f);
 
             rint textReference = background.AddReference(text);
             rint cursorReference = background.AddReference(cursor);

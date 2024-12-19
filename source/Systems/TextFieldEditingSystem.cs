@@ -7,6 +7,7 @@ using Meshes;
 using Rendering.Components;
 using Simulation;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -83,9 +84,14 @@ namespace InteractionKit.Systems
             {
                 ComponentQuery<IsPointer> pointerQuery = new(world);
                 bool currentAnyPointerPressed = false;
+                uint firstPressedPointer = default;
                 foreach (var p in pointerQuery)
                 {
                     currentAnyPointerPressed |= p.component1.HasPrimaryIntent;
+                    if (currentAnyPointerPressed && firstPressedPointer == default)
+                    {
+                        firstPressedPointer = p.entity;
+                    }
                 }
 
                 bool anyPointerPressed = false;
@@ -114,15 +120,19 @@ namespace InteractionKit.Systems
                     bool startEditing = selectable.WasPrimaryInteractedWith;
                     if (startEditing && !startedEditing)
                     {
-                        ComponentQuery<IsTextField> otherTextFieldQuery = new(world);
-                        foreach (var otherT in otherTextFieldQuery)
+                        if (anyPointerPressed)
                         {
-                            ref IsTextField otherComponent = ref otherT.component1;
-                            otherComponent.editing = false;
-                        }
+                            ComponentQuery<IsTextField> otherTextFieldQuery = new(world);
+                            foreach (var otherT in otherTextFieldQuery)
+                            {
+                                ref IsTextField otherComponent = ref otherT.component1;
+                                otherComponent.editing = false;
+                            }
 
-                        StartEditing(world, textFieldEntity);
-                        startedEditing = true;
+                            Pointer pointer = new(world, firstPressedPointer);
+                            StartEditing(world, textFieldEntity, pointer, settings);
+                            startedEditing = true;
+                        }
                     }
                     else if (pressedEscape && component.editing)
                     {
@@ -259,9 +269,8 @@ namespace InteractionKit.Systems
             selection.index += clipboardLength;
         }
 
-        private static void StartEditing(World world, uint textFieldEntity)
+        private static void StartEditing(World world, uint textFieldEntity, Pointer pointer, Settings settings)
         {
-            Pointer pointer = world.GetFirst<Pointer>();
             TextField textField = new Entity(world, textFieldEntity).As<TextField>();
             textField.Editing = true;
             Vector3 worldPosition = textField.AsEntity().As<Transform>().WorldPosition;
@@ -271,12 +280,11 @@ namespace InteractionKit.Systems
 
             Label textLabel = textField.TextLabel;
             USpan<char> text = textLabel.Text;
-            Settings settings = world.GetFirst<Settings>();
             ref TextSelection range = ref settings.TextSelection;
             USpan<char> tempText = stackalloc char[(int)(text.Length + 1)];
             text.CopyTo(tempText);
             tempText[text.Length] = ' ';
-            if (textLabel.Font.TryIndexOf(tempText, pointerPosition / 16f, out uint newIndex))
+            if (textLabel.Font.TryIndexOf(tempText, pointerPosition / textLabel.Size, out uint newIndex))
             {
                 bool holdingShift = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
                 if (holdingShift)
@@ -299,8 +307,6 @@ namespace InteractionKit.Systems
 
                 range.index = newIndex;
             }
-
-            settings.TextSelection = range;
         }
 
         private static void UpdateCursorToMatchPosition(World world, Label textLabel, uint cursorEntity, Settings settings)
@@ -309,10 +315,7 @@ namespace InteractionKit.Systems
             USpan<char> text = textLabel.Text;
 
             ref TextSelection range = ref settings.TextSelection;
-            if (range.index > text.Length)
-            {
-                range.index = text.Length;
-            }
+            range.index = Math.Min(range.index, text.Length);
 
             USpan<char> textToCursor = text.Slice(0, range.index);
             Vector2 totalSize = font.CalulcateSize(textToCursor) * textLabel.Size;
@@ -493,9 +496,60 @@ namespace InteractionKit.Systems
             return false;
         }
 
+        private static uint GetLineNumber(USpan<char> text, uint index)
+        {
+            uint line = 0;
+            for (uint i = 0; i < index; i++)
+            {
+                if (text[i] == '\n')
+                {
+                    line++;
+                }
+            }
+
+            return line;
+        }
+
+        private static uint CountLines(USpan<char> text)
+        {
+            uint lines = 1;
+            for (uint i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n')
+                {
+                    lines++;
+                }
+            }
+
+            return lines;
+        }
+
+        private static (uint start, uint length) GetLine(USpan<char> text, uint lineNumber)
+        {
+            uint line = 0;
+            uint start = 0;
+            for (uint i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n')
+                {
+                    if (line == lineNumber)
+                    {
+                        return (start, i - start);
+                    }
+
+                    line++;
+                    start = i + 1;
+                }
+            }
+
+            return (start, text.Length - start);
+        }
+
         private static void HandleCharacter(World world, Label textLabel, TextValidation validation, char character, Settings settings)
         {
             USpan<char> text = textLabel.Text;
+            Font font = textLabel.Font;
+            Vector2 fontSize = textLabel.Size;
             ref TextSelection range = ref settings.TextSelection;
             uint start = Math.Min(range.start, range.end);
             uint end = Math.Max(range.start, range.end);
@@ -509,11 +563,58 @@ namespace InteractionKit.Systems
             }
             else if (character == Settings.MoveUpCharacter)
             {
+                uint lineNumber = GetLineNumber(text, range.index);
+                if (lineNumber > 0)
+                {
+                    (uint start, uint length) thisLine = GetLine(text, lineNumber);
+                    (uint start, uint length) lineAbove = GetLine(text, lineNumber - 1);
+                    if (shift && length == 0)
+                    {
+                        range.start = range.index;
+                    }
 
+                    uint localIndex = range.index - thisLine.start;
+                    range.index = lineAbove.start + Math.Min(localIndex, lineAbove.length);
+
+                    if (shift)
+                    {
+                        range.end = range.index;
+                    }
+                }
+
+                if (!shift)
+                {
+                    range.start = 0;
+                    range.end = 0;
+                }
             }
             else if (character == Settings.MoveDownCharacter)
             {
+                uint lineNumber = GetLineNumber(text, range.index);
+                uint lineCount = CountLines(text);
+                if (lineNumber < lineCount - 1)
+                {
+                    (uint start, uint length) thisLine = GetLine(text, lineNumber);
+                    (uint start, uint length) lineBelow = GetLine(text, lineNumber + 1);
+                    if (shift && length == 0)
+                    {
+                        range.start = range.index;
+                    }
 
+                    uint localIndex = range.index - thisLine.start;
+                    range.index = lineBelow.start + Math.Min(localIndex, lineBelow.length);
+
+                    if (shift)
+                    {
+                        range.end = range.index;
+                    }
+                }
+
+                if (!shift)
+                {
+                    range.start = 0;
+                    range.end = 0;
+                }
             }
             else if (character == Settings.MoveLeftCharacter)
             {
@@ -821,8 +922,6 @@ namespace InteractionKit.Systems
                     range.index++;
                 }
             }
-
-            settings.TextSelection = range;
         }
 
         private static void RemoveSelection(Label textLabel, TextValidation validation, ref TextSelection range)

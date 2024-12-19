@@ -21,14 +21,15 @@ namespace InteractionKit
             get
             {
                 Transform transform = textRenderer.AsEntity().As<Transform>();
-                Vector3 position = transform.LocalPosition;
+                ref Vector3 position = ref transform.LocalPosition;
                 return new(position.X, position.Y);
             }
             set
             {
                 Transform transform = textRenderer.AsEntity().As<Transform>();
-                Vector3 position = transform.LocalPosition;
-                transform.LocalPosition = new(value.X, value.Y, position.Z);
+                ref Vector3 position = ref transform.LocalPosition;
+                position.X = value.X;
+                position.Y = value.Y;
             }
         }
 
@@ -46,19 +47,23 @@ namespace InteractionKit
             }
         }
 
+        /// <summary>
+        /// Size of the label.
+        /// </summary>
         public readonly Vector2 Size
         {
             get
             {
                 Transform transform = textRenderer.AsEntity().As<Transform>();
-                Vector3 scale = transform.LocalScale;
+                ref Vector3 scale = ref transform.LocalScale;
                 return new(scale.X, scale.Y);
             }
             set
             {
                 Transform transform = textRenderer.AsEntity().As<Transform>();
-                Vector3 scale = transform.LocalScale;
-                transform.LocalScale = new(value.X, value.Y, scale.Z);
+                ref Vector3 scale = ref transform.LocalScale;
+                scale.X = value.X;
+                scale.Y = value.Y;
             }
         }
 

@@ -66,10 +66,14 @@ namespace InteractionKit
         }
 #endif
 
+        public Pointer(World world, uint existingEntity)
+        {
+            entity = new(world, existingEntity);
+        }
+
         public Pointer(World world)
         {
-            entity = new(world);
-            entity.AddComponent(new IsPointer());
+            entity = new Entity<IsPointer>(world);
         }
 
         public readonly void Dispose()
