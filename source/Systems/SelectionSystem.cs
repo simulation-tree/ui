@@ -12,9 +12,9 @@ namespace InteractionKit.Systems
     {
         private readonly Dictionary<Entity, uint> selectionStates;
         private readonly Dictionary<Entity, PointerAction> pointerStates;
-        private readonly List<uint> selectableEntities;
+        private readonly List<(uint entity, LocalToWorld ltw)> selectableEntities;
 
-        private SelectionSystem(Dictionary<Entity, uint> selectionStates, Dictionary<Entity, PointerAction> pointerStates, List<uint> selectableEntities)
+        private SelectionSystem(Dictionary<Entity, uint> selectionStates, Dictionary<Entity, PointerAction> pointerStates, List<(uint entity, LocalToWorld ltw)> selectableEntities)
         {
             this.selectionStates = selectionStates;
             this.pointerStates = pointerStates;
@@ -27,7 +27,7 @@ namespace InteractionKit.Systems
             {
                 Dictionary<Entity, uint> selectionStates = new();
                 Dictionary<Entity, PointerAction> pointerStates = new();
-                List<uint> selectableEntities = new();
+                List<(uint entity, LocalToWorld ltw)> selectableEntities = new();
                 systemContainer.Write(new SelectionSystem(selectionStates, pointerStates, selectableEntities));
             }
         }
@@ -89,22 +89,21 @@ namespace InteractionKit.Systems
                 }
 
                 //find currently hovering over entity
-                foreach (uint selectableEntity in selectableEntities)
+                foreach ((uint selectableEntity, LocalToWorld ltw) in selectableEntities)
                 {
-                    LocalToWorld ltw = world.GetComponent<LocalToWorld>(selectableEntity);
                     Vector3 position = ltw.Position;
                     Vector3 scale = ltw.Scale;
-                    ref WorldRotation worldRotationComponent = ref world.TryGetComponent<WorldRotation>(selectableEntity, out bool contains);
-                    if (contains)
+                    ref WorldRotation worldRotationComponent = ref world.TryGetComponent<WorldRotation>(selectableEntity, out bool hasWorldRotation);
+                    if (hasWorldRotation)
                     {
                         scale = Vector3.Transform(scale, worldRotationComponent.value);
                     }
 
-                    Vector3 offset = position + scale;
-                    Vector3 min = Vector3.Min(position, offset);
-                    Vector3 max = Vector3.Max(position, offset);
-                    bool isHoveringOver = pointerPosition.X >= min.X && pointerPosition.X <= max.X && pointerPosition.Y >= min.Y && pointerPosition.Y <= max.Y;
-                    if (isHoveringOver)
+                    Vector2 offset = new Vector2(position.X, position.Y) + new Vector2(scale.X, scale.Y);
+                    Vector2 min = Vector2.Min(new(position.X, position.Y), offset);
+                    Vector2 max = Vector2.Max(new(position.X, position.Y), offset);
+                    UIBounds bounds = new(min, max);
+                    if (bounds.Contains(pointerPosition))
                     {
                         float depth = position.Z;
                         if (lastDepth < depth)
@@ -204,7 +203,7 @@ namespace InteractionKit.Systems
             {
                 if (world.IsEnabled(s.entity))
                 {
-                    selectableEntities.Add(s.entity);
+                    selectableEntities.Add((s.entity, s.component2));
                 }
             }
         }

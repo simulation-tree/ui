@@ -1,27 +1,16 @@
 ﻿using InteractionKit.Components;
 using InteractionKit.Systems;
-using Simulation.Tests;
 using System;
 using System.Numerics;
 using Worlds;
 
 namespace InteractionKit.Tests
 {
-    public class ComponentMixingTests : SimulationTests
+    public class ComponentMixingTests : InteractionKitTests
     {
         protected override void SetUp()
         {
             base.SetUp();
-            ComponentType.Register<ComponentMix>();
-            ComponentType.Register<First>();
-            ComponentType.Register<Second>();
-            ComponentType.Register<Result>();
-            ComponentType.Register<FirstFloat>();
-            ComponentType.Register<SecondFloat>();
-            ComponentType.Register<ResultFloat>();
-            ComponentType.Register<FirstVector>();
-            ComponentType.Register<SecondVector>();
-            ComponentType.Register<ResultVector>();
             Simulator.AddSystem<ComponentMixingSystem>();
         }
 
@@ -53,39 +42,6 @@ namespace InteractionKit.Tests
             Assert.That(result, Is.EqualTo(first + second));
         }
 
-        [Component]
-        public struct Result
-        {
-            public int value;
-
-            public Result(int value)
-            {
-                this.value = value;
-            }
-        }
-
-        [Component]
-        public struct First
-        {
-            public int value;
-
-            public First(int value)
-            {
-                this.value = value;
-            }
-        }
-
-        [Component]
-        public struct Second
-        {
-            public int value;
-
-            public Second(int value)
-            {
-                this.value = value;
-            }
-        }
-
         [Test]
         public void FloatingMultiply()
         {
@@ -113,39 +69,6 @@ namespace InteractionKit.Tests
             Assert.That(result, Is.EqualTo(first + second));
         }
 
-        [Component]
-        public struct FirstFloat
-        {
-            public float value;
-
-            public FirstFloat(float value)
-            {
-                this.value = value;
-            }
-        }
-
-        [Component]
-        public struct SecondFloat
-        {
-            public float value;
-
-            public SecondFloat(float value)
-            {
-                this.value = value;
-            }
-        }
-
-        [Component]
-        public struct ResultFloat
-        {
-            public float value;
-
-            public ResultFloat(float value)
-            {
-                this.value = value;
-            }
-        }
-
         [Test]
         public void MixTwoVectors()
         {
@@ -162,38 +85,104 @@ namespace InteractionKit.Tests
             Vector3 result = World.GetComponent<ResultVector>(entity).value;
             Assert.That(result, Is.EqualTo(first * second));
         }
+    }
 
-        [Component]
-        public struct FirstVector
+    [Component]
+    public struct Result
+    {
+        public int value;
+
+        public Result(int value)
         {
-            public Vector3 value;
-
-            public FirstVector(Vector3 value)
-            {
-                this.value = value;
-            }
+            this.value = value;
         }
+    }
 
-        [Component]
-        public struct SecondVector
+    [Component]
+    public struct First
+    {
+        public int value;
+
+        public First(int value)
         {
-            public Vector3 value;
-
-            public SecondVector(Vector3 value)
-            {
-                this.value = value;
-            }
+            this.value = value;
         }
+    }
 
-        [Component]
-        public struct ResultVector
+    [Component]
+    public struct Second
+    {
+        public int value;
+
+        public Second(int value)
         {
-            public Vector3 value;
+            this.value = value;
+        }
+    }
 
-            public ResultVector(Vector3 value)
-            {
-                this.value = value;
-            }
+    [Component]
+    public struct FirstFloat
+    {
+        public float value;
+
+        public FirstFloat(float value)
+        {
+            this.value = value;
+        }
+    }
+
+    [Component]
+    public struct SecondFloat
+    {
+        public float value;
+
+        public SecondFloat(float value)
+        {
+            this.value = value;
+        }
+    }
+
+    [Component]
+    public struct ResultFloat
+    {
+        public float value;
+
+        public ResultFloat(float value)
+        {
+            this.value = value;
+        }
+    }
+
+    [Component]
+    public struct FirstVector
+    {
+        public Vector3 value;
+
+        public FirstVector(Vector3 value)
+        {
+            this.value = value;
+        }
+    }
+
+    [Component]
+    public struct SecondVector
+    {
+        public Vector3 value;
+
+        public SecondVector(Vector3 value)
+        {
+            this.value = value;
+        }
+    }
+
+    [Component]
+    public struct ResultVector
+    {
+        public Vector3 value;
+
+        public ResultVector(Vector3 value)
+        {
+            this.value = value;
         }
     }
 }

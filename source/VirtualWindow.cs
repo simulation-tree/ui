@@ -73,6 +73,7 @@ namespace InteractionKit
         private unsafe VirtualWindow(World world, Canvas canvas, FixedString titleText, VirtualWindowClose closeCallback)
         {
             background = new(canvas);
+            background.AddComponent(new IsResizable(IsResizable.Boundary.All));
 
             Image header = new(canvas);
             header.Anchor = new(new(0f, false), new(1f, false), default, new(1f, false), new(1f, false), default);

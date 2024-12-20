@@ -13,6 +13,7 @@ namespace InteractionKit.Systems
                 Simulator simulator = systemContainer.Simulator;
                 simulator.AddSystem<CanvasSystem>();
                 simulator.AddSystem<SelectionSystem>();
+                simulator.AddSystem<ResizingSystem>();
                 simulator.AddSystem<VirtualWindowsScrollViewSystem>();
                 simulator.AddSystem<InvokeTriggersSystem>();
                 simulator.AddSystem<AutomationParameterSystem>();
@@ -47,6 +48,7 @@ namespace InteractionKit.Systems
                 simulator.RemoveSystem<AutomationParameterSystem>();
                 simulator.RemoveSystem<InvokeTriggersSystem>();
                 simulator.RemoveSystem<VirtualWindowsScrollViewSystem>();
+                simulator.RemoveSystem<ResizingSystem>();
                 simulator.RemoveSystem<SelectionSystem>();
                 simulator.RemoveSystem<CanvasSystem>();
             }
