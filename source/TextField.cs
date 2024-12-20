@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Collections;
+using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
 using Meshes;
@@ -66,16 +67,21 @@ namespace InteractionKit
             }
         }
 
+        public readonly ref BeginEditing BeginEditing => ref background.AsEntity().GetComponent<IsTextField>().beginEditing;
         public readonly ref TextValidation Validation => ref background.AsEntity().GetComponent<IsTextField>().validation;
         public readonly ref Submit Submit => ref background.AsEntity().GetComponent<IsTextField>().submit;
         public readonly ref Cancel Cancel => ref background.AsEntity().GetComponent<IsTextField>().cancel;
+
+        /// <summary>
+        /// The content of this text field.
+        /// </summary>
         public readonly USpan<char> Value => TextLabel.Text;
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
         readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTextField, IsSelectable>();
 
-        public unsafe TextField(Canvas canvas, FixedString defaultValue = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
+        public unsafe TextField(Canvas canvas, FixedString defaultValue = default, BeginEditing beginEditing = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
         {
             background = new(canvas);
             background.AddComponent(new IsSelectable());
@@ -113,7 +119,7 @@ namespace InteractionKit
             rint textReference = background.AddReference(text);
             rint cursorReference = background.AddReference(cursor);
             rint highlightReference = background.AddReference(highlight);
-            background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference, validation, submit, cancel));
+            background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference, beginEditing, validation, submit, cancel));
         }
 
         public readonly void Dispose()
@@ -126,11 +132,9 @@ namespace InteractionKit
             ref TextValidation validation = ref Validation;
             if (validation != default)
             {
-                Allocation newTextContainer = Allocation.Create(newText);
-                uint newLength = newText.Length;
-                validation.Invoke(Value, ref newTextContainer, ref newLength);
-                TextLabel.SetText(newTextContainer.AsSpan<char>(0, newLength));
-                newTextContainer.Dispose();
+                using Text newTextContainer = new(newText);
+                validation.Invoke(Value, newTextContainer);
+                TextLabel.SetText(newTextContainer.AsSpan());
             }
             else
             {

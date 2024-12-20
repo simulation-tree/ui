@@ -1,5 +1,6 @@
 ﻿using Data;
 using InteractionKit.Functions;
+using Rendering.Components;
 using System.Runtime.InteropServices;
 using Unmanaged;
 using Worlds;
@@ -42,7 +43,9 @@ namespace InteractionKit.ControlEditors
                 }
             }
 
+            textField.BeginEditing = new(&BeginEditing);
             textField.Submit = new(&Submit);
+            textField.Cancel = new(&Cancel);
             input.AddEntity(textField);
         }
 
@@ -57,6 +60,31 @@ namespace InteractionKit.ControlEditors
             {
                 return true;
             }
+        }
+
+        [UnmanagedCallersOnly]
+        private static void BeginEditing(Entity entity)
+        {
+            //store original state
+            TextField textField = entity.As<TextField>();
+            USpan<char> originalText = textField.Value;
+            if (!entity.ContainsArray<TextCharacter>())
+            {
+                entity.CreateArray(originalText.As<TextCharacter>());
+            }
+            else
+            {
+                entity.ResizeArray<TextCharacter>(originalText.Length).CopyFrom(originalText.As<TextCharacter>());
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        private static void Cancel(Entity entity)
+        {
+            //revert
+            TextField textField = entity.As<TextField>();
+            USpan<TextCharacter> originalText = entity.GetArray<TextCharacter>();
+            textField.SetText(originalText.As<char>());
         }
     }
 }

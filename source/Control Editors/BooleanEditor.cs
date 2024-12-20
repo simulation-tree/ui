@@ -22,8 +22,9 @@ namespace InteractionKit.ControlEditors
             toggle.Size = new(singleLineHeight, singleLineHeight);
             toggle.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1f);
             toggle.CheckmarkColor = Color.White;
-            toggle.Anchor = Anchor.Centered;
-            toggle.Pivot = new(0f, 0.5f, 0f);
+            toggle.Anchor = Anchor.BottomLeft;
+            toggle.Position = new(100f, 0f);
+            toggle.Pivot = new(0f, 0f, 0f);
             toggle.Callback = new(&BooleanToggled);
             input.AddEntity(toggle);
         }

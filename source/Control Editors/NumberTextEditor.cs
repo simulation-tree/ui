@@ -1,5 +1,6 @@
 ﻿using Data;
 using InteractionKit.Functions;
+using Rendering.Components;
 using System.Runtime.InteropServices;
 using Unmanaged;
 using Worlds;
@@ -49,8 +50,10 @@ namespace InteractionKit.ControlEditors
                 }
             }
 
+            textField.BeginEditing = new(&BeginEditing);
             textField.Validation = new(&Validate);
             textField.Submit = new(&Submit);
+            textField.Cancel = new(&Cancel);
             input.AddEntity(textField);
         }
 
@@ -58,46 +61,56 @@ namespace InteractionKit.ControlEditors
         private static void Validate(TextValidation.Input input)
         {
             USpan<char> newText = input.NewText;
-            uint lastValidIndex = 0;
-            bool readDecimal = false;
+            USpan<char> validatedText = stackalloc char[(int)newText.Length];
+            uint validatedLength = 0;
             for (uint i = 0; i < newText.Length; i++)
             {
                 char c = newText[i];
                 if (c == '.' || c == '-' || (c >= '0' && c <= '9'))
                 {
-                    if (c == '.')
-                    {
-                        if (readDecimal)
-                        {
-                            break;
-                        }
-
-                        readDecimal = true;
-                    }
-
-                    lastValidIndex++;
-                }
-                else
-                {
-                    break;
+                    validatedText[validatedLength++] = c;
                 }
             }
 
-            USpan<char> validNewText = newText.Slice(0, lastValidIndex);
-            if (float.TryParse(validNewText.AsSystemSpan(), out _))
+            input.SetNewText(validatedText.Slice(0, validatedLength));
+        }
+
+        [UnmanagedCallersOnly]
+        private static Boolean Submit(Entity entity, Settings settings)
+        {
+            TextField textField = entity.As<TextField>();
+            USpan<char> newText = textField.Value;
+            if (!float.TryParse(newText.AsSystemSpan(), out _))
             {
-                input.SetText(validNewText);
+                textField.SetText(['0']);
+            }
+
+            return true;
+        }
+
+        [UnmanagedCallersOnly]
+        private static void BeginEditing(Entity entity)
+        {
+            //store original state
+            TextField textField = entity.As<TextField>();
+            USpan<char> originalText = textField.Value;
+            if (!entity.ContainsArray<TextCharacter>())
+            {
+                entity.CreateArray(originalText.As<TextCharacter>());
             }
             else
             {
-                input.SetText(['0']);
+                entity.ResizeArray<TextCharacter>(originalText.Length).CopyFrom(originalText.As<TextCharacter>());
             }
         }
 
         [UnmanagedCallersOnly]
-        private static Boolean Submit(Entity textField, Settings settings)
+        private static void Cancel(Entity entity)
         {
-            return true;
+            //revert
+            TextField textField = entity.As<TextField>();
+            USpan<TextCharacter> originalText = entity.GetArray<TextCharacter>();
+            textField.SetText(originalText.As<char>());
         }
     }
 }

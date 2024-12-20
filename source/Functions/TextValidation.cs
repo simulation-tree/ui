@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Collections;
+using System;
 using Unmanaged;
 
 namespace InteractionKit.Functions
@@ -27,15 +28,9 @@ namespace InteractionKit.Functions
             return ((nint)function).GetHashCode();
         }
 
-        public readonly void Invoke(USpan<char> oldText, ref Allocation newText, ref uint newLength)
+        public readonly void Invoke(USpan<char> oldText, Text newText)
         {
-            using Allocation container = Allocation.Create<Input.Text>();
-            ref Input.Text text = ref container.Read<Input.Text>();
-            text.allocation = newText;
-            text.length = newLength;
-            function(new(oldText, container));
-            newText = text.allocation;
-            newLength = text.length;
+            function(new(oldText, newText));
         }
 
         public static bool operator ==(TextValidation left, TextValidation right)
@@ -48,42 +43,26 @@ namespace InteractionKit.Functions
             return !(left == right);
         }
 
-        public readonly ref struct Input
+        public readonly struct Input
         {
             private readonly void* oldText;
             private readonly uint oldLength;
-            private readonly Allocation container;
+            private readonly Text newText;
 
             public readonly USpan<char> PreviousText => new(oldText, oldLength);
+            public readonly USpan<char> NewText => newText.AsSpan();
 
-            public readonly USpan<char> NewText
-            {
-                get
-                {
-                    ref Text text = ref container.Read<Text>();
-                    return text.allocation.AsSpan<char>(0, text.length);
-                }
-            }
-
-            public Input(USpan<char> oldText, Allocation container)
+            public Input(USpan<char> oldText, Text newText)
             {
                 this.oldText = oldText.Pointer;
                 this.oldLength = oldText.Length;
-                this.container = container;
+                this.newText = newText;
             }
 
-            public readonly void SetText(USpan<char> value)
+            public readonly void SetNewText(USpan<char> newText)
             {
-                ref Text text = ref container.Read<Text>();
-                text.length = value.Length;
-                Allocation.Resize(ref text.allocation, text.length * TypeInfo<char>.size);
-                text.allocation.Write(0, value);
-            }
-
-            public struct Text
-            {
-                public Allocation allocation;
-                public uint length;
+                this.newText.SetLength(newText.Length);
+                newText.CopyTo(this.newText.AsSpan());
             }
         }
     }

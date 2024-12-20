@@ -19,7 +19,7 @@ namespace InteractionKit.Systems
     {
         private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/', '\n'];
 
-        private readonly Dictionary<uint, TextSelection> lastSelections;
+        private readonly Dictionary<Entity, TextSelection> lastSelections;
         private FixedString lastPressedCharacters;
         private FixedString currentCharacters;
         private DateTime nextPress;
@@ -116,6 +116,12 @@ namespace InteractionKit.Systems
                     ref IsTextField component = ref t.component1;
                     ref IsSelectable selectable = ref t.component2;
                     bool startEditing = selectable.WasPrimaryInteractedWith;
+                    rint cursorReference = component.cursorReference;
+                    uint cursorEntity = world.GetReference(textFieldEntity, cursorReference);
+                    rint textLabelReference = component.textLabelReference;
+                    uint textLabelEntity = world.GetReference(textFieldEntity, textLabelReference);
+                    Label textLabel = new(world, textLabelEntity);
+
                     if (startEditing && !startedEditing)
                     {
                         if (anyPointerPressed)
@@ -130,14 +136,13 @@ namespace InteractionKit.Systems
                             Pointer pointer = new(world, firstPressedPointer);
                             StartEditing(world, textFieldEntity, pointer, settings);
                             startedEditing = true;
+                            if (component.beginEditing != default)
+                            {
+                                component.beginEditing.Invoke(new(world, textFieldEntity));
+                            }
                         }
                     }
 
-                    rint cursorReference = component.cursorReference;
-                    uint cursorEntity = world.GetReference(textFieldEntity, cursorReference);
-                    rint textLabelReference = component.textLabelReference;
-                    uint textLabelEntity = world.GetReference(textFieldEntity, textLabelReference);
-                    Label textLabel = new(world, textLabelEntity);
                     if (component.editing)
                     {
                         ref TextSelection selection = ref settings.TextSelection;
@@ -243,7 +248,7 @@ namespace InteractionKit.Systems
 
                         rint highlightReference = component.highlightReference;
                         uint highlightEntity = world.GetReference(textFieldEntity, highlightReference);
-                        UpdateHighlightToMatchPosition(world, textLabel, highlightEntity, settings);
+                        UpdateHighlightToMatchPosition(world, textLabel, new(world, highlightEntity), settings);
                     }
                     else
                     {
@@ -350,7 +355,7 @@ namespace InteractionKit.Systems
             cursorPosition.value = localPosition;
         }
 
-        private readonly void UpdateHighlightToMatchPosition(World world, Label textLabel, uint highlightEntity, Settings settings)
+        private readonly void UpdateHighlightToMatchPosition(World world, Label textLabel, Entity highlightEntity, Settings settings)
         {
             ref TextSelection range = ref settings.TextSelection;
             ref TextSelection lastRange = ref lastSelections.TryGetValue(highlightEntity, out bool contains);
@@ -927,12 +932,10 @@ namespace InteractionKit.Systems
 
                 if (validation != default)
                 {
-                    Allocation newTextContainer = Allocation.Create(newText);
-                    uint newLength = newText.Length;
-                    validation.Invoke(text, ref newTextContainer, ref newLength);
-                    textLabel.SetText(newTextContainer.AsSpan<char>(0, newLength));
-                    range.index = newLength;
-                    newTextContainer.Dispose();
+                    using Text newTextContainer = new(newText);
+                    validation.Invoke(text, newTextContainer);
+                    textLabel.SetText(newTextContainer.AsSpan());
+                    range.index = newTextContainer.Length;
                 }
                 else
                 {
@@ -971,11 +974,9 @@ namespace InteractionKit.Systems
         {
             if (validation != default)
             {
-                Allocation newTextContainer = Allocation.Create(newText);
-                uint newLength = newText.Length;
-                validation.Invoke(oldText, ref newTextContainer, ref newLength);
-                label.SetText(newTextContainer.AsSpan<char>(0, newLength));
-                newTextContainer.Dispose();
+                using Text newTextContainer = new(newText);
+                validation.Invoke(oldText, newTextContainer);
+                label.SetText(newTextContainer.AsSpan());
             }
             else
             {
