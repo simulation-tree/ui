@@ -59,6 +59,20 @@ namespace InteractionKit
             }
         }
 
+        public readonly float Rotation
+        {
+            get
+            {
+                Quaternion rotation = transform.LocalRotation;
+                return new EulerAngles(rotation).value.Z;
+            }
+            set
+            {
+                ref Quaternion rotation = ref transform.LocalRotation;
+                rotation = Quaternion.CreateFromYawPitchRoll(0f, 0f, value);
+            }
+        }
+
         public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
         public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
         public readonly ref Color Color => ref transform.AsEntity().GetComponent<BaseColor>().value;

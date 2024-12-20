@@ -1,6 +1,7 @@
 ﻿using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
+using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
@@ -78,11 +79,9 @@ namespace InteractionKit
             header.Pivot = new(0f, 1f, 0f);
             header.Size = new(1f, 26f);
             header.Color = new Color(0.2f, 0.2f, 0.2f);
+            header.Position = new(0f, 0f);
             header.SetParent(background);
             header.AddComponent(new IsSelectable());
-
-            Transform headerTransform = header;
-            headerTransform.LocalPosition = new(0f, 0f, 1f);
 
             rint targetReference = header.AddReference(background);
             header.AddComponent(new IsDraggable(targetReference));
@@ -100,9 +99,24 @@ namespace InteractionKit
             closeButton.Anchor = Anchor.TopRight;
             closeButton.Size = new(18f, 18f);
             closeButton.Pivot = new(1f, 1f, 0f);
+            closeButton.Position = new(-4f, -4f);
 
-            Transform closeButtonTransform = closeButton;
-            closeButtonTransform.LocalPosition = new(-4f, -4f, 1f);
+            //close button x shape
+            {
+                Image line1 = new(canvas);
+                line1.SetParent(closeButton);
+                line1.Color = Vector4.Lerp(Color.Black, Color.Red, 0.3f);
+                line1.Size = new(18f, 2.5f);
+                line1.Rotation = MathF.PI * 0.25f;
+                line1.Position = new(3f, 2f);
+
+                Image line2 = new(canvas);
+                line2.SetParent(closeButton);
+                line2.Color = Vector4.Lerp(Color.Black, Color.Red, 0.3f);
+                line2.Size = new(18f, 2f);
+                line2.Rotation = MathF.PI * -0.25f;
+                line2.Position = new(2f, 15f);
+            }
 
             ScrollBar scrollBar = new(canvas, Vector2.UnitY, 0.5f);
             scrollBar.SetParent(background);

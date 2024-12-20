@@ -26,6 +26,12 @@ namespace InteractionKit
             set => image.Size = value;
         }
 
+        public readonly float Z
+        {
+            get => image.Z;
+            set => image.Z = value;
+        }
+
         public readonly ref Anchor Anchor => ref image.Anchor;
         public readonly ref Vector3 Pivot => ref image.Pivot;
         public readonly ref Color Color => ref image.Color;

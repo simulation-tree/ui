@@ -35,6 +35,11 @@ namespace InteractionKit
             get
             {
                 rint hoveringOverReference = entity.GetComponent<IsPointer>().hoveringOverReference;
+                if (hoveringOverReference == default)
+                {
+                    return default;
+                }
+
                 uint hoveringOverEntity = entity.GetReference(hoveringOverReference);
                 return new Entity(entity.world, hoveringOverEntity);
             }
