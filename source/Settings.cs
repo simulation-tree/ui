@@ -7,7 +7,6 @@ using Fonts;
 using InteractionKit.Components;
 using Meshes;
 using Rendering;
-using Rendering.Components;
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -34,8 +33,9 @@ namespace InteractionKit
 
         private readonly Entity entity;
 
-        public readonly USpan<char> PressedCharacters => entity.GetArray<TextCharacter>().As<char>();
         public readonly ref float SingleLineHeight => ref entity.GetComponent<UISettings>().singleLineHeight;
+        public readonly ref uint Mask => ref entity.GetComponent<UISettings>().mask;
+        public readonly ref PressedCharacters PressedCharacters => ref entity.GetComponent<UISettings>().pressedCharacters;
 
         public readonly StateMachine ControlStateMachine
         {
@@ -114,7 +114,7 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<AssetReferences, UISettings, TextEditState>().AddArrayTypes<TextCharacter, MaterialSettings>();
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<AssetReferences, UISettings, TextEditState>().AddArrayType<MaterialSettings>();
 
 #if NET
         [Obsolete("Default constructor not supported", true)]
@@ -224,11 +224,11 @@ namespace InteractionKit
 
             UISettings uiSettings = new();
             uiSettings.singleLineHeight = 24f;
+            uiSettings.mask = 1;
 
             entity.AddComponent(assetReferences);
             entity.AddComponent(uiSettings);
             entity.AddComponent(new TextEditState());
-            entity.CreateArray<TextCharacter>();
 
             MaterialSettings materialSettings = new(default, squareMaterialReference, triangleMaterialReference, textMaterialReference, dropShadowMaterialReference);
             entity.CreateArray([materialSettings]);
@@ -237,12 +237,6 @@ namespace InteractionKit
         public readonly void Dispose()
         {
             entity.Dispose();
-        }
-
-        public readonly void SetPressedCharacters(USpan<char> characters)
-        {
-            USpan<TextCharacter> array = entity.ResizeArray<TextCharacter>(characters.Length);
-            characters.As<TextCharacter>().CopyTo(array);
         }
 
         public readonly Material GetSquareMaterial(Camera camera)

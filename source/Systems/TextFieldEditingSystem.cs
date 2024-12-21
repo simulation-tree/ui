@@ -20,7 +20,7 @@ namespace InteractionKit.Systems
         private static readonly char[] controlCharacters = [' ', '.', ',', '_', '-', '+', '*', '/', '\n'];
 
         private readonly Dictionary<Entity, TextSelection> lastSelections;
-        private FixedString lastPressedCharacters;
+        private PressedCharacters lastPressedCharacters;
         private FixedString currentCharacters;
         private DateTime nextPress;
         private bool lastAnyPointerPressed;
@@ -100,8 +100,7 @@ namespace InteractionKit.Systems
                     anyPointerPressed = currentAnyPointerPressed;
                 }
 
-                FixedString pressedCharacters = default;
-                pressedCharacters.CopyFrom(settings.PressedCharacters);
+                PressedCharacters pressedCharacters = settings.PressedCharacters;
                 bool pressedControl = pressedCharacters.Contains(Settings.ControlCharacter);
                 bool editingAny = false;
                 bool startedEditing = false;

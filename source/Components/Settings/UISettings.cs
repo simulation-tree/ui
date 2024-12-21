@@ -6,5 +6,7 @@ namespace InteractionKit.Components
     public struct UISettings
     {
         public float singleLineHeight;
+        public uint mask;
+        public PressedCharacters pressedCharacters;
     }
 }

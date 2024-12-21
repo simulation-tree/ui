@@ -39,7 +39,7 @@ namespace InteractionKit.Systems
                 }
 
                 ref Position position = ref x.component2;
-                position.value = new(0, 0, distanceFromCamera); //todo: wtf: why negative?
+                position.value = new(0, 0, distanceFromCamera);
 
                 ref Scale scale = ref x.component3;
                 scale.value = new(size, scale.value.Z);

@@ -127,7 +127,7 @@ namespace InteractionKit
             textRenderer = transform.AsEntity().Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
-            textRenderer.Mask = 1; //todo: customizing the layer that ui controls are on
+            textRenderer.Mask = settings.Mask;
 
             textRenderer.AddComponent(new IsLabel());
 
