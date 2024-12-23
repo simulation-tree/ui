@@ -42,8 +42,8 @@ namespace InteractionKit
             set
             {
                 Transform transform = textRenderer.AsEntity().As<Transform>();
-                Vector3 position = transform.LocalPosition;
-                transform.LocalPosition = new(position.X, position.Y, value);
+                ref Vector3 position = ref transform.LocalPosition;
+                position.Z = value;
             }
         }
 
@@ -96,14 +96,14 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => textRenderer.GetEntityValue();
         readonly World IEntity.World => textRenderer.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsLabel, IsTextRenderer, IsSelectable>();
+        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsLabel, IsTextRenderer, IsSelectable>().AddArrayType<LabelCharacter>();
 
         public Label(World world, uint existingEntity)
         {
             textRenderer = new(world, existingEntity);
         }
 
-        public Label(Canvas canvas, FixedString text, Font font = default, float size = 16f)
+        public Label(Canvas canvas, USpan<char> text, Font font = default, float size = 16f)
         {
             World world = canvas.GetWorld();
             Settings settings = canvas.GetSettings();
@@ -112,7 +112,7 @@ namespace InteractionKit
                 font = settings.Font;
             }
 
-            TextMesh textMesh = new(world, text, font);
+            TextMesh textMesh = new(world, default(FixedString), font);
 
             Transform transform = new(world);
             transform.AddComponent(new Anchor());
@@ -131,6 +131,44 @@ namespace InteractionKit
 
             textRenderer.AddComponent(new IsLabel());
 
+            textRenderer.AsEntity().CreateArray(text.As<LabelCharacter>());
+
+            transform.LocalScale = Vector3.One * size;
+            transform.LocalPosition = new(0f, 0f, Settings.ZScale);
+        }
+
+        public Label(Canvas canvas, FixedString text, Font font = default, float size = 16f)
+        {
+            World world = canvas.GetWorld();
+            Settings settings = canvas.GetSettings();
+            if (font == default)
+            {
+                font = settings.Font;
+            }
+
+            TextMesh textMesh = new(world, default(FixedString), font);
+
+            Transform transform = new(world);
+            transform.AddComponent(new Anchor());
+            transform.AddComponent(new Pivot());
+            transform.AddComponent(new ColorTint(new Vector4(1f)));
+            transform.AddComponent(new BaseColor(new Vector4(1f)));
+            transform.AddComponent(new Color(new Vector4(1f)));
+            transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
+            transform.SetParent(canvas);
+
+            Camera camera = canvas.Camera;
+            textRenderer = transform.AsEntity().Become<TextRenderer>();
+            textRenderer.TextMesh = textMesh;
+            textRenderer.Material = settings.GetTextMaterial(camera);
+            textRenderer.Mask = settings.Mask;
+
+            textRenderer.AddComponent(new IsLabel());
+
+            USpan<char> textSpan = stackalloc char[(int)text.Length];
+            uint length = text.CopyTo(textSpan);
+            textRenderer.AsEntity().CreateArray(textSpan.As<LabelCharacter>());
+
             transform.LocalScale = Vector3.One * size;
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
         }
@@ -142,14 +180,13 @@ namespace InteractionKit
 
         public readonly void SetText(USpan<char> text)
         {
-            TextMesh textMesh = textRenderer.TextMesh;
-            textMesh.SetText(text);
+            USpan<LabelCharacter> array = textRenderer.AsEntity().ResizeArray<LabelCharacter>(text.Length);
+            text.CopyTo(array.As<char>());
         }
 
         public readonly void SetText(string text)
         {
-            TextMesh textMesh = textRenderer.TextMesh;
-            textMesh.SetText(text);
+            SetText(text.AsUSpan());
         }
 
         public readonly void SetText(FixedString text)
@@ -167,6 +204,11 @@ namespace InteractionKit
         public static implicit operator TextRenderer(Label label)
         {
             return label.textRenderer;
+        }
+
+        public static implicit operator Transform(Label label)
+        {
+            return label.textRenderer.AsEntity().As<Transform>();
         }
     }
 }

@@ -14,6 +14,7 @@ namespace InteractionKit.Systems
                 simulator.AddSystem<CanvasSystem>();
                 simulator.AddSystem<SelectionSystem>();
                 simulator.AddSystem<ResizingSystem>();
+                simulator.AddSystem<LabelTextSystem>();
                 simulator.AddSystem<VirtualWindowsScrollViewSystem>();
                 simulator.AddSystem<InvokeTriggersSystem>();
                 simulator.AddSystem<AutomationParameterSystem>();
@@ -48,6 +49,7 @@ namespace InteractionKit.Systems
                 simulator.RemoveSystem<AutomationParameterSystem>();
                 simulator.RemoveSystem<InvokeTriggersSystem>();
                 simulator.RemoveSystem<VirtualWindowsScrollViewSystem>();
+                simulator.RemoveSystem<LabelTextSystem>();
                 simulator.RemoveSystem<ResizingSystem>();
                 simulator.RemoveSystem<SelectionSystem>();
                 simulator.RemoveSystem<CanvasSystem>();

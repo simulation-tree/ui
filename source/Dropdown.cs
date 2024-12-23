@@ -194,7 +194,7 @@ namespace InteractionKit
             background.AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
             background.AddComponent(new IsSelectable());
 
-            Label label = new(canvas, "");
+            Label label = new(canvas, default(FixedString));
             label.SetParent(background);
             label.Anchor = Anchor.TopLeft;
             label.Color = Color.Black;
