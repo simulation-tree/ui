@@ -96,7 +96,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => textRenderer.GetEntityValue();
         readonly World IEntity.World => textRenderer.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsLabel, IsTextRenderer, IsSelectable>().AddArrayType<LabelCharacter>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentTypes<IsLabel, IsTextRenderer, IsSelectable>(schema).AddArrayType<LabelCharacter>(schema);
+        }
 
         public Label(World world, uint existingEntity)
         {
@@ -107,6 +111,7 @@ namespace InteractionKit
         {
             World world = canvas.GetWorld();
             Settings settings = canvas.GetSettings();
+            Schema schema = world.Schema;
             if (font == default)
             {
                 font = settings.Font;
@@ -120,7 +125,7 @@ namespace InteractionKit
             transform.AddComponent(new ColorTint(new Vector4(1f)));
             transform.AddComponent(new BaseColor(new Vector4(1f)));
             transform.AddComponent(new Color(new Vector4(1f)));
-            transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
+            transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4, schema));
             transform.SetParent(canvas);
 
             Camera camera = canvas.Camera;
@@ -141,6 +146,7 @@ namespace InteractionKit
         {
             World world = canvas.GetWorld();
             Settings settings = canvas.GetSettings();
+            Schema schema = world.Schema;
             if (font == default)
             {
                 font = settings.Font;
@@ -154,7 +160,7 @@ namespace InteractionKit
             transform.AddComponent(new ColorTint(new Vector4(1f)));
             transform.AddComponent(new BaseColor(new Vector4(1f)));
             transform.AddComponent(new Color(new Vector4(1f)));
-            transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
+            transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4, schema));
             transform.SetParent(canvas);
 
             Camera camera = canvas.Camera;

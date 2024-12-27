@@ -42,17 +42,17 @@ namespace InteractionKit.Functions
                 {
                     ThrowIfNotComponentType();
 
-                    return ComponentType.All[typeIndex];
+                    return new(typeIndex);
                 }
             }
 
-            public readonly ArrayType ArrayType
+            public readonly ArrayType ArrayElementType
             {
                 get
                 {
                     ThrowIfNotArrayType();
 
-                    return ArrayType.All[typeIndex];
+                    return new(typeIndex);
                 }
             }
 

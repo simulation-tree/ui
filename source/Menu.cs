@@ -136,7 +136,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsMenu>().AddArrayType<IsMenuOption>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsMenu>(schema).AddArrayType<IsMenuOption>(schema);
+        }
 
         public Menu(Canvas canvas, MenuCallback callback = default)
         {

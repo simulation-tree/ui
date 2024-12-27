@@ -55,7 +55,8 @@ namespace InteractionKit.Systems
                 destroyOperation.ClearSelection();
             }
 
-            ComponentQuery<IsDropShadow> queryWithoutScale = new(world, ComponentType.GetBitSet<Scale>());
+            Schema schema = world.Schema;
+            ComponentQuery<IsDropShadow> queryWithoutScale = new(world, schema.GetComponents<Scale>());
             foreach (var r in queryWithoutScale)
             {
                 destroyOperation.SelectEntity(r.entity);
@@ -63,7 +64,7 @@ namespace InteractionKit.Systems
 
             if (destroyOperation.HasSelection)
             {
-                destroyOperation.AddComponent(Scale.Default);
+                destroyOperation.AddComponent(Scale.Default, schema);
             }
 
             if (destroyOperation.Count > 0)

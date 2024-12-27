@@ -51,7 +51,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsCanvas>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsCanvas>(schema);
+        }
 
 #if NET
         [Obsolete("Default constructor not available", true)]

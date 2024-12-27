@@ -63,7 +63,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsVirtualWindow>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsVirtualWindow>(schema);
+        }
 
         public VirtualWindow(World world, uint existingEntity)
         {

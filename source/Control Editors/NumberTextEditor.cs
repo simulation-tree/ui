@@ -25,15 +25,16 @@ namespace InteractionKit.ControlEditors
             textField.BackgroundColor = new(0.2f, 0.2f, 0.2f);
             textField.TextColor = Color.White;
 
+            Schema schema = canvas.GetWorld().Schema;
             Entity target = input.Target;
             if (input.isComponentType)
             {
                 ComponentType componentType = input.ComponentType;
-                if (componentType.Is<FixedString>())
+                if (componentType == schema.GetComponent<FixedString>())
                 {
                     textField.SetText(target.GetComponent<FixedString>());
                 }
-                else if (componentType.Is<float>())
+                else if (componentType == schema.GetComponent<float>())
                 {
                     USpan<char> buffer = stackalloc char[32];
                     float value = target.GetComponent<float>();
@@ -43,8 +44,8 @@ namespace InteractionKit.ControlEditors
             }
             else
             {
-                ArrayType arrayType = input.ArrayType;
-                if (arrayType.Is<char>())
+                ArrayType arrayElementType = input.ArrayElementType;
+                if (arrayElementType == schema.GetArrayElement<char>())
                 {
                     textField.SetText(target.GetArray<char>());
                 }

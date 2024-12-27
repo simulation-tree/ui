@@ -20,9 +20,12 @@ namespace InteractionKit.Components
             this.vectorLength = vectorLength;
         }
 
-        public static ComponentMix Create<L, R, O>(Operation operation, byte vectorLength = 1) where L : unmanaged where R : unmanaged where O : unmanaged
+        public static ComponentMix Create<L, R, O>(Operation operation, byte vectorLength, Schema schema) where L : unmanaged where R : unmanaged where O : unmanaged
         {
-            return new ComponentMix(ComponentType.Get<L>(), ComponentType.Get<R>(), ComponentType.Get<O>(), operation, vectorLength);
+            ComponentType left = schema.GetComponent<L>();
+            ComponentType right = schema.GetComponent<R>();
+            ComponentType output = schema.GetComponent<O>();
+            return new ComponentMix(left, right, output, operation, vectorLength);
         }
 
         public enum Operation : byte

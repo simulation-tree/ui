@@ -79,7 +79,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTextField, IsSelectable>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentTypes<IsTextField, IsSelectable>(schema);
+        }
 
         public unsafe TextField(Canvas canvas, FixedString defaultValue = default, BeginEditing beginEditing = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
         {

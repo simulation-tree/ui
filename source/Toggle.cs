@@ -55,7 +55,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsToggle, IsSelectable>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentTypes<IsToggle, IsSelectable>(schema);
+        }
 
         public Toggle(World world, uint existingEntity)
         {

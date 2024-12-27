@@ -38,7 +38,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => image.GetEntityValue();
         readonly World IEntity.World => image.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTrigger, IsSelectable>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentTypes<IsTrigger, IsSelectable>(schema);
+        }
 
 #if NET
         [Obsolete("Default constructor not available", true)]

@@ -93,7 +93,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsView>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsView>(schema);
+        }
 
         public View(World world, Canvas canvas)
         {

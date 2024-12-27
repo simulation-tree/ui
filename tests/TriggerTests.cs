@@ -1,7 +1,6 @@
 ﻿using InteractionKit.Components;
 using InteractionKit.Functions;
 using InteractionKit.Systems;
-using Simulation;
 using Simulation.Tests;
 using System;
 using System.Runtime.InteropServices;
@@ -11,42 +10,45 @@ namespace InteractionKit.Tests
 {
     public class TriggerTests : SimulationTests
     {
+        static TriggerTests()
+        {
+            TypeLayout.Register<IsTrigger>("IsTrigger");
+        }
+
         protected override void SetUp()
         {
             base.SetUp();
-            ComponentType.Register<IsTrigger>();
-            ComponentType.Register<byte>();
-            ComponentType.Register<int>();
-            Simulator.AddSystem<InvokeTriggersSystem>();
+            world.Schema.RegisterComponent<IsTrigger>();
+            simulator.AddSystem<InvokeTriggersSystem>();
         }
 
         [Test]
         public unsafe void CheckTrigger()
         {
-            uint triggerA = World.CreateEntity();
-            uint triggerB = World.CreateEntity();
-            uint triggerC = World.CreateEntity();
-            World.AddComponent(triggerA, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
-            World.AddComponent(triggerB, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
-            World.AddComponent(triggerC, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
+            uint triggerA = world.CreateEntity();
+            uint triggerB = world.CreateEntity();
+            uint triggerC = world.CreateEntity();
+            world.AddComponent(triggerA, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
+            world.AddComponent(triggerB, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
+            world.AddComponent(triggerC, new IsTrigger(new(&FilterEverythingOut), new(&RemoveByteComponent)));
 
-            World.AddComponent(triggerA, (byte)1);
-            World.AddComponent(triggerB, (byte)2);
-            World.AddComponent(triggerC, (int)3);
+            world.AddComponent(triggerA, (byte)1);
+            world.AddComponent(triggerB, (byte)2);
+            world.AddComponent(triggerC, (int)3);
 
-            Simulator.Update(TimeSpan.FromSeconds(0.1f));
+            simulator.Update(TimeSpan.FromSeconds(0.1f));
 
-            Assert.That(World.ContainsComponent<byte>(triggerA), Is.True);
-            Assert.That(World.ContainsComponent<byte>(triggerB), Is.True);
+            Assert.That(world.ContainsComponent<byte>(triggerA), Is.True);
+            Assert.That(world.ContainsComponent<byte>(triggerB), Is.True);
 
-            World.GetComponent<IsTrigger>(triggerA).filter = new(&SelectFirstEntity);
-            World.GetComponent<IsTrigger>(triggerB).filter = new(&SelectFirstEntity);
-            World.GetComponent<IsTrigger>(triggerC).filter = new(&SelectFirstEntity);
+            world.GetComponent<IsTrigger>(triggerA).filter = new(&SelectFirstEntity);
+            world.GetComponent<IsTrigger>(triggerB).filter = new(&SelectFirstEntity);
+            world.GetComponent<IsTrigger>(triggerC).filter = new(&SelectFirstEntity);
 
-            Simulator.Update(TimeSpan.FromSeconds(0.1f));
+            simulator.Update(TimeSpan.FromSeconds(0.1f));
 
-            Assert.That(World.ContainsComponent<byte>(triggerA), Is.False);
-            Assert.That(World.ContainsComponent<byte>(triggerB), Is.True);
+            Assert.That(world.ContainsComponent<byte>(triggerA), Is.False);
+            Assert.That(world.ContainsComponent<byte>(triggerB), Is.True);
 
             [UnmanagedCallersOnly]
             static void FilterEverythingOut(TriggerFilter.Input input)

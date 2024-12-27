@@ -82,7 +82,7 @@ namespace InteractionKit
             get
             {
                 ref IsControlField component = ref transform.AsEntity().GetComponent<IsControlField>();
-                return ComponentType.All[component.typeIndex];
+                return new(component.typeIndex);
             }
         }
 
@@ -91,7 +91,7 @@ namespace InteractionKit
             get
             {
                 ref IsControlField component = ref transform.AsEntity().GetComponent<IsControlField>();
-                return ArrayType.All[component.typeIndex];
+                return new(component.typeIndex);
             }
         }
 
@@ -100,7 +100,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsControlField>().AddArrayType<ControlEntity>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsControlField>(schema).AddArrayType<ControlEntity>(schema);
+        }
 
         public ControlField(World world, uint existingEntity)
         {
@@ -156,7 +160,8 @@ namespace InteractionKit
 
         public static ControlField Create<C, E>(Canvas canvas, FixedString label, Entity target) where C : unmanaged where E : unmanaged, IControlEditor
         {
-            ComponentType componentType = ComponentType.Get<C>();
+            Schema schema = canvas.GetWorld().Schema;
+            ComponentType componentType = schema.GetComponent<C>();
             ControlEditor editor = ControlEditor.Get<E>();
             return new ControlField(canvas, label, target, componentType, editor);
         }

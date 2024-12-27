@@ -75,6 +75,7 @@ namespace InteractionKit.Systems
 
         private readonly void MixComponents(World world, USpan<Request> requests)
         {
+            Schema schema = world.Schema;
             foreach (var request in requests)
             {
                 uint entity = request.entity;
@@ -84,8 +85,8 @@ namespace InteractionKit.Systems
                 ComponentType outputType = mix.output;
                 ThrowIfComponentIsMissing(world, entity, leftType);
                 ThrowIfComponentIsMissing(world, entity, rightType);
-                ThrowIfComponentSizesDontMatch(leftType, rightType);
-                ThrowIfComponentSizesDontMatch(leftType, outputType);
+                ThrowIfComponentSizesDontMatch(leftType, rightType, schema);
+                ThrowIfComponentSizesDontMatch(leftType, outputType, schema);
                 if (!world.ContainsComponent(entity, outputType))
                 {
                     world.AddComponent(entity, outputType);
@@ -94,8 +95,9 @@ namespace InteractionKit.Systems
                 USpan<byte> leftBytes = world.GetComponentBytes(entity, leftType);
                 USpan<byte> rightBytes = world.GetComponentBytes(entity, rightType);
                 USpan<byte> outputBytes = world.GetComponentBytes(entity, outputType);
+                ushort componentSize = schema.GetComponentSize(leftType);
                 byte partCount = mix.vectorLength;
-                uint partSize = (uint)(leftType.Size / partCount);
+                uint partSize = (uint)(componentSize / partCount);
                 for (uint i = 0; i < partCount; i++)
                 {
                     USpan<byte> leftPart = leftBytes.Slice(i * partSize, partSize);
@@ -470,9 +472,9 @@ namespace InteractionKit.Systems
         }
 
         [Conditional("DEBUG")]
-        private void ThrowIfComponentSizesDontMatch(ComponentType left, ComponentType right)
+        private void ThrowIfComponentSizesDontMatch(ComponentType left, ComponentType right, Schema schema)
         {
-            if (left.Size != right.Size)
+            if (schema.GetComponentSize(left) != schema.GetComponentSize(right))
             {
                 throw new Exception($"Components `{left}` and `{right}` don't match in size");
             }

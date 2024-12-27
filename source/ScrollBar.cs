@@ -97,7 +97,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsScrollBar, IsSelectable>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentTypes<IsScrollBar, IsSelectable>(schema);
+        }
 
         public ScrollBar(Canvas canvas, Vector2 axis, float handlePercentageSize)
         {

@@ -11,7 +11,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsLabelProcessor>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsLabelProcessor>(schema);
+        }
 
 #if NET
         [Obsolete("Default constructor not supported", true)]

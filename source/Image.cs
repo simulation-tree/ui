@@ -116,7 +116,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<IsTransform, IsRenderer>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentTypes<IsTransform, IsRenderer>(schema);
+        }
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -134,6 +138,7 @@ namespace InteractionKit
         {
             World world = canvas.GetWorld();
             Settings settings = canvas.GetSettings();
+            Schema schema = world.Schema;
 
             transform = new(world);
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
@@ -142,7 +147,7 @@ namespace InteractionKit
             transform.AddComponent(new ColorTint(new Vector4(1f)));
             transform.AddComponent(new BaseColor(new Vector4(1f)));
             transform.AddComponent(new Color(new Vector4(1f)));
-            transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4));
+            transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4, schema));
             transform.SetParent(canvas);
 
             StatefulAutomationPlayer stateful = transform.AsEntity().Become<StatefulAutomationPlayer>();

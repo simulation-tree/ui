@@ -61,7 +61,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => entity.value;
         readonly World IEntity.World => entity.world;
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsPointer>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsPointer>(schema);
+        }
 
 #if NET
         [Obsolete("Default constructor not available", true)]

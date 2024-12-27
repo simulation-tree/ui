@@ -114,7 +114,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentTypes<AssetReferences, UISettings, TextEditState>().AddArrayType<MaterialSettings>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentTypes<AssetReferences, UISettings, TextEditState>(schema).AddArrayType<MaterialSettings>(schema);
+        }
 
 #if NET
         [Obsolete("Default constructor not supported", true)]

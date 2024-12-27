@@ -70,7 +70,11 @@ namespace InteractionKit
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
-        readonly Definition IEntity.Definition => new Definition().AddComponentType<IsTreeNode>().AddArrayType<TreeNodeOption>();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return new Definition().AddComponentType<IsTreeNode>(schema).AddArrayType<TreeNodeOption>(schema);
+        }
 
         public TreeNode(World world, uint existingEntity)
         {
