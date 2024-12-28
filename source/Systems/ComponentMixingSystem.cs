@@ -95,7 +95,7 @@ namespace InteractionKit.Systems
                 USpan<byte> leftBytes = world.GetComponentBytes(entity, leftType);
                 USpan<byte> rightBytes = world.GetComponentBytes(entity, rightType);
                 USpan<byte> outputBytes = world.GetComponentBytes(entity, outputType);
-                ushort componentSize = schema.GetComponentSize(leftType);
+                ushort componentSize = schema.GetSize(leftType);
                 byte partCount = mix.vectorLength;
                 uint partSize = (uint)(componentSize / partCount);
                 for (uint i = 0; i < partCount; i++)
@@ -474,7 +474,7 @@ namespace InteractionKit.Systems
         [Conditional("DEBUG")]
         private void ThrowIfComponentSizesDontMatch(ComponentType left, ComponentType right, Schema schema)
         {
-            if (schema.GetComponentSize(left) != schema.GetComponentSize(right))
+            if (schema.GetSize(left) != schema.GetSize(right))
             {
                 throw new Exception($"Components `{left}` and `{right}` don't match in size");
             }
