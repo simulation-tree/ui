@@ -4,6 +4,7 @@ using InteractionKit.Functions;
 using Rendering.Components;
 using Simulation;
 using System;
+using System.Diagnostics;
 using Unmanaged;
 using Worlds;
 
@@ -49,10 +50,10 @@ namespace InteractionKit.Systems
             ComponentQuery<IsLabel, IsTextRenderer> labelQuery = new(world);
             foreach (var r in labelQuery)
             {
-                USpan<char> originalText = world.GetArray<LabelCharacter>(r.entity).As<char>();
                 ref rint textMeshReference = ref r.component2.textMeshReference;
                 if (textMeshReference != default)
                 {
+                    USpan<char> originalText = world.GetArray<LabelCharacter>(r.entity).As<char>();
                     result.CopyFrom(originalText);
                     foreach (TryProcessLabel token in processors)
                     {
@@ -61,13 +62,15 @@ namespace InteractionKit.Systems
 
                     uint textMeshEntity = world.GetReference(r.entity, textMeshReference);
                     uint arrayLength = world.GetArrayLength<TextCharacter>(textMeshEntity);
+                    bool lengthChanged = false;
                     if (arrayLength != result.Length)
                     {
                         world.ResizeArray<TextCharacter>(textMeshEntity, result.Length);
+                        lengthChanged = true;
                     }
 
                     USpan<char> targetText = world.GetArray<TextCharacter>(textMeshEntity).As<char>();
-                    if (!targetText.SequenceEqual(result.AsSpan()))
+                    if (lengthChanged || !targetText.SequenceEqual(result.AsSpan()))
                     {
                         ref IsTextMeshRequest request = ref world.GetComponent<IsTextMeshRequest>(textMeshEntity);
                         request.version++;

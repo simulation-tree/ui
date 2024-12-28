@@ -171,7 +171,7 @@ namespace InteractionKit
 
             textRenderer.AddComponent(new IsLabel());
 
-            USpan<char> textSpan = stackalloc char[(int)text.Length];
+            USpan<char> textSpan = stackalloc char[text.Length];
             uint length = text.CopyTo(textSpan);
             textRenderer.AsEntity().CreateArray(textSpan.As<LabelCharacter>());
 
@@ -197,7 +197,7 @@ namespace InteractionKit
 
         public readonly void SetText(FixedString text)
         {
-            USpan<char> buffer = stackalloc char[(int)text.Length];
+            USpan<char> buffer = stackalloc char[text.Length];
             uint length = text.CopyTo(buffer);
             SetText(buffer.Slice(0, length));
         }
