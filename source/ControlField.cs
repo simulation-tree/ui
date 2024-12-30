@@ -13,7 +13,7 @@ namespace InteractionKit
 {
     public readonly struct ControlField : IEntity
     {
-        public readonly Transform transform;
+        private readonly Transform transform;
 
         public readonly Label Label
         {
@@ -27,31 +27,36 @@ namespace InteractionKit
 
         public readonly ref Color LabelColor => ref Label.Color;
 
-        public readonly Vector2 Position
+        public unsafe readonly ref Vector2 Position
         {
             get
             {
-                Vector3 position = transform.LocalPosition;
-                return new(position.X, position.Y);
-            }
-            set
-            {
-                Vector3 position = transform.LocalPosition;
-                transform.LocalPosition = new(value.X, value.Y, position.Z);
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                fixed (Vector3* position = &localPosition)
+                {
+                    return ref *(Vector2*)position;
+                }
             }
         }
 
-        public readonly Vector2 Size
+        public unsafe readonly ref Vector2 Size
         {
             get
             {
-                Vector3 scale = transform.LocalScale;
-                return new(scale.X, scale.Y);
+                ref Vector3 localScale = ref transform.LocalScale;
+                fixed (Vector3* scale = &localScale)
+                {
+                    return ref *(Vector2*)scale;
+                }
             }
-            set
+        }
+
+        public readonly ref float Z
+        {
+            get
             {
-                Vector3 scale = transform.LocalScale;
-                transform.LocalScale = new(value.X, value.Y, scale.Z);
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                return ref localPosition.Z;
             }
         }
 
@@ -75,7 +80,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly bool IsArrayType => !IsComponentType;
+        public readonly bool IsArrayElementType => !IsComponentType;
 
         public readonly ComponentType ComponentType
         {
@@ -86,7 +91,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ArrayType ArrayType
+        public readonly ArrayElementType ArrayElementType
         {
             get
             {
@@ -103,7 +108,7 @@ namespace InteractionKit
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentType<IsControlField>(schema).AddArrayType<ControlEntity>(schema);
+            return new Definition().AddComponentType<IsControlField>(schema).AddArrayElementType<ControlEntity>(schema);
         }
 
         public ControlField(World world, uint existingEntity)
@@ -116,8 +121,8 @@ namespace InteractionKit
         {
         }
 
-        public ControlField(Canvas canvas, FixedString label, Entity target, ArrayType arrayType, ControlEditor editor, uint offset = 0) :
-            this(canvas, label, target, arrayType.index, false, editor, offset)
+        public ControlField(Canvas canvas, FixedString label, Entity target, ArrayElementType arrayElementType, ControlEditor editor, uint offset = 0) :
+            this(canvas, label, target, arrayElementType.index, false, editor, offset)
         {
         }
 
@@ -174,15 +179,15 @@ namespace InteractionKit
                 ComponentType componentType = new(typeIndex);
                 if (!entity.ContainsComponent(componentType))
                 {
-                    throw new NullReferenceException($"Entity `{entity}` is missing component `{componentType}`");
+                    throw new NullReferenceException($"Entity `{entity}` is missing component `{componentType.ToString(entity.GetWorld().Schema)}`");
                 }
             }
             else
             {
-                ArrayType arrayType = new(typeIndex);
-                if (!entity.ContainsArray(arrayType))
+                ArrayElementType arrayElementType = new(typeIndex);
+                if (!entity.ContainsArray(arrayElementType))
                 {
-                    throw new NullReferenceException($"Entity `{entity}` is missing array `{arrayType}`");
+                    throw new NullReferenceException($"Entity `{entity}` is missing array `{arrayElementType.ToString(entity.GetWorld().Schema)}`");
                 }
             }
         }

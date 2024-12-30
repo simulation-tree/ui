@@ -16,46 +16,36 @@ namespace InteractionKit
     {
         private readonly Transform transform;
 
-        public readonly Vector2 Position
+        public unsafe readonly ref Vector2 Position
         {
             get
             {
-                Vector3 position = transform.LocalPosition;
-                return new(position.X, position.Y);
-            }
-            set
-            {
-                ref Vector3 position = ref transform.LocalPosition;
-                position.X = value.X;
-                position.Y = value.Y;
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                fixed (Vector3* positionPointer = &localPosition)
+                {
+                    return ref *(Vector2*)positionPointer;
+                }
             }
         }
 
-        public readonly float Z
+        public readonly ref float Z
         {
             get
             {
-                return transform.LocalPosition.Z;
-            }
-            set
-            {
-                ref Vector3 position = ref transform.LocalPosition;
-                position.Z = value;
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                return ref localPosition.Z;
             }
         }
 
-        public readonly Vector2 Size
+        public unsafe readonly ref Vector2 Size
         {
             get
             {
-                Vector3 scale = transform.LocalScale;
-                return new(scale.X, scale.Y);
-            }
-            set
-            {
-                ref Vector3 scale = ref transform.LocalScale;
-                scale.X = value.X;
-                scale.Y = value.Y;
+                ref Vector3 localScale = ref transform.LocalScale;
+                fixed (Vector3* sizePointer = &localScale)
+                {
+                    return ref *(Vector2*)sizePointer;
+                }
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace InteractionKit.Components
 {
-    [Array]
+    [ArrayElement]
     public struct LabelCharacter
     {
         public char value;

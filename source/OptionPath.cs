@@ -18,7 +18,7 @@ namespace InteractionKit
         /// </summary>
         public readonly byte Depth => depth;
 
-        public OptionPath(USpan<ushort> path)
+        public OptionPath(params USpan<ushort> path)
         {
             ThrowIfTooDeep((ushort)path.Length);
             depth = (byte)path.Length;
@@ -26,6 +26,18 @@ namespace InteractionKit
             {
                 this.path[i] = path[i];
             }
+        }
+
+        public OptionPath(FixedString path)
+        {
+            USpan<char> buffer = stackalloc char[path.Length];
+            path.CopyTo(buffer);
+            CopyFrom(buffer);
+        }
+
+        public OptionPath(USpan<char> path)
+        {
+            CopyFrom(path);
         }
 
         public readonly override string ToString()
@@ -62,6 +74,32 @@ namespace InteractionKit
             }
 
             return depth;
+        }
+
+        public void CopyFrom(USpan<char> path)
+        {
+            uint index = 0;
+            uint start = 0;
+            depth = 0;
+            while (index < path.Length)
+            {
+                char c = path[index];
+                bool atEnd = index == path.Length - 1;
+                if (c == '/' || atEnd)
+                {
+                    uint length = atEnd ? path.Length - index : index - start;
+                    if (length > 0)
+                    {
+                        USpan<char> slice = path.Slice(start, length);
+                        this.path[depth] = ushort.Parse(slice.AsSystemSpan());
+                        depth++;
+                    }
+
+                    start = index + 1;
+                }
+
+                index++;
+            }
         }
 
         public readonly OptionPath Append(uint value)
@@ -129,6 +167,11 @@ namespace InteractionKit
             {
                 throw new IndexOutOfRangeException("Menu option path is too deep");
             }
+        }
+
+        public static implicit operator OptionPath(string path)
+        {
+            return new(path.AsUSpan());
         }
     }
 }

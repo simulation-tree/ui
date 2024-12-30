@@ -15,24 +15,9 @@ namespace InteractionKit
     {
         private readonly Image background;
 
-        public readonly Vector2 Position
-        {
-            get => background.Position;
-            set => background.Position = value;
-        }
-
-        public readonly Vector2 Size
-        {
-            get => background.Size;
-            set => background.Size = value;
-        }
-
-        public readonly float Z
-        {
-            get => background.Z;
-            set => background.Z = value;
-        }
-
+        public readonly ref Vector2 Position => ref background.Position;
+        public readonly ref Vector2 Size => ref background.Size;
+        public readonly ref float Z => ref background.Z;
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;
 

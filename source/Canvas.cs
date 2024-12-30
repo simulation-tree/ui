@@ -40,12 +40,15 @@ namespace InteractionKit
         /// <summary>
         /// Size of the destination that this camera is rendering to.
         /// </summary>
-        public readonly Vector2 Size
+        public unsafe readonly ref Vector2 Size
         {
             get
             {
-                Vector3 scale = transform.LocalScale;
-                return new(scale.X, scale.Y);
+                ref Vector3 localScale = ref transform.LocalScale;
+                fixed (Vector3* sizePointer = &localScale)
+                {
+                    return ref *(Vector2*)sizePointer;
+                }
             }
         }
 

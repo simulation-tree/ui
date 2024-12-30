@@ -46,11 +46,11 @@ namespace InteractionKit.Functions
                 }
             }
 
-            public readonly ArrayType ArrayElementType
+            public readonly ArrayElementType ArrayElementType
             {
                 get
                 {
-                    ThrowIfNotArrayType();
+                    ThrowIfNotArrayElementType();
 
                     return new(typeIndex);
                 }
@@ -83,7 +83,7 @@ namespace InteractionKit.Functions
             }
 
             [Conditional("DEBUG")]
-            private readonly void ThrowIfNotArrayType()
+            private readonly void ThrowIfNotArrayElementType()
             {
                 if (isComponentType)
                 {

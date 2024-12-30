@@ -3,7 +3,7 @@ using Worlds;
 
 namespace InteractionKit.Components
 {
-    [Array]
+    [ArrayElement]
     public struct IsMenuOption
     {
         public FixedString text;

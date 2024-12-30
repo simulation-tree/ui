@@ -56,7 +56,8 @@ namespace InteractionKit.Systems
             }
 
             Schema schema = world.Schema;
-            ComponentQuery<IsDropShadow> queryWithoutScale = new(world, schema.GetComponents<Scale>());
+            ComponentQuery<IsDropShadow> queryWithoutScale = new(world);
+            queryWithoutScale.ExcludeComponent<Scale>();
             foreach (var r in queryWithoutScale)
             {
                 destroyOperation.SelectEntity(r.entity);
@@ -89,13 +90,14 @@ namespace InteractionKit.Systems
                 ref LocalToWorld foregroundLtw = ref world.GetComponent<LocalToWorld>(foregroundEntity);
                 Vector3 positionValue = foregroundLtw.Position;
                 Vector3 scaleValue = foregroundLtw.Scale;
-                if (world.ContainsComponent<IsMenu>(foregroundEntity))
+                if (world.TryGetComponent(foregroundEntity, out IsMenu menuComponent))
                 {
+                    //unique branch for menus
                     uint optionCount = world.GetArrayLength<IsMenuOption>(foregroundEntity);
-                    float originalHeight = 24f;
+                    float originalHeight = menuComponent.optionSize.Y;
+                    scaleValue.X = menuComponent.optionSize.X;
                     scaleValue.Y = originalHeight * optionCount;
-                    positionValue.Y -= (originalHeight * optionCount);
-                    positionValue.Y += originalHeight;
+                    positionValue.Y -= originalHeight * optionCount;
                 }
 
                 position.value = positionValue + new Vector3(-ShadowDistance, -ShadowDistance, Settings.ZScale * -2f);

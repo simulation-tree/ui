@@ -117,7 +117,7 @@ namespace InteractionKit
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentTypes<AssetReferences, UISettings, TextEditState>(schema).AddArrayType<MaterialSettings>(schema);
+            return new Definition().AddComponentTypes<AssetReferences, UISettings, TextEditState>(schema).AddArrayElementType<MaterialSettings>(schema);
         }
 
 #if NET

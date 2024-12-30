@@ -13,31 +13,27 @@ namespace InteractionKit
     {
         private readonly Transform transform;
 
-        public readonly Vector2 Position
+        public unsafe readonly ref Vector2 Position
         {
             get
             {
-                Vector3 position = transform.LocalPosition;
-                return new(position.X, position.Y);
-            }
-            set
-            {
-                Vector3 position = transform.LocalPosition;
-                transform.LocalPosition = new(value.X, value.Y, position.Z);
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                fixed (Vector3* p = &localPosition)
+                {
+                    return ref *(Vector2*)p;
+                }
             }
         }
 
-        public readonly Vector2 Size
+        public unsafe readonly ref Vector2 Size
         {
             get
             {
-                Vector3 scale = transform.LocalScale;
-                return new(scale.X, scale.Y);
-            }
-            set
-            {
-                Vector3 scale = transform.LocalScale;
-                transform.LocalScale = new(value.X, value.Y, scale.Z);
+                ref Vector3 localScale = ref transform.LocalScale;
+                fixed (Vector3* p = &localScale)
+                {
+                    return ref *(Vector2*)p;
+                }
             }
         }
 
@@ -51,7 +47,7 @@ namespace InteractionKit
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentType<IsTree>(schema).AddArrayTypes<SelectedLeaf, TreeNodeOption>(schema);
+            return new Definition().AddComponentType<IsTree>(schema).AddArrayElementTypes<SelectedLeaf, TreeNodeOption>(schema);
         }
 
         public Tree(Canvas canvas)

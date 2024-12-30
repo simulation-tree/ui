@@ -2,7 +2,7 @@
 
 namespace InteractionKit.Components
 {
-    [Array]
+    [ArrayElement]
     public readonly struct ControlEntity
     {
         public readonly rint reference;

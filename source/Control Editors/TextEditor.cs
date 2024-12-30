@@ -37,7 +37,7 @@ namespace InteractionKit.ControlEditors
             }
             else
             {
-                ArrayType arrayElementType = input.ArrayElementType;
+                ArrayElementType arrayElementType = input.ArrayElementType;
                 if (arrayElementType == schema.GetArrayElement<char>())
                 {
                     textField.SetText(target.GetArray<char>());

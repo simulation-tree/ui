@@ -17,18 +17,14 @@ namespace InteractionKit
     {
         public readonly Image background;
 
-        public readonly Vector2 Position
-        {
-            get => background.Position;
-            set => background.Position = value;
-        }
+        public readonly ref Vector2 Position => ref background.Position;
 
-        public readonly Vector2 Size
-        {
-            get => background.Size;
-            set => background.Size = value;
-        }
+        /// <summary>
+        /// Size of the dropdown button.
+        /// </summary>
+        public readonly ref Vector2 Size => ref background.Size;
 
+        public readonly ref float Z => ref background.Z;
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;
         public readonly ref Color BackgroundColor => ref background.Color;
@@ -137,7 +133,7 @@ namespace InteractionKit
                 component.expanded = value;
 
                 Menu menu = Menu;
-                menu.Size = Size;
+                menu.OptionSize = Size;
                 menu.SetEnabled(component.expanded);
 
                 USpan<IsMenuOption> options = menu.Options;
@@ -191,9 +187,8 @@ namespace InteractionKit
             background = new(world, existingEntity);
         }
 
-        public unsafe Dropdown(Canvas canvas, DropdownCallback callback = default)
+        public unsafe Dropdown(Canvas canvas, Vector2 optionSize, DropdownCallback callback = default)
         {
-            World world = canvas.GetWorld();
             background = new(canvas);
             background.AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
             background.AddComponent(new IsSelectable());
@@ -216,9 +211,8 @@ namespace InteractionKit
             Transform triangleTransform = triangle;
             triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
 
-            Menu menu = new(canvas, new(&ChosenOption));
+            Menu menu = new(canvas, optionSize, new(&ChosenOption));
             menu.Anchor = Anchor.BottomLeft;
-            menu.Size = background.Size;
             menu.Pivot = new(0f, 1f, 0f);
             menu.SetEnabled(false);
 
@@ -237,7 +231,7 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void Filter(TriggerFilter.Input input)
+        public static void Filter(TriggerFilter.Input input)
         {
             foreach (ref Entity entity in input.Entities)
             {
@@ -250,14 +244,14 @@ namespace InteractionKit
         }
 
         [UnmanagedCallersOnly]
-        private static void ToggleDropdown(Entity dropdownEntity)
+        public static void ToggleDropdown(Entity dropdownEntity)
         {
             Dropdown dropdown = dropdownEntity.As<Dropdown>();
             dropdown.IsExpanded = !dropdown.IsExpanded;
         }
 
         [UnmanagedCallersOnly]
-        private static void ChosenOption(MenuOption option)
+        public static void ChosenOption(MenuOption option)
         {
             World world = option.rootMenu.GetWorld();
             rint dropdownReference = option.rootMenu.AsEntity().GetComponent<DropdownMenu>().dropdownReference;
@@ -267,10 +261,104 @@ namespace InteractionKit
             dropdown.IsExpanded = false;
         }
 
-        private static Material GetTriangleMaterialFromSettings(Camera camera)
+        public static Material GetTriangleMaterialFromSettings(Camera camera)
         {
             Settings settings = camera.GetSettings();
             return settings.GetTriangleMaterial(camera);
+        }
+
+        public static implicit operator Entity(Dropdown dropdown)
+        {
+            return dropdown.background;
+        }
+    }
+
+    public readonly struct Dropdown<T> : ISelectable where T : struct, Enum
+    {
+        private readonly Dropdown dropdown;
+
+        readonly uint IEntity.Value => dropdown.GetEntityValue();
+        readonly World IEntity.World => dropdown.GetWorld();
+
+        readonly Definition IEntity.GetDefinition(Schema schema)
+        {
+            return Definition.Get<Dropdown>(schema);
+        }
+
+#if NET
+        [Obsolete("Default constructor not available", true)]
+        public Dropdown()
+        {
+            throw new NotSupportedException();
+        }
+#endif
+
+        public Dropdown(World world, uint existingEntity)
+        {
+            dropdown = new(world, existingEntity);
+        }
+
+        public unsafe Dropdown(Canvas canvas, Vector2 optionSize, DropdownCallback callback = default)
+        {
+            Image background = new(canvas);
+            background.AddComponent(new IsTrigger(new(&Dropdown.Filter), new(&Dropdown.ToggleDropdown)));
+            background.AddComponent(new IsSelectable());
+
+            Label label = new(canvas, default(FixedString));
+            label.SetParent(background);
+            label.Anchor = Anchor.TopLeft;
+            label.Color = Color.Black;
+            label.Position = new(4f, -4f);
+            label.Pivot = new(0f, 1f, 0f);
+
+            Image triangle = new(canvas);
+            triangle.SetParent(background);
+            triangle.Material = Dropdown.GetTriangleMaterialFromSettings(canvas.Camera);
+            triangle.Anchor = Anchor.TopRight;
+            triangle.Size = new(16f, 16f);
+            triangle.Color = Color.Black;
+            triangle.Pivot = new(0.5f, 0.5f, 0f);
+
+            Transform triangleTransform = triangle;
+            triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
+
+            Menu menu = new(canvas, optionSize, new(&Dropdown.ChosenOption));
+            menu.Anchor = Anchor.BottomLeft;
+            menu.Pivot = new(0f, 1f, 0f);
+            menu.SetEnabled(false);
+
+            T[] options = Enum.GetValues<T>();
+            for (uint i = 0; i < options.Length; i++)
+            {
+                T option = options[i];
+                menu.AddOption(option.ToString());
+            }
+
+            rint dropdownReference = menu.AddReference(background);
+            menu.AddComponent(new DropdownMenu(dropdownReference));
+
+            rint labelReference = background.AddReference(label);
+            rint triangleReference = background.AddReference(triangle);
+            rint menuReference = background.AddReference(menu);
+            background.AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
+
+            dropdown = background.AsEntity().As<Dropdown>();
+            dropdown.SelectedOption = "0";
+        }
+
+        public readonly void Dispose()
+        {
+            dropdown.Dispose();
+        }
+
+        public static implicit operator Dropdown(Dropdown<T> dropdown)
+        {
+            return dropdown.dropdown;
+        }
+
+        public static implicit operator Entity(Dropdown<T> dropdown)
+        {
+            return dropdown.dropdown;
         }
     }
 }

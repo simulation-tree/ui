@@ -10,35 +10,27 @@ namespace InteractionKit
     {
         private readonly Transform transform;
 
-        public readonly Vector2 ViewPosition
+        public unsafe readonly ref Vector2 ViewPosition
         {
             get
             {
-                Vector3 position = transform.LocalPosition;
-                return new(position.X, position.Y);
-            }
-            set
-            {
-                Vector3 position = transform.LocalPosition;
-                position.X = value.X;
-                position.Y = value.Y;
-                transform.LocalPosition = position;
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                fixed (Vector3* pLocalPosition = &localPosition)
+                {
+                    return ref *(Vector2*)pLocalPosition;
+                }
             }
         }
 
-        public readonly Vector2 ViewSize
+        public unsafe readonly ref Vector2 ViewSize
         {
             get
             {
-                Vector3 scale = transform.LocalScale;
-                return new(scale.X, scale.Y);
-            }
-            set
-            {
-                Vector3 scale = transform.LocalScale;
-                scale.X = value.X;
-                scale.Y = value.Y;
-                transform.LocalScale = scale;
+                ref Vector3 localScale = ref transform.LocalScale;
+                fixed (Vector3* pLocalScale = &localScale)
+                {
+                    return ref *(Vector2*)pLocalScale;
+                }
             }
         }
 
@@ -52,39 +44,29 @@ namespace InteractionKit
             }
         }
 
-        public readonly Vector2 ContentPosition
+        public unsafe readonly ref Vector2 ContentPosition
         {
             get
             {
                 Transform content = Content.As<Transform>();
-                Vector3 position = content.LocalPosition;
-                return new(position.X, position.Y);
-            }
-            set
-            {
-                Transform content = Content.As<Transform>();
-                Vector3 position = content.LocalPosition;
-                position.X = value.X;
-                position.Y = value.Y;
-                content.LocalPosition = position;
+                ref Vector3 localPosition = ref content.LocalPosition;
+                fixed (Vector3* pLocalPosition = &localPosition)
+                {
+                    return ref *(Vector2*)pLocalPosition;
+                }
             }
         }
 
-        public readonly Vector2 ContentSize
+        public unsafe readonly ref Vector2 ContentSize
         {
             get
             {
                 Transform content = Content.As<Transform>();
-                Vector3 scale = content.LocalScale;
-                return new(scale.X, scale.Y);
-            }
-            set
-            {
-                Transform content = Content.As<Transform>();
-                Vector3 scale = content.LocalScale;
-                scale.X = value.X;
-                scale.Y = value.Y;
-                content.LocalScale = scale;
+                ref Vector3 localScale = ref content.LocalScale;
+                fixed (Vector3* pLocalScale = &localScale)
+                {
+                    return ref *(Vector2*)pLocalScale;
+                }
             }
         }
 

@@ -16,54 +16,42 @@ namespace InteractionKit
     {
         private readonly TextRenderer textRenderer;
 
-        public readonly Vector2 Position
+        public unsafe readonly ref Vector2 Position
         {
             get
             {
                 Transform transform = textRenderer.AsEntity().As<Transform>();
-                ref Vector3 position = ref transform.LocalPosition;
-                return new(position.X, position.Y);
-            }
-            set
-            {
-                Transform transform = textRenderer.AsEntity().As<Transform>();
-                ref Vector3 position = ref transform.LocalPosition;
-                position.X = value.X;
-                position.Y = value.Y;
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                fixed (Vector3* position = &localPosition)
+                {
+                    return ref *(Vector2*)position;
+                }
             }
         }
 
-        public readonly float Z
+        public readonly ref float Z
         {
             get
             {
-                return textRenderer.AsEntity().As<Transform>().LocalPosition.Z;
-            }
-            set
-            {
                 Transform transform = textRenderer.AsEntity().As<Transform>();
-                ref Vector3 position = ref transform.LocalPosition;
-                position.Z = value;
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                return ref localPosition.Z;
             }
         }
 
         /// <summary>
         /// Size of the label.
         /// </summary>
-        public readonly Vector2 Size
+        public unsafe readonly ref Vector2 Size
         {
             get
             {
                 Transform transform = textRenderer.AsEntity().As<Transform>();
-                ref Vector3 scale = ref transform.LocalScale;
-                return new(scale.X, scale.Y);
-            }
-            set
-            {
-                Transform transform = textRenderer.AsEntity().As<Transform>();
-                ref Vector3 scale = ref transform.LocalScale;
-                scale.X = value.X;
-                scale.Y = value.Y;
+                ref Vector3 localPosition = ref transform.LocalScale;
+                fixed (Vector3* scale = &localPosition)
+                {
+                    return ref *(Vector2*)scale;
+                }
             }
         }
 
@@ -99,7 +87,7 @@ namespace InteractionKit
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentTypes<IsLabel, IsTextRenderer, IsSelectable>(schema).AddArrayType<LabelCharacter>(schema);
+            return new Definition().AddComponentTypes<IsLabel, IsTextRenderer, IsSelectable>(schema).AddArrayElementType<LabelCharacter>(schema);
         }
 
         public Label(World world, uint existingEntity)

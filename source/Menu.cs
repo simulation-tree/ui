@@ -17,50 +17,24 @@ namespace InteractionKit
     {
         private readonly Transform transform;
 
-        public readonly Vector2 Position
+        public unsafe readonly ref Vector2 Position
         {
             get
             {
-                Vector3 position = transform.LocalPosition;
-                return new(position.X, position.Y);
-            }
-            set
-            {
-                Vector3 position = transform.LocalPosition;
-                transform.LocalPosition = new(value.X, value.Y, position.Z);
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                fixed (Vector3* position = &localPosition)
+                {
+                    return ref *(Vector2*)position;
+                }
             }
         }
 
-        public readonly Vector2 Size
+        public readonly ref float Z
         {
             get
             {
-                Vector3 scale = transform.LocalScale;
-                return new(scale.X, scale.Y);
-            }
-            set
-            {
-                Vector3 scale = transform.LocalScale;
-                transform.LocalScale = new(value.X, value.Y, scale.Z);
-
-                USpan<IsMenuOption> options = Options;
-                for (uint i = 0; i < options.Length; i++)
-                {
-                    IsMenuOption option = options[i];
-                    rint buttonReference = option.buttonReference;
-                    uint buttonEntity = transform.GetReference(buttonReference);
-                    Button optionButton = new Entity(transform.GetWorld(), buttonEntity).As<Button>();
-                    optionButton.Size = value;
-                    optionButton.Position = new(0, -value.Y * i);
-
-                    rint childMenuReference = option.childMenuReference;
-                    if (childMenuReference != default)
-                    {
-                        uint childMenuEntity = transform.GetReference(childMenuReference);
-                        Menu childMenu = new Entity(transform.GetWorld(), childMenuEntity).As<Menu>();
-                        childMenu.Size = value;
-                    }
-                }
+                ref Vector3 localPosition = ref transform.LocalPosition;
+                return ref localPosition.Z;
             }
         }
 
@@ -78,6 +52,39 @@ namespace InteractionKit
             {
                 ref IsMenu component = ref transform.AsEntity().GetComponent<IsMenu>();
                 return ref component.callback;
+            }
+        }
+
+        public readonly Vector2 OptionSize
+        {
+            get
+            {
+                ref IsMenu component = ref transform.AsEntity().GetComponent<IsMenu>();
+                return component.optionSize;
+            }
+            set
+            {
+                ref IsMenu component = ref transform.AsEntity().GetComponent<IsMenu>();
+                component.optionSize = value;
+
+                USpan<IsMenuOption> options = Options;
+                for (uint i = 0; i < options.Length; i++)
+                {
+                    IsMenuOption option = options[i];
+                    rint buttonReference = option.buttonReference;
+                    uint buttonEntity = transform.GetReference(buttonReference);
+                    Button optionButton = new Entity(transform.GetWorld(), buttonEntity).As<Button>();
+                    optionButton.Size = value;
+                    optionButton.Position = new(0, -value.Y * i);
+
+                    rint childMenuReference = option.childMenuReference;
+                    if (childMenuReference != default)
+                    {
+                        uint childMenuEntity = transform.GetReference(childMenuReference);
+                        Menu childMenu = new Entity(transform.GetWorld(), childMenuEntity).As<Menu>();
+                        childMenu.OptionSize = value;
+                    }
+                }
             }
         }
 
@@ -139,10 +146,10 @@ namespace InteractionKit
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentType<IsMenu>(schema).AddArrayType<IsMenuOption>(schema);
+            return new Definition().AddComponentType<IsMenu>(schema).AddArrayElementType<IsMenuOption>(schema);
         }
 
-        public Menu(Canvas canvas, MenuCallback callback = default)
+        public Menu(Canvas canvas, Vector2 optionSize, MenuCallback callback = default)
         {
             World world = canvas.GetWorld();
             transform = new(world);
@@ -150,10 +157,10 @@ namespace InteractionKit
             transform.LocalPosition = new(0, 0, Settings.ZScale);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
-            transform.AddComponent(new IsMenu(callback));
+            transform.AddComponent(new IsMenu(optionSize, callback));
             transform.AsEntity().CreateArray<IsMenuOption>();
 
-            DropShadow dropShadow = new(canvas, transform);
+            new DropShadow(canvas, transform);
         }
 
         public readonly void Dispose()
@@ -167,7 +174,7 @@ namespace InteractionKit
         /// <returns>Index path towards this specific option local to this menu.</returns>
         public unsafe readonly OptionPath AddOption(FixedString label)
         {
-            Vector2 size = Size;
+            Vector2 optionSize = OptionSize;
             Entity entity = transform;
             Canvas canvas = entity.GetCanvas();
             uint optionCount = entity.GetArrayLength<IsMenuOption>();
@@ -207,10 +214,9 @@ namespace InteractionKit
                 //todo: for some reason, the buttons in child menus position themselves upwards
                 //while the menus of dropdowns position downwards
                 ref IsMenuOption addedOption = ref entity.GetArrayElement<IsMenuOption>(optionCount);
-                Menu newChildMenu = new(canvas);
+                Menu newChildMenu = new(canvas, optionSize);
                 newChildMenu.SetParent(transform);
-                newChildMenu.Position = new(size.X, 0);
-                newChildMenu.Size = size;
+                newChildMenu.Position = new(optionSize.X, 0);
                 newChildMenu.Anchor = Anchor.BottomLeft;
                 newChildMenu.Pivot = new(0, 1f, 0f);
                 newChildMenu.Callback = Callback;
@@ -237,8 +243,8 @@ namespace InteractionKit
             {
                 Button optionButton = new(new(&OptionChosen), canvas);
                 optionButton.SetParent(transform);
-                optionButton.Position = new(0, -size.Y * optionCount);
-                optionButton.Size = size;
+                optionButton.Position = new(0, -optionSize.Y * optionCount);
+                optionButton.Size = optionSize;
                 optionButton.Anchor = Anchor.TopLeft;
                 optionButton.Pivot = new(0f, 1f, 0f);
 
@@ -288,9 +294,9 @@ namespace InteractionKit
                 option.expanded = !option.expanded;
                 uint childMenuEntity = menuEntity.GetReference(option.childMenuReference);
                 Menu childMenu = new Entity(world, childMenuEntity).As<Menu>();
-                Vector2 size = menu.Size;
-                childMenu.Size = size;
-                childMenu.Position = new(size.X, 0);
+                Vector2 optionSize = menu.OptionSize;
+                childMenu.OptionSize = optionSize;
+                childMenu.Position = new(optionSize.X, 0);
                 childMenu.IsExpanded = option.expanded;
             }
             else
