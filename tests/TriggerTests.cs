@@ -12,7 +12,7 @@ namespace InteractionKit.Tests
     {
         static TriggerTests()
         {
-            TypeLayout.Register<IsTrigger>("IsTrigger");
+            TypeLayout.Register<IsTrigger>();
         }
 
         protected override void SetUp()

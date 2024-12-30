@@ -8,16 +8,16 @@ namespace InteractionKit.Tests
     {
         static InteractionKitTests()
         {
-            TypeLayout.Register<ComponentMix>("ComponentMix");
-            TypeLayout.Register<First>("First");
-            TypeLayout.Register<Second>("Second");
-            TypeLayout.Register<Result>("Result");
-            TypeLayout.Register<FirstFloat>("FirstFloat");
-            TypeLayout.Register<SecondFloat>("SecondFloat");
-            TypeLayout.Register<ResultFloat>("ResultFloat");
-            TypeLayout.Register<FirstVector>("FirstVector");
-            TypeLayout.Register<SecondVector>("SecondVector");
-            TypeLayout.Register<ResultVector>("ResultVector");
+            TypeLayout.Register<ComponentMix>();
+            TypeLayout.Register<First>();
+            TypeLayout.Register<Second>();
+            TypeLayout.Register<Result>();
+            TypeLayout.Register<FirstFloat>();
+            TypeLayout.Register<SecondFloat>();
+            TypeLayout.Register<ResultFloat>();
+            TypeLayout.Register<FirstVector>();
+            TypeLayout.Register<SecondVector>();
+            TypeLayout.Register<ResultVector>();
         }
 
         protected override void SetUp()
