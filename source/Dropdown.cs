@@ -1,5 +1,4 @@
 using Cameras;
-using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
 using Rendering;
@@ -27,7 +26,7 @@ namespace InteractionKit
         public readonly ref float Z => ref background.Z;
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;
-        public readonly ref Color BackgroundColor => ref background.Color;
+        public readonly ref Vector4 BackgroundColor => ref background.Color;
 
         public readonly Label Label
         {
@@ -39,7 +38,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Color LabelColor => ref Label.Color;
+        public readonly ref Vector4 LabelColor => ref Label.Color;
 
         public readonly Image Triangle
         {
@@ -51,7 +50,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Color TriangleColor => ref Triangle.Color;
+        public readonly ref Vector4 TriangleColor => ref Triangle.Color;
 
         public readonly Menu Menu
         {
@@ -196,7 +195,7 @@ namespace InteractionKit
             Label label = new(canvas, default(FixedString));
             label.SetParent(background);
             label.Anchor = Anchor.TopLeft;
-            label.Color = Color.Black;
+            label.Color = new(0, 0, 0, 1);
             label.Position = new(4f, -4f);
             label.Pivot = new(0f, 1f, 0f);
 
@@ -205,7 +204,7 @@ namespace InteractionKit
             triangle.Material = GetTriangleMaterialFromSettings(canvas.Camera);
             triangle.Anchor = Anchor.TopRight;
             triangle.Size = new(16f, 16f);
-            triangle.Color = Color.Black;
+            triangle.Color = new(0, 0, 0, 1);
             triangle.Pivot = new(0.5f, 0.5f, 0f);
 
             Transform triangleTransform = triangle;
@@ -307,7 +306,7 @@ namespace InteractionKit
             Label label = new(canvas, default(FixedString));
             label.SetParent(background);
             label.Anchor = Anchor.TopLeft;
-            label.Color = Color.Black;
+            label.Color = new(0, 0, 0, 1);
             label.Position = new(4f, -4f);
             label.Pivot = new(0f, 1f, 0f);
 
@@ -316,7 +315,7 @@ namespace InteractionKit
             triangle.Material = Dropdown.GetTriangleMaterialFromSettings(canvas.Camera);
             triangle.Anchor = Anchor.TopRight;
             triangle.Size = new(16f, 16f);
-            triangle.Color = Color.Black;
+            triangle.Color = new(0, 0, 0, 1);
             triangle.Pivot = new(0.5f, 0.5f, 0f);
 
             Transform triangleTransform = triangle;

@@ -1,5 +1,4 @@
-﻿using Data;
-using System.Numerics;
+﻿using System.Numerics;
 using Worlds;
 
 namespace InteractionKit.Components
@@ -7,16 +6,11 @@ namespace InteractionKit.Components
     [Component]
     public struct BaseColor
     {
-        public Color value;
-
-        public BaseColor(Color value)
-        {
-            this.value = value;
-        }
+        public Vector4 value;
 
         public BaseColor(Vector4 value)
         {
-            this.value = new(value);
+            this.value = value;
         }
     }
 }

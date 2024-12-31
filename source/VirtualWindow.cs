@@ -1,5 +1,4 @@
-﻿using Data;
-using InteractionKit.Components;
+﻿using InteractionKit.Components;
 using InteractionKit.Functions;
 using System;
 using System.Numerics;
@@ -44,7 +43,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Color BackgroundColor => ref background.Color;
+        public readonly ref Vector4 BackgroundColor => ref background.Color;
 
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
@@ -68,7 +67,7 @@ namespace InteractionKit
             header.Anchor = new(new(0f, false), new(1f, false), default, new(1f, false), new(1f, false), default);
             header.Pivot = new(0f, 1f, 0f);
             header.Size = new(1f, 26f);
-            header.Color = new Color(0.2f, 0.2f, 0.2f);
+            header.Color = new(0.2f, 0.2f, 0.2f, 1);
             header.Position = new(0f, 0f);
             header.SetParent(background);
             header.AddComponent(new IsSelectable());
@@ -79,13 +78,13 @@ namespace InteractionKit
             Label title = new(canvas, titleText);
             title.SetParent(header);
             title.Anchor = Anchor.TopLeft;
-            title.Color = Color.White;
+            title.Color = new(1, 1, 1, 1);
             title.Position = new(4f, -4f);
             title.Pivot = new(0f, 1f, 0f);
 
             Button closeButton = new(new(&PressedWindowCloseButton), canvas);
             closeButton.SetParent(header);
-            closeButton.Color = Color.Red;
+            closeButton.Color = new(1, 0, 0, 1);
             closeButton.Anchor = Anchor.TopRight;
             closeButton.Size = new(18f, 18f);
             closeButton.Pivot = new(1f, 1f, 0f);
@@ -93,16 +92,18 @@ namespace InteractionKit
 
             //close button x shape
             {
+                Vector4 lineColor = Vector4.Lerp(new(0, 0, 0, 1), new(1, 0, 0, 1), 0.3f);
+
                 Image line1 = new(canvas);
                 line1.SetParent(closeButton);
-                line1.Color = Vector4.Lerp(Color.Black, Color.Red, 0.3f);
+                line1.Color = lineColor;
                 line1.Size = new(18f, 2.5f);
                 line1.Rotation = MathF.PI * 0.25f;
                 line1.Position = new(3f, 2f);
 
                 Image line2 = new(canvas);
                 line2.SetParent(closeButton);
-                line2.Color = Vector4.Lerp(Color.Black, Color.Red, 0.3f);
+                line2.Color = lineColor;
                 line2.Size = new(18f, 2f);
                 line2.Rotation = MathF.PI * -0.25f;
                 line2.Position = new(2f, 15f);
@@ -113,8 +114,8 @@ namespace InteractionKit
             scrollBar.Size = new(24f, 1f);
             scrollBar.Anchor = new(new(1f, false), new(0f, false), default, new(1f, false), new(26f, true), default);
             scrollBar.Pivot = new(1f, 0f, 0f);
-            scrollBar.BackgroundColor = new(0.2f, 0.2f, 0.2f);
-            scrollBar.ScrollHandleColor = Color.White;
+            scrollBar.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1);
+            scrollBar.ScrollHandleColor = new(1, 1, 1, 1);
             scrollBar.Value = new(0f, 1f);
 
             View view = new(world, canvas);

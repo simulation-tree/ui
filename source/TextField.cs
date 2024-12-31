@@ -1,5 +1,4 @@
 ﻿using Collections;
-using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
 using Meshes;
@@ -21,7 +20,7 @@ namespace InteractionKit
         public readonly ref Vector2 Size => ref background.Size;
         public readonly ref float Z => ref background.Z;
         public readonly ref bool Editing => ref background.AsEntity().GetComponent<IsTextField>().editing;
-        public readonly ref Color BackgroundColor => ref background.Color;
+        public readonly ref Vector4 BackgroundColor => ref background.Color;
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;
 
@@ -45,7 +44,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly Color TextColor
+        public readonly Vector4 TextColor
         {
             get
             {
@@ -84,7 +83,7 @@ namespace InteractionKit
             Label text = new(canvas, defaultValue);
             text.SetParent(background);
             text.Anchor = Anchor.TopLeft;
-            text.Color = Color.Black;
+            text.Color = new(0, 0, 0, 1);
             text.Position = new(4f, -4f);
             text.Pivot = new(0f, 1f, 0f);
             text.AddComponent(new RendererScissor());
@@ -92,14 +91,14 @@ namespace InteractionKit
             Image cursor = new(canvas);
             cursor.SetParent(background);
             cursor.Anchor = Anchor.TopLeft;
-            cursor.Color = Color.Black;
+            cursor.Color = new(0, 0, 0, 1);
             cursor.Size = new(2f, 16f);
             cursor.Position = new(16f, 0f);
             cursor.AddComponent(new RendererScissor());
 
             Image highlight = new(canvas);
             highlight.SetParent(background);
-            highlight.Color = new Color(0f, 0.4f, 1f, 0.3f);
+            highlight.Color = new(0f, 0.4f, 1f, 0.3f);
             highlight.Anchor = Anchor.TopLeft;
             highlight.Position = new(4f, -4f);
             highlight.Size = new(1, 1);

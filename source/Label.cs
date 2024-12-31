@@ -1,5 +1,4 @@
 ﻿using Cameras;
-using Data;
 using Fonts;
 using InteractionKit.Components;
 using Rendering;
@@ -57,7 +56,7 @@ namespace InteractionKit
 
         public readonly ref Anchor Anchor => ref textRenderer.AsEntity().GetComponent<Anchor>();
         public readonly ref Vector3 Pivot => ref textRenderer.AsEntity().GetComponent<Pivot>().value;
-        public readonly ref Color Color => ref textRenderer.AsEntity().GetComponent<BaseColor>().value;
+        public readonly ref Vector4 Color => ref textRenderer.AsEntity().GetComponent<BaseColor>().value;
 
         public readonly USpan<char> Text
         {

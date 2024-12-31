@@ -1,5 +1,4 @@
-﻿using Data;
-using InteractionKit.Components;
+﻿using InteractionKit.Components;
 using InteractionKit.Functions;
 using System;
 using System.Numerics;
@@ -19,7 +18,7 @@ namespace InteractionKit
         public readonly ref float Z => ref image.Z;
         public readonly ref Anchor Anchor => ref image.Anchor;
         public readonly ref Vector3 Pivot => ref image.Pivot;
-        public readonly ref Color Color => ref image.Color;
+        public readonly ref Vector4 Color => ref image.Color;
 
         readonly uint IEntity.Value => image.GetEntityValue();
         readonly World IEntity.World => image.GetWorld();

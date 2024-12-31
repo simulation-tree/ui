@@ -1,5 +1,4 @@
 ﻿using Collections;
-using Data;
 using InteractionKit.Components;
 using System;
 using System.Diagnostics;
@@ -25,7 +24,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Color LabelColor => ref Label.Color;
+        public readonly ref Vector4 LabelColor => ref Label.Color;
 
         public unsafe readonly ref Vector2 Position
         {
@@ -139,7 +138,7 @@ namespace InteractionKit
             Label labelEntity = new(canvas, label);
             labelEntity.SetParent(transform);
             labelEntity.Anchor = Anchor.TopLeft;
-            labelEntity.Color = Color.White;
+            labelEntity.Color = new(1, 1, 1, 1);
             labelEntity.Position = new(4f, -4f);
             labelEntity.Pivot = new(0f, 1f, 0f);
 

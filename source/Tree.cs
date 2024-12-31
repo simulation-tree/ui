@@ -1,5 +1,4 @@
-﻿using Data;
-using InteractionKit.Components;
+﻿using InteractionKit.Components;
 using System.Diagnostics;
 using System.Numerics;
 using Transforms;
@@ -131,8 +130,8 @@ namespace InteractionKit
                 rint nodeReference = transform.AddReference(node);
                 USpan<SelectedLeaf> selected = transform.AsEntity().ResizeArray<SelectedLeaf>(selectedCount + 1);
                 selected[selectedCount] = new(nodeReference);
-                node.BackgroundColor = Color.SkyBlue;
-                node.Label.Color = Color.White;
+                node.BackgroundColor = new(0, 0.5f, 1, 1);
+                node.Label.Color = new(1, 1, 1, 1);
             }
             else
             {
@@ -156,8 +155,8 @@ namespace InteractionKit
                 }
 
                 transform.AsEntity().ResizeArray<SelectedLeaf>(selectedCount - 1);
-                node.BackgroundColor = Color.White;
-                node.Label.Color = Color.Black;
+                node.BackgroundColor = new(1, 1, 1, 1);
+                node.Label.Color = new(0, 0, 0, 1);
             }
         }
 

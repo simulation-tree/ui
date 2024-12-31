@@ -1,5 +1,4 @@
 ﻿using Cameras;
-using Data;
 using InteractionKit.Components;
 using InteractionKit.Functions;
 using Rendering;
@@ -228,7 +227,7 @@ namespace InteractionKit
                 triangle.Material = GetTriangleMaterialFromSettings(world, canvas.Camera);
                 triangle.Anchor = Anchor.Right;
                 triangle.Size = new(16f, 16f);
-                triangle.Color = Color.Black;
+                triangle.Color = new(0, 0, 0, 1);
                 triangle.Pivot = new(1f, -0.5f, 0f);
 
                 Transform triangleTransform = triangle;
@@ -251,7 +250,7 @@ namespace InteractionKit
                 Label optionButtonLabel = new(canvas, label);
                 optionButtonLabel.SetParent(optionButton);
                 optionButtonLabel.Anchor = Anchor.TopLeft;
-                optionButtonLabel.Color = Color.Black;
+                optionButtonLabel.Color = new(0, 0, 0, 1);
                 optionButtonLabel.Position = new(4f, -4f);
                 optionButtonLabel.Pivot = new(0f, 1f, 0f);
 

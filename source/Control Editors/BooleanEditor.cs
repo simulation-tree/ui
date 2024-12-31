@@ -1,5 +1,4 @@
-﻿using Data;
-using InteractionKit.Functions;
+﻿using InteractionKit.Functions;
 using System.Runtime.InteropServices;
 using Transforms.Components;
 using Worlds;
@@ -20,8 +19,8 @@ namespace InteractionKit.ControlEditors
             Toggle toggle = new(canvas, initialValue);
             toggle.SetParent(controlField);
             toggle.Size = new(singleLineHeight, singleLineHeight);
-            toggle.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1f);
-            toggle.CheckmarkColor = Color.White;
+            toggle.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1);
+            toggle.CheckmarkColor = new(1, 1, 1, 1);
             toggle.Anchor = Anchor.BottomLeft;
             toggle.Position = new(100f, 0f);
             toggle.Pivot = new(0f, 0f, 0f);

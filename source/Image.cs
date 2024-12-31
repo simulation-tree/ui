@@ -1,5 +1,4 @@
 ﻿using Automations;
-using Data;
 using InteractionKit.Components;
 using Rendering;
 using Rendering.Components;
@@ -65,7 +64,7 @@ namespace InteractionKit
 
         public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
         public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
-        public readonly ref Color Color => ref transform.AsEntity().GetComponent<BaseColor>().value;
+        public readonly ref Vector4 Color => ref transform.AsEntity().GetComponent<BaseColor>().value;
 
         public readonly Material Material
         {

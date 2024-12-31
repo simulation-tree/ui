@@ -1,5 +1,4 @@
-﻿using Data;
-using InteractionKit.Functions;
+﻿using InteractionKit.Functions;
 using Rendering.Components;
 using System.Runtime.InteropServices;
 using Unmanaged;
@@ -22,8 +21,8 @@ namespace InteractionKit.ControlEditors
             textField.Size = new(1f, singleLineHeight);
             textField.Anchor = new("100", "100%", "0", "100%", "100%", "0");
             textField.Pivot = new(0f, 1f, 0f);
-            textField.BackgroundColor = new(0.2f, 0.2f, 0.2f);
-            textField.TextColor = Color.White;
+            textField.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1f);
+            textField.TextColor = new(1, 1, 1, 1);
 
             Schema schema = canvas.GetWorld().Schema;
             Entity target = input.Target;

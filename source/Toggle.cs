@@ -1,5 +1,4 @@
-﻿using Data;
-using InteractionKit.Components;
+﻿using InteractionKit.Components;
 using InteractionKit.Functions;
 using System.Numerics;
 using Transforms;
@@ -17,8 +16,8 @@ namespace InteractionKit
         public readonly ref float Z => ref background.Z;
         public readonly ref Anchor Anchor => ref background.AsEntity().GetComponent<Anchor>();
         public readonly ref Vector3 Pivot => ref background.AsEntity().GetComponent<Pivot>().value;
-        public readonly ref Color BackgroundColor => ref background.AsEntity().GetComponent<BaseColor>().value;
-        public readonly ref Color CheckmarkColor
+        public readonly ref Vector4 BackgroundColor => ref background.AsEntity().GetComponent<BaseColor>().value;
+        public readonly ref Vector4 CheckmarkColor
         {
             get
             {
@@ -63,8 +62,8 @@ namespace InteractionKit
 
             Image checkmarkBox = new(canvas);
             checkmarkBox.SetParent(background);
-            checkmarkBox.Anchor = new(new(4, true), new(4, true), default, new(4, true), new(4, true), default);
-            checkmarkBox.Color = Color.Black;
+            checkmarkBox.Anchor = new("4", "4", "0", "4", "4", "0");
+            checkmarkBox.Color = new(0, 0, 0, 1);
 
             Transform checkmarkTransform = checkmarkBox;
             checkmarkTransform.LocalPosition = new(0f, 0f, Settings.ZScale);

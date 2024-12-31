@@ -1,5 +1,4 @@
-﻿using Data;
-using InteractionKit.Components;
+﻿using InteractionKit.Components;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -15,10 +14,9 @@ namespace InteractionKit
         public readonly ref Vector2 Size => ref background.Size;
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;
+        public readonly ref Vector4 BackgroundColor => ref background.Color;
 
-        public readonly ref Color BackgroundColor => ref background.Color;
-
-        public readonly ref Color ScrollHandleColor
+        public readonly ref Vector4 ScrollHandleColor
         {
             get
             {
@@ -105,7 +103,7 @@ namespace InteractionKit
 
             Image scrollHandle = new(canvas);
             scrollHandle.SetParent(scrollRegion);
-            scrollHandle.Color = Color.Black;
+            scrollHandle.Color = new(0, 0, 0, 1);
             if (axis.Y > axis.X)
             {
                 scrollHandle.Anchor = new(new(0f, false), default, default, new(1f, false), default, default);
