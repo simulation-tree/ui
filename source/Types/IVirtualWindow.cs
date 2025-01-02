@@ -1,4 +1,5 @@
 ﻿using InteractionKit.Functions;
+using Transforms;
 using Unmanaged;
 
 namespace InteractionKit
@@ -6,8 +7,15 @@ namespace InteractionKit
     public interface IVirtualWindow
     {
         FixedString Title { get; }
+
+        /// <summary>
+        /// Callback for handling what happens when virtual window's close button is pressed.
+        /// <para>
+        /// If <c>default</c>, the <see cref="VirtualWindow"/> will be destroyed.
+        /// </para>
+        /// </summary>
         VirtualWindowClose CloseCallback { get; }
 
-        void OnCreated(VirtualWindow window, Canvas canvas);
+        void OnCreated(Transform transform, Canvas canvas);
     }
 }

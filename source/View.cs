@@ -34,7 +34,7 @@ namespace InteractionKit
             }
         }
 
-        public readonly Entity Content
+        public readonly Transform Content
         {
             get
             {
@@ -48,7 +48,7 @@ namespace InteractionKit
         {
             get
             {
-                Transform content = Content.As<Transform>();
+                Transform content = Content;
                 ref Vector3 localPosition = ref content.LocalPosition;
                 fixed (Vector3* pLocalPosition = &localPosition)
                 {
@@ -61,7 +61,7 @@ namespace InteractionKit
         {
             get
             {
-                Transform content = Content.As<Transform>();
+                Transform content = Content;
                 ref Vector3 localScale = ref content.LocalScale;
                 fixed (Vector3* pLocalScale = &localScale)
                 {

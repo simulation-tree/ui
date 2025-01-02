@@ -20,7 +20,7 @@ namespace InteractionKit
         public readonly ref Anchor Anchor => ref background.Anchor;
         public readonly ref Vector3 Pivot => ref background.Pivot;
 
-        public readonly Entity Container
+        public readonly Transform Container
         {
             get
             {
@@ -145,9 +145,16 @@ namespace InteractionKit
         {
             Entity headerEntity = closeButtonEntity.GetParent();
             Entity windowEntity = headerEntity.GetParent();
-            VirtualWindow window = windowEntity.As<VirtualWindow>();
-            IsVirtualWindow component = windowEntity.GetComponent<IsVirtualWindow>();
-            component.closeCallback.Invoke(window);
+            VirtualWindow virtualWindow = windowEntity.As<VirtualWindow>();
+            ref IsVirtualWindow component = ref windowEntity.GetComponent<IsVirtualWindow>();
+            if (component.closeCallback != default)
+            {
+                component.closeCallback.Invoke(virtualWindow);
+            }
+            else
+            {
+                virtualWindow.Dispose();
+            }
         }
 
         public unsafe static VirtualWindow Create<T>(World world, Canvas canvas) where T : unmanaged, IVirtualWindow
@@ -155,7 +162,7 @@ namespace InteractionKit
             FixedString title = default(T).Title;
             VirtualWindowClose closeCallback = default(T).CloseCallback;
             VirtualWindow window = new(world, canvas, title, closeCallback);
-            default(T).OnCreated(window, canvas);
+            default(T).OnCreated(window.Container, canvas);
             return window;
         }
 
