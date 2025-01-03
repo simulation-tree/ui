@@ -467,7 +467,7 @@ namespace InteractionKit.Systems
         {
             if (!world.ContainsComponent(entity, componentType))
             {
-                throw new Exception($"Entity `{entity}` is missing expected component `{componentType}`");
+                throw new Exception($"Entity `{entity}` is missing expected component `{componentType.ToString(world.Schema)}`");
             }
         }
 
