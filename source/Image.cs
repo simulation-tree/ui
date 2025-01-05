@@ -108,7 +108,7 @@ namespace InteractionKit
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentTypes<IsTransform, IsRenderer>(schema);
+            return new Definition().AddComponentType<IsRenderer>(schema).AddTagType<IsTransform>(schema);
         }
 
 #if NET

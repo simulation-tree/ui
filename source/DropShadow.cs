@@ -1,5 +1,4 @@
 ﻿using Cameras;
-using Data;
 using InteractionKit.Components;
 using Meshes.NineSliced;
 using Rendering;
@@ -20,7 +19,7 @@ namespace InteractionKit
 
         readonly Definition IEntity.GetDefinition(Schema schema)
         {
-            return new Definition().AddComponentTypes<IsTransform, IsRenderer, IsDropShadow>(schema);
+            return new Definition().AddComponentTypes<IsRenderer, IsDropShadow>(schema).AddTagType<IsTransform>(schema);
         }
 
 #if NET
