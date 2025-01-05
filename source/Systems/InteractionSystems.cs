@@ -10,7 +10,7 @@ namespace InteractionKit.Systems
         {
             if (systemContainer.World == world)
             {
-                Simulator simulator = systemContainer.Simulator;
+                Simulator simulator = systemContainer.simulator;
                 simulator.AddSystem<CanvasSystem>();
                 simulator.AddSystem<SelectionSystem>();
                 simulator.AddSystem<ResizingSystem>();
@@ -37,7 +37,7 @@ namespace InteractionKit.Systems
         {
             if (systemContainer.World == world)
             {
-                Simulator simulator = systemContainer.Simulator;
+                Simulator simulator = systemContainer.simulator;
                 simulator.RemoveSystem<UpdateDropShadowTransformSystem>();
                 simulator.RemoveSystem<DropdownMenusSystem>();
                 simulator.RemoveSystem<TextFieldEditingSystem>();
