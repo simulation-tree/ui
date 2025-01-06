@@ -18,9 +18,10 @@ namespace InteractionKit
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentTypes<IsResizable, LocalToWorld>(schema);
+            archetype.AddComponentType<IsResizable>();
+            archetype.AddComponentType<LocalToWorld>();
         }
 
         public Resizable(World world, uint existingEntity)

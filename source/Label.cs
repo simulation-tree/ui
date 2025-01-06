@@ -84,9 +84,12 @@ namespace InteractionKit
         readonly uint IEntity.Value => textRenderer.GetEntityValue();
         readonly World IEntity.World => textRenderer.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentTypes<IsLabel, IsTextRenderer, IsSelectable>(schema).AddArrayElementType<LabelCharacter>(schema);
+            archetype.AddComponentType<IsLabel>();
+            archetype.AddComponentType<IsTextRenderer>();
+            archetype.AddComponentType<IsSelectable>();
+            archetype.AddArrayElementType<LabelCharacter>();
         }
 
         public Label(World world, uint existingEntity)

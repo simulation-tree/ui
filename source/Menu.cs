@@ -143,9 +143,10 @@ namespace InteractionKit
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentType<IsMenu>(schema).AddArrayElementType<IsMenuOption>(schema);
+            archetype.AddComponentType<IsMenu>();
+            archetype.AddArrayElementType<IsMenuOption>();
         }
 
         public Menu(Canvas canvas, Vector2 optionSize, MenuCallback callback = default)

@@ -168,9 +168,11 @@ namespace InteractionKit
         readonly uint IEntity.Value => background.GetEntityValue();
         readonly World IEntity.World => background.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentTypes<IsTrigger, IsSelectable, IsDropdown>(schema);
+            archetype.AddComponentType<IsTrigger>();
+            archetype.AddComponentType<IsSelectable>();
+            archetype.AddComponentType<IsDropdown>();
         }
 
 #if NET
@@ -279,9 +281,9 @@ namespace InteractionKit
         readonly uint IEntity.Value => dropdown.GetEntityValue();
         readonly World IEntity.World => dropdown.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return Definition.Get<Dropdown>(schema);
+            archetype.Add<Dropdown>();
         }
 
 #if NET

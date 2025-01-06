@@ -23,9 +23,10 @@ namespace InteractionKit
         readonly uint IEntity.Value => image.GetEntityValue();
         readonly World IEntity.World => image.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentTypes<IsTrigger, IsSelectable>(schema);
+            archetype.AddComponentType<IsTrigger>();
+            archetype.AddComponentType<IsSelectable>();
         }
 
 #if NET

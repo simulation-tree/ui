@@ -17,9 +17,11 @@ namespace InteractionKit
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentTypes<IsRenderer, IsDropShadow>(schema).AddTagType<IsTransform>(schema);
+            archetype.AddComponentType<IsRenderer>();
+            archetype.AddComponentType<IsDropShadow>();
+            archetype.AddTagType<IsTransform>();
         }
 
 #if NET

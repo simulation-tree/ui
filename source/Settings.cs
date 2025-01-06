@@ -115,9 +115,12 @@ namespace InteractionKit
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentTypes<AssetReferences, UISettings, TextEditState>(schema).AddArrayElementType<MaterialSettings>(schema);
+            archetype.AddComponentType<AssetReferences>();
+            archetype.AddComponentType<UISettings>();
+            archetype.AddComponentType<TextEditState>();
+            archetype.AddArrayElementType<MaterialSettings>();
         }
 
 #if NET

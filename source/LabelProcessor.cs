@@ -12,9 +12,9 @@ namespace InteractionKit
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentType<IsLabelProcessor>(schema);
+            archetype.AddComponentType<IsLabelProcessor>();
         }
 
 #if NET

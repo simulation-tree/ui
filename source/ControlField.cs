@@ -105,9 +105,10 @@ namespace InteractionKit
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
 
-        readonly Definition IEntity.GetDefinition(Schema schema)
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            return new Definition().AddComponentType<IsControlField>(schema).AddArrayElementType<ControlEntity>(schema);
+            archetype.AddComponentType<IsControlField>();
+            archetype.AddArrayElementType<ControlEntity>();
         }
 
         public ControlField(World world, uint existingEntity)
