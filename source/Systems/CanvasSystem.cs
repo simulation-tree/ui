@@ -25,8 +25,8 @@ namespace InteractionKit.Systems
             foreach (var x in canvasQuery)
             {
                 uint canvasEntity = x.entity;
-                ref IsCanvas canvas = ref x.component1;
-                rint cameraReference = canvas.cameraReference;
+                ref IsCanvas component = ref x.component1;
+                rint cameraReference = component.cameraReference;
                 uint cameraEntity = world.GetReference(canvasEntity, cameraReference);
                 float distanceFromCamera = Settings.ZScale;
                 Vector2 size = default;

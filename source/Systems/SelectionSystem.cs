@@ -119,7 +119,7 @@ namespace InteractionKit.Systems
                 uint oldHoveringOver = hoveringOverReference == default ? default : world.GetReference(p.entity, hoveringOverReference);
                 if (oldHoveringOver != currentHoveringOver)
                 {
-                    if (oldHoveringOver != default)
+                    if (oldHoveringOver != default && world.ContainsEntity(oldHoveringOver))
                     {
                         ref IsSelectable oldSelectable = ref world.GetComponent<IsSelectable>(oldHoveringOver);
                         oldSelectable = default;
