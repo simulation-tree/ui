@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using Worlds;
 
 namespace InteractionKit.Components
@@ -10,6 +11,7 @@ namespace InteractionKit.Components
         public rint hoveringOverReference;
         public PointerAction action;
         public Vector2 scroll;
+        public uint mask;
 
         public bool HasPrimaryIntent
         {
@@ -23,10 +25,20 @@ namespace InteractionKit.Components
             set => action = value ? action | PointerAction.Secondary : action & ~PointerAction.Secondary;
         }
 
-        public IsPointer(Vector2 position, rint hoveringOverReference)
+#if NET
+        [Obsolete("Default constructor not available", true)]
+        public IsPointer()
+        {
+            throw new NotSupportedException();
+        }
+#endif
+
+        public IsPointer(Vector2 position, uint mask = uint.MaxValue)
         {
             this.position = position;
-            this.hoveringOverReference = hoveringOverReference;
+            action = default;
+            scroll = default;
+            this.mask = mask;
         }
     }
 }

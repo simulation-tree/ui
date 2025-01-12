@@ -70,7 +70,7 @@ namespace InteractionKit
             header.Color = new(0.2f, 0.2f, 0.2f, 1);
             header.Position = new(0f, 0f);
             header.SetParent(background);
-            header.AddComponent(new IsSelectable());
+            header.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             rint targetReference = header.AddReference(background);
             header.AddComponent(new IsDraggable(targetReference));

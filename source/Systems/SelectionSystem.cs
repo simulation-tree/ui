@@ -10,13 +10,11 @@ namespace InteractionKit.Systems
 {
     public readonly partial struct SelectionSystem : ISystem
     {
-        private readonly Dictionary<Entity, uint> selectionStates;
         private readonly Dictionary<Entity, PointerAction> pointerStates;
         private readonly List<(uint entity, LocalToWorld ltw)> selectableEntities;
 
-        private SelectionSystem(Dictionary<Entity, uint> selectionStates, Dictionary<Entity, PointerAction> pointerStates, List<(uint entity, LocalToWorld ltw)> selectableEntities)
+        private SelectionSystem(Dictionary<Entity, PointerAction> pointerStates, List<(uint entity, LocalToWorld ltw)> selectableEntities)
         {
-            this.selectionStates = selectionStates;
             this.pointerStates = pointerStates;
             this.selectableEntities = selectableEntities;
         }
@@ -25,10 +23,9 @@ namespace InteractionKit.Systems
         {
             if (systemContainer.World == world)
             {
-                Dictionary<Entity, uint> selectionStates = new();
                 Dictionary<Entity, PointerAction> pointerStates = new();
                 List<(uint entity, LocalToWorld ltw)> selectableEntities = new();
-                systemContainer.Write(new SelectionSystem(selectionStates, pointerStates, selectableEntities));
+                systemContainer.Write(new SelectionSystem(pointerStates, selectableEntities));
             }
         }
 
@@ -43,14 +40,11 @@ namespace InteractionKit.Systems
             {
                 selectableEntities.Dispose();
                 pointerStates.Dispose();
-                selectionStates.Dispose();
             }
         }
 
         private readonly void Update(World world)
         {
-            FindSelectableEntities(world);
-
             ComponentQuery<IsPointer> pointerQuery = new(world);
             foreach (var p in pointerQuery)
             {
@@ -89,6 +83,7 @@ namespace InteractionKit.Systems
                 }
 
                 //find currently hovering over entity
+                FindSelectableEntities(world, component.mask);
                 foreach ((uint selectableEntity, LocalToWorld ltw) in selectableEntities)
                 {
                     Vector3 position = ltw.Position;
@@ -122,7 +117,7 @@ namespace InteractionKit.Systems
                     if (oldHoveringOver != default && world.ContainsEntity(oldHoveringOver))
                     {
                         ref IsSelectable oldSelectable = ref world.GetComponent<IsSelectable>(oldHoveringOver);
-                        oldSelectable = default;
+                        oldSelectable.state = default;
                     }
 
                     if (currentHoveringOver != default)
@@ -195,7 +190,7 @@ namespace InteractionKit.Systems
             //todo: handle using arrow keys to switch to an adjacent selectable
         }
 
-        private readonly void FindSelectableEntities(World world)
+        private readonly void FindSelectableEntities(World world, uint selectionMask)
         {
             selectableEntities.Clear();
             ComponentQuery<IsSelectable, LocalToWorld> selectableQuery = new(world);
@@ -203,7 +198,11 @@ namespace InteractionKit.Systems
             {
                 if (world.IsEnabled(s.entity))
                 {
-                    selectableEntities.Add((s.entity, s.component2));
+                    ref IsSelectable selectable = ref s.component1;
+                    if ((selectable.mask & selectionMask) != 0)
+                    {
+                        selectableEntities.Add((s.entity, s.component2));
+                    }
                 }
             }
         }

@@ -151,7 +151,7 @@ namespace InteractionKit
             MeshRenderer renderer = transform.AsEntity().Become<MeshRenderer>();
             renderer.Mesh = settings.QuadMesh;
             renderer.Material = settings.GetSquareMaterial(canvas.Camera);
-            renderer.Mask = settings.Mask;
+            renderer.Mask = canvas.RenderMask;
         }
 
         public readonly void Dispose()

@@ -100,7 +100,7 @@ namespace InteractionKit
             Transform scrollRegion = new(world);
             scrollRegion.SetParent(background);
             scrollRegion.AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
-            scrollRegion.AddComponent(new IsSelectable());
+            scrollRegion.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             Image scrollHandle = new(canvas);
             scrollHandle.SetParent(scrollRegion);
@@ -121,7 +121,7 @@ namespace InteractionKit
                 scrollHandle.Size = new(handlePercentageSize);
             }
 
-            scrollHandle.AddComponent(new IsSelectable());
+            scrollHandle.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             rint scrollHandleReference = background.AddReference(scrollHandle);
             background.AddComponent(new IsScrollBar(scrollHandleReference, axis));

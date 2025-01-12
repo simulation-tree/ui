@@ -14,6 +14,7 @@ namespace InteractionKit
         private readonly Entity entity;
 
         public readonly ref IsResizable.Boundary Boundary => ref entity.GetComponent<IsResizable>().resize;
+        public readonly ref uint Mask => ref entity.GetComponent<IsResizable>().mask;
 
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();

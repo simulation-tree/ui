@@ -71,7 +71,7 @@ namespace InteractionKit
 
             rint checkmarkReference = background.AddReference(checkmarkBox);
             background.AddComponent(new IsToggle(checkmarkReference, initialValue, default));
-            background.AddComponent(new IsSelectable());
+            background.AddComponent(new IsSelectable(canvas.SelectionMask));
             checkmarkBox.SetEnabled(initialValue);
         }
 

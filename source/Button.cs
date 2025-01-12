@@ -41,7 +41,7 @@ namespace InteractionKit
         {
             image = new(canvas);
             image.AddComponent(new IsTrigger(new(&Filter), callback));
-            image.AddComponent(new IsSelectable());
+            image.AddComponent(new IsSelectable(canvas.SelectionMask));
         }
 
         public readonly void Dispose()

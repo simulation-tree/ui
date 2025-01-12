@@ -7,6 +7,7 @@ namespace InteractionKit.Components
     public struct IsSelectable
     {
         public State state;
+        public uint mask;
 
         /// <summary>
         /// <c>true</c> when this entity is the only selected entity.
@@ -15,6 +16,20 @@ namespace InteractionKit.Components
 
         public readonly bool WasPrimaryInteractedWith => (state & State.WasPrimaryInteractedWith) != 0;
         public readonly bool WasSecondaryInteractedWith => (state & State.WasSecondaryInteractedWith) != 0;
+
+#if NET
+        [Obsolete("Default constructor not supported", true)]
+        public IsSelectable()
+        {
+            throw new NotSupportedException();
+        }
+#endif
+
+        public IsSelectable(uint mask)
+        {
+            state = State.None;
+            this.mask = mask;
+        }
 
         [Flags]
         public enum State : byte

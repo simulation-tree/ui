@@ -34,7 +34,6 @@ namespace InteractionKit
         private readonly Entity entity;
 
         public readonly ref float SingleLineHeight => ref entity.GetComponent<UISettings>().singleLineHeight;
-        public readonly ref uint Mask => ref entity.GetComponent<UISettings>().mask;
         public readonly ref PressedCharacters PressedCharacters => ref entity.GetComponent<UISettings>().pressedCharacters;
 
         public readonly StateMachine ControlStateMachine
@@ -231,7 +230,6 @@ namespace InteractionKit
 
             UISettings uiSettings = new();
             uiSettings.singleLineHeight = 24f;
-            uiSettings.mask = 1;
 
             entity.AddComponent(assetReferences);
             entity.AddComponent(uiSettings);

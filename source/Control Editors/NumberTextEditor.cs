@@ -50,11 +50,12 @@ namespace InteractionKit.ControlEditors
                 }
             }
 
+            input.AddEntity(textField);
+
             textField.BeginEditing = new(&BeginEditing);
             textField.Validation = new(&Validate);
             textField.Submit = new(&Submit);
             textField.Cancel = new(&Cancel);
-            input.AddEntity(textField);
         }
 
         [UnmanagedCallersOnly]

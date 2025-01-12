@@ -88,7 +88,7 @@ namespace InteractionKit
             box.Color = new(1, 1, 1, 1);
             box.Anchor = new(new(24f, true), new(0f, false), default, new(1f, false), new(1f, false), default);
             box.AddComponent(new IsTrigger(new(&Filter), new(&ToggleSelected)));
-            box.AddComponent(new IsSelectable());
+            box.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             Label label = new(canvas, text);
             label.SetParent(box);

@@ -26,6 +26,8 @@ namespace InteractionKit
             set => entity.GetComponent<IsPointer>().HasSecondaryIntent = value;
         }
 
+        public readonly ref uint Mask => ref entity.GetComponent<IsPointer>().mask;
+
         /// <summary>
         /// The currently hovered over entity.
         /// <para>May be <c>default</c>.</para>

@@ -55,9 +55,13 @@ namespace InteractionKit.Systems
                 foreach (var r in resizableQuery)
                 {
                     Resizable resizable = new(world, r.entity);
+                    uint mask = r.component1.mask;
                     foreach (var p in pointerQuery)
                     {
                         ref IsPointer pointer = ref p.component1;
+                        uint selectionMask = pointer.mask;
+                        if ((mask & selectionMask) == 0) continue;
+
                         if (pointer.HasPrimaryIntent && !lastPressedPointers[new(world, p.entity)])
                         {
                             Vector2 pointerPosition = pointer.position;

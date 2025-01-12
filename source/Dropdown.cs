@@ -192,7 +192,7 @@ namespace InteractionKit
         {
             background = new(canvas);
             background.AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
-            background.AddComponent(new IsSelectable());
+            background.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             Label label = new(canvas, default(FixedString));
             label.SetParent(background);
@@ -303,7 +303,7 @@ namespace InteractionKit
         {
             Image background = new(canvas);
             background.AddComponent(new IsTrigger(new(&Dropdown.Filter), new(&Dropdown.ToggleDropdown)));
-            background.AddComponent(new IsSelectable());
+            background.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             Label label = new(canvas, default(FixedString));
             label.SetParent(background);

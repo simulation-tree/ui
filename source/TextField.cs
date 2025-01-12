@@ -79,7 +79,7 @@ namespace InteractionKit
         public unsafe TextField(Canvas canvas, FixedString defaultValue = default, BeginEditing beginEditing = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
         {
             background = new(canvas);
-            background.AddComponent(new IsSelectable());
+            background.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             Label text = new(canvas, defaultValue);
             text.SetParent(background);

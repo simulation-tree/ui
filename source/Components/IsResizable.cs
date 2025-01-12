@@ -7,10 +7,20 @@ namespace InteractionKit.Components
     public struct IsResizable
     {
         public Boundary resize;
+        public uint mask;
 
-        public IsResizable(Boundary resize)
+#if NET
+        [Obsolete("Default constructor not supported", true)]
+        public IsResizable()
+        {
+            throw new NotSupportedException();
+        }
+#endif
+
+        public IsResizable(Boundary resize, uint mask = uint.MaxValue)
         {
             this.resize = resize;
+            this.mask = mask;
         }
 
         [Flags]

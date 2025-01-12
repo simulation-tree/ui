@@ -52,6 +52,9 @@ namespace InteractionKit
             }
         }
 
+        public readonly ref uint RenderMask => ref transform.AsEntity().GetComponent<IsCanvas>().renderMask;
+        public readonly ref uint SelectionMask => ref transform.AsEntity().GetComponent<IsCanvas>().selectionMask;
+
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
 
@@ -73,13 +76,13 @@ namespace InteractionKit
             transform = new(world, existingEntity);
         }
 
-        public Canvas(World world, Camera camera)
+        public Canvas(World world, Camera camera, uint renderMask = 1, uint selectionMask = 1)
         {
             Settings.ThrowIfMissing(world);
             transform = new(world);
 
             rint cameraReference = transform.AddReference(camera);
-            transform.AddComponent(new IsCanvas(cameraReference));
+            transform.AddComponent(new IsCanvas(cameraReference, renderMask, selectionMask));
         }
 
         public readonly void Dispose()
