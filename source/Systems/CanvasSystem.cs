@@ -22,6 +22,7 @@ namespace InteractionKit.Systems
             uint destroyedCanvasCount = 0;
 
             ComponentQuery<IsCanvas, Position, Scale> canvasQuery = new(world);
+            canvasQuery.ExcludeDisabled(true);
             foreach (var x in canvasQuery)
             {
                 uint canvasEntity = x.entity;

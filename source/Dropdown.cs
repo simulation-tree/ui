@@ -264,7 +264,7 @@ namespace InteractionKit
 
         public static Material GetTriangleMaterialFromSettings(Camera camera)
         {
-            Settings settings = camera.GetSettings();
+            Settings settings = camera.GetWorld().GetFirst<Settings>();
             return settings.GetTriangleMaterial(camera);
         }
 

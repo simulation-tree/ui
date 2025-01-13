@@ -13,7 +13,7 @@ namespace InteractionKit.ControlEditors
         private static void InitializeControlField(InitializeControlField.Input input)
         {
             Canvas canvas = input.Canvas;
-            float singleLineHeight = canvas.GetSettings().SingleLineHeight;
+            float singleLineHeight = canvas.Settings.SingleLineHeight;
             ControlField controlField = input.ControlField;
             controlField.AsEntity().TryGetComponent(out bool initialValue);
             Toggle toggle = new(canvas, initialValue);

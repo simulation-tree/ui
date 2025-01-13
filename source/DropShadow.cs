@@ -34,7 +34,7 @@ namespace InteractionKit
 
         public DropShadow(Canvas canvas, Entity foreground)
         {
-            Settings settings = canvas.GetSettings();
+            Settings settings = canvas.Settings;
             World world = canvas.GetWorld();
             Camera camera = canvas.Camera;
 

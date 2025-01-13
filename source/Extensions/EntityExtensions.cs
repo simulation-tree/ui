@@ -29,25 +29,5 @@ namespace InteractionKit
 
             throw new InvalidOperationException($"Entity `{entity}` is not a descendant of a canvas entity");
         }
-
-        /// <summary>
-        /// Retrieves the <see cref="Settings"/> entity in the world of this entity.
-        /// <para>
-        /// May throw <see cref="NullReferenceException"/> if none found.
-        /// </para>
-        /// </summary>
-        /// <exception cref="NullReferenceException"></exception>
-        public static Settings GetSettings<T>(this T entity) where T : unmanaged, IEntity
-        {
-            World world = entity.GetWorld();
-            if (world.TryGetFirst(out Settings settings))
-            {
-                return settings;
-            }
-            else
-            {
-                throw new NullReferenceException($"A `{typeof(Settings)}` entity was not found in the world");
-            }
-        }
     }
 }

@@ -40,6 +40,7 @@ namespace InteractionKit.Systems
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
             ComponentQuery<IsPointer> pointerQuery = new(world);
+            pointerQuery.ExcludeDisabled(true);
             foreach (var p in pointerQuery)
             {
                 Entity entity = new(world, p.entity);
@@ -52,6 +53,7 @@ namespace InteractionKit.Systems
             if (resizingEntity == default)
             {
                 ComponentQuery<IsResizable, Position, Scale> resizableQuery = new(world);
+                resizableQuery.ExcludeDisabled(true);
                 foreach (var r in resizableQuery)
                 {
                     Resizable resizable = new(world, r.entity);

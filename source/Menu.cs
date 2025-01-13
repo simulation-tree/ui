@@ -140,6 +140,19 @@ namespace InteractionKit
             }
         }
 
+        public readonly uint Count => transform.AsEntity().GetArrayLength<IsMenuOption>();
+
+        public readonly MenuOption this[uint index]
+        {
+            get
+            {
+                USpan<IsMenuOption> options = Options;
+                ref IsMenuOption option = ref options[index];
+                OptionPath path = GetPath(this, index);
+                return new(this, path);
+            }
+        }
+
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
 

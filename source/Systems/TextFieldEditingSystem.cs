@@ -7,7 +7,6 @@ using Meshes;
 using Rendering.Components;
 using Simulation;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;

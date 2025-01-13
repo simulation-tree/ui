@@ -62,6 +62,7 @@ namespace InteractionKit.Systems
         private readonly void Update(World world)
         {
             ComponentQuery<ComponentMix> query = new(world);
+            query.ExcludeDisabled(true);
             foreach (var x in query)
             {
                 uint entity = x.entity;

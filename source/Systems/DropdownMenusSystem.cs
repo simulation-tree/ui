@@ -19,6 +19,7 @@ namespace InteractionKit.Systems
         void ISystem.Update(in SystemContainer systemContainer, in World world, in TimeSpan delta)
         {
             ComponentQuery<IsDropdown, LocalToWorld> dropdownQuery = new(world);
+            dropdownQuery.ExcludeDisabled(true);
             foreach (var r in dropdownQuery)
             {
                 uint entity = r.entity;

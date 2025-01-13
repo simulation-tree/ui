@@ -55,6 +55,7 @@ namespace InteractionKit.Systems
             FindDraggableEntities(world);
 
             ComponentQuery<IsPointer> query = new(world);
+            query.ExcludeDisabled(true);
             foreach (var r in query)
             {
                 ref IsPointer pointer = ref r.component1;
@@ -118,13 +119,12 @@ namespace InteractionKit.Systems
         private readonly void FindDraggableEntities(World world)
         {
             draggableEntities.Clear();
+
             ComponentQuery<IsDraggable> query = new(world);
+            query.ExcludeDisabled(true);
             foreach (var r in query)
             {
-                if (world.IsEnabled(r.entity))
-                {
-                    draggableEntities.Add(r.entity);
-                }
+                draggableEntities.Add(r.entity);
             }
         }
     }

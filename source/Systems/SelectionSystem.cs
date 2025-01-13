@@ -46,10 +46,9 @@ namespace InteractionKit.Systems
         private readonly void Update(World world)
         {
             ComponentQuery<IsPointer> pointerQuery = new(world);
+            pointerQuery.ExcludeDisabled(true);
             foreach (var p in pointerQuery)
             {
-                if (!world.IsEnabled(p.entity)) continue;
-
                 Entity pointer = new(world, p.entity);
                 ref IsPointer component = ref p.component1;
                 Vector2 pointerPosition = component.position;
@@ -193,16 +192,15 @@ namespace InteractionKit.Systems
         private readonly void FindSelectableEntities(World world, uint selectionMask)
         {
             selectableEntities.Clear();
+
             ComponentQuery<IsSelectable, LocalToWorld> selectableQuery = new(world);
+            selectableQuery.ExcludeDisabled(true);
             foreach (var s in selectableQuery)
             {
-                if (world.IsEnabled(s.entity))
+                ref IsSelectable selectable = ref s.component1;
+                if ((selectable.mask & selectionMask) != 0)
                 {
-                    ref IsSelectable selectable = ref s.component1;
-                    if ((selectable.mask & selectionMask) != 0)
-                    {
-                        selectableEntities.Add((s.entity, s.component2));
-                    }
+                    selectableEntities.Add((s.entity, s.component2));
                 }
             }
         }

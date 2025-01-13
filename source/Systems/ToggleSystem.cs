@@ -46,6 +46,7 @@ namespace InteractionKit.Systems
             FindToggleEntities(world);
 
             ComponentQuery<IsPointer> pointerQuery = new(world);
+            pointerQuery.ExcludeDisabled(true);
             foreach (var p in pointerQuery)
             {
                 ref IsPointer pointer = ref p.component1;
@@ -92,10 +93,7 @@ namespace InteractionKit.Systems
             ComponentQuery<IsToggle> query = new(world);
             foreach (var t in query)
             {
-                if (world.IsEnabled(t.entity))
-                {
-                    toggleEntities.Add(t.entity);
-                }
+                toggleEntities.Add(t.entity);
             }
         }
     }

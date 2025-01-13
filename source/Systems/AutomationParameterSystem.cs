@@ -43,7 +43,9 @@ namespace InteractionKit.Systems
         private readonly void FindSelectedEntities(World world)
         {
             selectedEntities.Clear();
+
             ComponentQuery<IsPointer> pointerQuery = new(world);
+            pointerQuery.ExcludeDisabled(true);
             foreach (var p in pointerQuery)
             {
                 ref IsPointer pointer = ref p.component1;
@@ -58,6 +60,7 @@ namespace InteractionKit.Systems
         private readonly void UpdateSelectableParameters(World world)
         {
             ComponentQuery<IsSelectable, IsStateful> selectablesQuery = new(world);
+            selectablesQuery.ExcludeDisabled(true);
             foreach (var x in selectablesQuery)
             {
                 ref IsSelectable selectable = ref x.component1;

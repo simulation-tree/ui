@@ -100,7 +100,7 @@ namespace InteractionKit
         public Label(Canvas canvas, USpan<char> text, Font font = default, float size = 16f)
         {
             World world = canvas.GetWorld();
-            Settings settings = canvas.GetSettings();
+            Settings settings = canvas.Settings;
             Schema schema = world.Schema;
             if (font == default)
             {
@@ -135,7 +135,7 @@ namespace InteractionKit
         public Label(Canvas canvas, FixedString text, Font font = default, float size = 16f)
         {
             World world = canvas.GetWorld();
-            Settings settings = canvas.GetSettings();
+            Settings settings = canvas.Settings;
             Schema schema = world.Schema;
             if (font == default)
             {

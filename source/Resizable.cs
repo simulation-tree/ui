@@ -1,5 +1,4 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Systems;
 using System.Numerics;
 using Transforms.Components;
 using Worlds;

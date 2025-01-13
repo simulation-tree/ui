@@ -26,11 +26,10 @@ namespace InteractionKit.Systems
         private readonly void Update(World world)
         {
             ComponentQuery<IsVirtualWindow> query = new(world);
+            query.ExcludeDisabled(true);
             foreach (var v in query)
             {
                 uint virtualWindowEntity = v.entity;
-                if (!world.IsEnabled(virtualWindowEntity)) continue;
-
                 ref IsVirtualWindow component = ref v.component1;
                 VirtualWindow virtualWindow = new Entity(world, virtualWindowEntity).As<VirtualWindow>();
                 rint scrollBarReference = component.scrollBarReference;

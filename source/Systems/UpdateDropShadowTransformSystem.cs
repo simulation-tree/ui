@@ -78,8 +78,6 @@ namespace InteractionKit.Systems
             ComponentQuery<IsDropShadow, Position, Scale> fullQuery = new(world);
             foreach (var r in fullQuery)
             {
-                if (!world.IsEnabled(r.entity)) continue;
-
                 ref IsDropShadow component = ref r.component1;
                 ref Position position = ref r.component2;
                 ref Scale scale = ref r.component3;

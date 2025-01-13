@@ -34,10 +34,9 @@ namespace InteractionKit.Systems
         {
             //find new entities
             ComponentQuery<IsTrigger> invokeQuery = new(world);
+            invokeQuery.ExcludeDisabled(true);
             foreach (var x in invokeQuery)
             {
-                if (!world.IsEnabled(x.entity)) continue;
-
                 Entity entity = new(world, x.entity);
                 ref IsTrigger trigger = ref x.component1;
                 int triggerHash = trigger.GetHashCode();

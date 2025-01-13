@@ -126,7 +126,7 @@ namespace InteractionKit
             World world = transform.GetWorld();
             Vector2 size = Size;
             Canvas canvas = this.GetCanvas();
-            Settings settings = world.GetFirst<Settings>();
+            Settings settings = canvas.Settings;
             uint nodeCount = transform.AsEntity().GetArrayLength<TreeNodeOption>();
             if (nodeCount == 0)
             {

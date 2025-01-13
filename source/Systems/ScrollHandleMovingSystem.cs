@@ -55,14 +55,11 @@ namespace InteractionKit.Systems
             foreach (var s in scrollBarQuery)
             {
                 uint scrollBarEntity = s.entity;
-                if (world.IsEnabled(scrollBarEntity))
-                {
-                    rint scrollHandleReference = s.component1.scrollHandleReference;
-                    uint scrollHandleEntity = world.GetReference(scrollBarEntity, scrollHandleReference);
-                    uint scrollRegionEntity = world.GetParent(scrollHandleEntity);
-                    scrollHandleEntities.Add(scrollHandleEntity);
-                    scrollRegionEntities.Add(scrollRegionEntity);
-                }
+                rint scrollHandleReference = s.component1.scrollHandleReference;
+                uint scrollHandleEntity = world.GetReference(scrollBarEntity, scrollHandleReference);
+                uint scrollRegionEntity = world.GetParent(scrollHandleEntity);
+                scrollHandleEntities.Add(scrollHandleEntity);
+                scrollRegionEntities.Add(scrollRegionEntity);
             }
 
             ComponentQuery<IsPointer> pointerQuery = new(world);

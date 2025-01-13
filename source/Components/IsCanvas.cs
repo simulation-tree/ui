@@ -7,6 +7,7 @@ namespace InteractionKit.Components
     public struct IsCanvas
     {
         public rint cameraReference;
+        public rint settingsReference;
         public uint renderMask;
         public uint selectionMask;
 
@@ -18,9 +19,10 @@ namespace InteractionKit.Components
         }
 #endif
 
-        public IsCanvas(rint cameraReference, uint renderMask, uint selectionMask)
+        public IsCanvas(rint cameraReference, rint settingsReference, uint renderMask = uint.MaxValue, uint selectionMask = uint.MaxValue)
         {
             this.cameraReference = cameraReference;
+            this.settingsReference = settingsReference;
             this.renderMask = renderMask;
             this.selectionMask = selectionMask;
         }

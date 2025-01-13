@@ -23,6 +23,11 @@ namespace InteractionKit
             }
         }
 
+        public void Clear()
+        {
+            length = 0;
+        }
+
         public void SetPressedCharacters(USpan<char> characters)
         {
             ThrowIfGreaterThanCapacity(characters.Length);

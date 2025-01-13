@@ -127,7 +127,7 @@ namespace InteractionKit
         public Image(Canvas canvas)
         {
             World world = canvas.GetWorld();
-            Settings settings = canvas.GetSettings();
+            Settings settings = canvas.Settings;
             Schema schema = world.Schema;
 
             transform = new(world);
