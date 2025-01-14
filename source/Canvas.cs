@@ -1,5 +1,6 @@
 ﻿using Cameras;
 using InteractionKit.Components;
+using Rendering;
 using System;
 using System.Numerics;
 using Transforms;
@@ -65,8 +66,8 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref uint RenderMask => ref transform.AsEntity().GetComponent<IsCanvas>().renderMask;
-        public readonly ref uint SelectionMask => ref transform.AsEntity().GetComponent<IsCanvas>().selectionMask;
+        public readonly ref LayerMask RenderMask => ref transform.AsEntity().GetComponent<IsCanvas>().renderMask;
+        public readonly ref LayerMask SelectionMask => ref transform.AsEntity().GetComponent<IsCanvas>().selectionMask;
 
         readonly uint IEntity.Value => transform.GetEntityValue();
         readonly World IEntity.World => transform.GetWorld();
@@ -89,13 +90,22 @@ namespace InteractionKit
             transform = new(world, existingEntity);
         }
 
-        public Canvas(World world, Settings settings, Camera camera, uint renderMask = 1, uint selectionMask = 1)
+        public Canvas(World world, Settings settings, Camera camera, LayerMask renderMask, LayerMask selectionMask)
         {
             transform = new(world);
 
             rint cameraReference = transform.AddReference(camera);
             rint settingsReference = transform.AddReference(settings);
             transform.AddComponent(new IsCanvas(cameraReference, settingsReference, renderMask, selectionMask));
+        }
+
+        public Canvas(World world, Settings settings, Camera camera)
+        {
+            transform = new(world);
+
+            rint cameraReference = transform.AddReference(camera);
+            rint settingsReference = transform.AddReference(settings);
+            transform.AddComponent(new IsCanvas(cameraReference, settingsReference, LayerMask.All, LayerMask.All));
         }
 
         public readonly void Dispose()

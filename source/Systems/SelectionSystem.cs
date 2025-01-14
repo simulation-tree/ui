@@ -1,5 +1,6 @@
 ﻿using Collections;
 using InteractionKit.Components;
+using Rendering;
 using Simulation;
 using System;
 using System.Numerics;
@@ -53,7 +54,7 @@ namespace InteractionKit.Systems
                 ref IsPointer component = ref p.component1;
                 Vector2 pointerPosition = component.position;
                 float lastDepth = float.MinValue;
-                uint currentHoveringOver = default;
+                uint newHoveringOver = default;
                 bool hasPrimaryIntent = component.HasPrimaryIntent;
                 bool hasSecondaryIntent = component.HasSecondaryIntent;
                 bool primaryIntentStarted = false;
@@ -82,7 +83,7 @@ namespace InteractionKit.Systems
                 }
 
                 //find currently hovering over entity
-                FindSelectableEntities(world, component.mask);
+                FindSelectableEntities(world, component.selectionMask);
                 foreach ((uint selectableEntity, LocalToWorld ltw) in selectableEntities)
                 {
                     Vector3 position = ltw.Position;
@@ -103,29 +104,39 @@ namespace InteractionKit.Systems
                         if (lastDepth < depth)
                         {
                             lastDepth = depth;
-                            currentHoveringOver = selectableEntity;
+                            newHoveringOver = selectableEntity;
                         }
                     }
                 }
 
                 //update currently selected entity
                 ref rint hoveringOverReference = ref component.hoveringOverReference;
-                uint oldHoveringOver = hoveringOverReference == default ? default : world.GetReference(p.entity, hoveringOverReference);
-                if (oldHoveringOver != currentHoveringOver)
+                uint currentHoveringOver = hoveringOverReference == default ? default : world.GetReference(p.entity, hoveringOverReference);
+                
+                //handle state mismatch
+                if (!world.ContainsEntity(currentHoveringOver))
                 {
-                    if (oldHoveringOver != default && world.ContainsEntity(oldHoveringOver))
+                    currentHoveringOver = default;
+                }
+
+                if (currentHoveringOver != newHoveringOver)
+                {
+                    if (currentHoveringOver != default && world.ContainsEntity(currentHoveringOver))
                     {
-                        ref IsSelectable oldSelectable = ref world.GetComponent<IsSelectable>(oldHoveringOver);
-                        oldSelectable.state = default;
+                        ref IsSelectable oldSelectable = ref world.TryGetComponent<IsSelectable>(currentHoveringOver, out bool contains);
+                        if (contains)
+                        {
+                            oldSelectable.state = default;
+                        }
                     }
 
-                    if (currentHoveringOver != default)
+                    if (newHoveringOver != default)
                     {
-                        ref IsSelectable newSelectable = ref world.GetComponent<IsSelectable>(currentHoveringOver);
+                        ref IsSelectable newSelectable = ref world.GetComponent<IsSelectable>(newHoveringOver);
                         newSelectable.state |= IsSelectable.State.IsSelected;
                     }
 
-                    if (currentHoveringOver == default)
+                    if (newHoveringOver == default)
                     {
                         world.RemoveReference(p.entity, hoveringOverReference);
                         hoveringOverReference = default;
@@ -134,17 +145,17 @@ namespace InteractionKit.Systems
                     {
                         if (hoveringOverReference == default)
                         {
-                            hoveringOverReference = world.AddReference(p.entity, currentHoveringOver);
+                            hoveringOverReference = world.AddReference(p.entity, newHoveringOver);
                         }
                         else
                         {
-                            world.SetReference(p.entity, hoveringOverReference, currentHoveringOver);
+                            world.SetReference(p.entity, hoveringOverReference, newHoveringOver);
                         }
                     }
                 }
-                else if (currentHoveringOver != default && world.ContainsEntity(currentHoveringOver))
+                else if (newHoveringOver != default && world.ContainsEntity(newHoveringOver))
                 {
-                    ref IsSelectable selectable = ref world.GetComponent<IsSelectable>(currentHoveringOver);
+                    ref IsSelectable selectable = ref world.GetComponent<IsSelectable>(newHoveringOver);
                     if (primaryIntentStarted)
                     {
                         selectable.state |= IsSelectable.State.WasPrimaryInteractedWith;
@@ -189,7 +200,11 @@ namespace InteractionKit.Systems
             //todo: handle using arrow keys to switch to an adjacent selectable
         }
 
-        private readonly void FindSelectableEntities(World world, uint selectionMask)
+        /// <summary>
+        /// Finds all renderers that have a selection mask
+        /// which intersects with the given <paramref name="selectionMask"/>.
+        /// </summary>
+        private readonly void FindSelectableEntities(World world, LayerMask selectionMask)
         {
             selectableEntities.Clear();
 
@@ -198,7 +213,7 @@ namespace InteractionKit.Systems
             foreach (var s in selectableQuery)
             {
                 ref IsSelectable selectable = ref s.component1;
-                if ((selectable.mask & selectionMask) != 0)
+                if (selectionMask.ContainsAny(selectable.selectionMask))
                 {
                     selectableEntities.Add((s.entity, s.component2));
                 }

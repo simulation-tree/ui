@@ -1,5 +1,6 @@
 ﻿using Collections;
 using InteractionKit.Components;
+using Rendering;
 using Simulation;
 using System;
 using System.Numerics;
@@ -57,24 +58,25 @@ namespace InteractionKit.Systems
                 foreach (var r in resizableQuery)
                 {
                     Resizable resizable = new(world, r.entity);
-                    uint mask = r.component1.mask;
+                    LayerMask resizableMask = r.component1.selectionMask;
                     foreach (var p in pointerQuery)
                     {
                         ref IsPointer pointer = ref p.component1;
-                        uint selectionMask = pointer.mask;
-                        if ((mask & selectionMask) == 0) continue;
-
-                        if (pointer.HasPrimaryIntent && !lastPressedPointers[new(world, p.entity)])
+                        LayerMask pointerSelectionMask = pointer.selectionMask;
+                        if (pointerSelectionMask.ContainsAll(resizableMask))
                         {
-                            Vector2 pointerPosition = pointer.position;
-                            IsResizable.Boundary boundary = resizable.GetBoundary(pointerPosition);
-                            if (boundary != default)
+                            if (pointer.HasPrimaryIntent && !lastPressedPointers[new(world, p.entity)])
                             {
-                                resizingEntity = resizable;
-                                resizeBoundary = boundary;
-                                activePointer = new(world, p.entity);
-                                lastPointerPosition = pointerPosition;
-                                break;
+                                Vector2 pointerPosition = pointer.position;
+                                IsResizable.Boundary boundary = resizable.GetBoundary(pointerPosition);
+                                if (boundary != default)
+                                {
+                                    resizingEntity = resizable;
+                                    resizeBoundary = boundary;
+                                    activePointer = new(world, p.entity);
+                                    lastPointerPosition = pointerPosition;
+                                    break;
+                                }
                             }
                         }
                     }

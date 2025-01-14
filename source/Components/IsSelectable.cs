@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rendering;
+using System;
 using Worlds;
 
 namespace InteractionKit.Components
@@ -7,7 +8,7 @@ namespace InteractionKit.Components
     public struct IsSelectable
     {
         public State state;
-        public uint mask;
+        public LayerMask selectionMask;
 
         /// <summary>
         /// <c>true</c> when this entity is the only selected entity.
@@ -25,10 +26,10 @@ namespace InteractionKit.Components
         }
 #endif
 
-        public IsSelectable(uint mask)
+        public IsSelectable(LayerMask selectionMask)
         {
             state = State.None;
-            this.mask = mask;
+            this.selectionMask = selectionMask;
         }
 
         [Flags]

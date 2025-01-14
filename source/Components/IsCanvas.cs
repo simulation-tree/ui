@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rendering;
+using System;
 using Worlds;
 
 namespace InteractionKit.Components
@@ -8,8 +9,8 @@ namespace InteractionKit.Components
     {
         public rint cameraReference;
         public rint settingsReference;
-        public uint renderMask;
-        public uint selectionMask;
+        public LayerMask renderMask;
+        public LayerMask selectionMask;
 
 #if NET
         [Obsolete("Default constructor not supported", true)]
@@ -19,7 +20,7 @@ namespace InteractionKit.Components
         }
 #endif
 
-        public IsCanvas(rint cameraReference, rint settingsReference, uint renderMask = uint.MaxValue, uint selectionMask = uint.MaxValue)
+        public IsCanvas(rint cameraReference, rint settingsReference, LayerMask renderMask, LayerMask selectionMask)
         {
             this.cameraReference = cameraReference;
             this.settingsReference = settingsReference;

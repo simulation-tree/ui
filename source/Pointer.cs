@@ -1,4 +1,5 @@
 ﻿using InteractionKit.Components;
+using Rendering;
 using System;
 using System.Numerics;
 using Worlds;
@@ -26,7 +27,7 @@ namespace InteractionKit
             set => entity.GetComponent<IsPointer>().HasSecondaryIntent = value;
         }
 
-        public readonly ref uint Mask => ref entity.GetComponent<IsPointer>().mask;
+        public readonly ref LayerMask SelectionMask => ref entity.GetComponent<IsPointer>().selectionMask;
 
         /// <summary>
         /// The currently hovered over entity.

@@ -122,7 +122,7 @@ namespace InteractionKit
             textRenderer = transform.AsEntity().Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
-            textRenderer.Mask = canvas.RenderMask;
+            textRenderer.RenderMask = canvas.RenderMask;
 
             textRenderer.AddComponent(new IsLabel());
 
@@ -157,7 +157,7 @@ namespace InteractionKit
             textRenderer = transform.AsEntity().Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
-            textRenderer.Mask = canvas.RenderMask;
+            textRenderer.RenderMask = canvas.RenderMask;
 
             textRenderer.AddComponent(new IsLabel());
 

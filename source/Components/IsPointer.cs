@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rendering;
+using System;
 using System.Numerics;
 using Worlds;
 
@@ -11,7 +12,7 @@ namespace InteractionKit.Components
         public rint hoveringOverReference;
         public PointerAction action;
         public Vector2 scroll;
-        public uint mask;
+        public LayerMask selectionMask;
 
         public bool HasPrimaryIntent
         {
@@ -33,12 +34,20 @@ namespace InteractionKit.Components
         }
 #endif
 
-        public IsPointer(Vector2 position, uint mask = uint.MaxValue)
+        public IsPointer(Vector2 position, LayerMask selectionMask)
         {
             this.position = position;
             action = default;
             scroll = default;
-            this.mask = mask;
+            this.selectionMask = selectionMask;
+        }
+
+        public IsPointer(Vector2 position)
+        {
+            this.position = position;
+            action = default;
+            scroll = default;
+            selectionMask = LayerMask.All;
         }
     }
 }

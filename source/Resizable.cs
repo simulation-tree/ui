@@ -1,4 +1,5 @@
 ﻿using InteractionKit.Components;
+using Rendering;
 using System.Numerics;
 using Transforms.Components;
 using Worlds;
@@ -13,7 +14,7 @@ namespace InteractionKit
         private readonly Entity entity;
 
         public readonly ref IsResizable.Boundary Boundary => ref entity.GetComponent<IsResizable>().resize;
-        public readonly ref uint Mask => ref entity.GetComponent<IsResizable>().mask;
+        public readonly ref LayerMask SelectionMask => ref entity.GetComponent<IsResizable>().selectionMask;
 
         readonly uint IEntity.Value => entity.GetEntityValue();
         readonly World IEntity.World => entity.GetWorld();

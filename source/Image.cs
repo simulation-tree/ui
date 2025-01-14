@@ -11,7 +11,7 @@ using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct Image : IEntity
+    public readonly struct Image : IRenderer, ITransform
     {
         private readonly Transform transform;
 
@@ -151,7 +151,7 @@ namespace InteractionKit
             MeshRenderer renderer = transform.AsEntity().Become<MeshRenderer>();
             renderer.Mesh = settings.QuadMesh;
             renderer.Material = settings.GetSquareMaterial(canvas.Camera);
-            renderer.Mask = canvas.RenderMask;
+            renderer.RenderMask = canvas.RenderMask;
         }
 
         public readonly void Dispose()

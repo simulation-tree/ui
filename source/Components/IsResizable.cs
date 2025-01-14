@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rendering;
+using System;
 using Worlds;
 
 namespace InteractionKit.Components
@@ -7,7 +8,7 @@ namespace InteractionKit.Components
     public struct IsResizable
     {
         public Boundary resize;
-        public uint mask;
+        public LayerMask selectionMask;
 
 #if NET
         [Obsolete("Default constructor not supported", true)]
@@ -17,10 +18,16 @@ namespace InteractionKit.Components
         }
 #endif
 
-        public IsResizable(Boundary resize, uint mask = uint.MaxValue)
+        public IsResizable(Boundary resize, LayerMask selectionMask)
         {
             this.resize = resize;
-            this.mask = mask;
+            this.selectionMask = selectionMask;
+        }
+
+        public IsResizable(Boundary resize)
+        {
+            this.resize = resize;
+            this.selectionMask = LayerMask.All;
         }
 
         [Flags]
