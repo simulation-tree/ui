@@ -4,6 +4,7 @@ using InteractionKit.Systems;
 using Simulation.Tests;
 using System;
 using System.Runtime.InteropServices;
+using Types;
 using Worlds;
 
 namespace InteractionKit.Tests

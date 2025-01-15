@@ -1,6 +1,6 @@
 ﻿using InteractionKit.Components;
 using Simulation.Tests;
-using Worlds;
+using Types;
 
 namespace InteractionKit.Tests
 {
