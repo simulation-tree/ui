@@ -34,8 +34,10 @@ namespace InteractionKit.Systems
                 if (cameraEntity != default && world.ContainsEntity(cameraEntity))
                 {
                     Camera camera = new(world, cameraEntity);
-                    if (camera.IsDestroyed())
+                    if (camera.IsDestroyed() || !camera.Is())
                     {
+                        //todo: the check for whether the camera entity is itself a camera, shouldnt be necessary
+                        //without it it sometimes fails, other times doesnt with the multiple windows program, not sure why
                         destroyedCanvases[destroyedCanvasCount++] = canvasEntity;
                         continue;
                     }
