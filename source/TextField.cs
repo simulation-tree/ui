@@ -1,5 +1,4 @@
-﻿using Collections;
-using InteractionKit.Components;
+﻿using InteractionKit.Components;
 using InteractionKit.Functions;
 using Meshes;
 using Rendering;

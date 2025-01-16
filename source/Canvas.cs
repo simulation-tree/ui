@@ -8,7 +8,7 @@ using Worlds;
 
 namespace InteractionKit
 {
-    public readonly struct Canvas : IEntity
+    public readonly struct Canvas : IEntity, IEquatable<Canvas>
     {
         private readonly Transform transform;
 
@@ -111,6 +111,31 @@ namespace InteractionKit
         public readonly void Dispose()
         {
             transform.Dispose();
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is Canvas canvas && Equals(canvas);
+        }
+
+        public readonly bool Equals(Canvas other)
+        {
+            return transform.Equals(other.transform);
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return transform.GetHashCode();
+        }
+
+        public static bool operator ==(Canvas left, Canvas right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Canvas left, Canvas right)
+        {
+            return !(left == right);
         }
 
         public static implicit operator Transform(Canvas canvas)

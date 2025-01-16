@@ -3,6 +3,7 @@ using Fonts;
 using InteractionKit.Components;
 using Rendering;
 using Rendering.Components;
+using System.Collections.Generic;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -13,6 +14,8 @@ namespace InteractionKit
 {
     public readonly struct Label : ISelectable
     {
+        public const float DefaultLabelSize = 16f;
+
         private readonly TextRenderer textRenderer;
 
         public unsafe readonly ref Vector2 Position
@@ -88,7 +91,6 @@ namespace InteractionKit
         {
             archetype.AddComponentType<IsLabel>();
             archetype.AddComponentType<IsTextRenderer>();
-            archetype.AddComponentType<IsSelectable>();
             archetype.AddArrayElementType<LabelCharacter>();
         }
 
@@ -97,7 +99,7 @@ namespace InteractionKit
             textRenderer = new(world, existingEntity);
         }
 
-        public Label(Canvas canvas, USpan<char> text, Font font = default, float size = 16f)
+        public Label(Canvas canvas, USpan<char> text, Font font = default, float size = DefaultLabelSize)
         {
             World world = canvas.GetWorld();
             Settings settings = canvas.Settings;
@@ -132,7 +134,7 @@ namespace InteractionKit
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
         }
 
-        public Label(Canvas canvas, FixedString text, Font font = default, float size = 16f)
+        public Label(Canvas canvas, FixedString text, Font font = default, float size = DefaultLabelSize)
         {
             World world = canvas.GetWorld();
             Settings settings = canvas.Settings;
@@ -167,6 +169,16 @@ namespace InteractionKit
 
             transform.LocalScale = Vector3.One * size;
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
+        }
+
+        public Label(Canvas canvas, IEnumerable<char> text, Font font = default, float size = DefaultLabelSize)
+            : this(canvas, new FixedString(text), font, size)
+        {
+        }
+
+        public Label(Canvas canvas, string text, Font font = default, float size = DefaultLabelSize)
+            : this(canvas, new FixedString(text), font, size)
+        {
         }
 
         public readonly void Dispose()
