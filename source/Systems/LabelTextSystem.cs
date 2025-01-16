@@ -49,6 +49,7 @@ namespace InteractionKit.Systems
 
             ComponentQuery<IsLabel, IsTextRenderer> labelQuery = new(world);
             labelQuery.ExcludeDisabled(true);
+            labelQuery.IncludeArray<LabelCharacter>();
             foreach (var r in labelQuery)
             {
                 ref rint textMeshReference = ref r.component2.textMeshReference;
@@ -66,6 +67,7 @@ namespace InteractionKit.Systems
                     bool lengthChanged = false;
                     if (arrayLength != result.Length)
                     {
+                        //make sure destination array matches length
                         world.ResizeArray<TextCharacter>(textMeshEntity, result.Length);
                         lengthChanged = true;
                     }
