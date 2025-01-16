@@ -67,7 +67,7 @@ namespace InteractionKit.Systems
 
                 currentEntities.Length = entities.Count;
                 currentEntities.CopyFrom(entities.AsSpan());
-                trigger.filter.Invoke(currentEntities.AsSpan(), trigger.identifier);
+                trigger.filter.Invoke(currentEntities.AsSpan(), trigger.userData);
                 for (uint i = 0; i < currentEntities.Length; i++)
                 {
                     Entity entity = currentEntities[i];

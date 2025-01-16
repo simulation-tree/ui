@@ -9,7 +9,7 @@ namespace InteractionKit.Components
     {
         public TriggerFilter filter;
         public TriggerCallback callback;
-        public ulong identifier;
+        public ulong userData;
 
 #if NET
         [Obsolete("Default constructor not available", true)]
@@ -19,11 +19,11 @@ namespace InteractionKit.Components
         }
 #endif
 
-        public IsTrigger(TriggerFilter filter, TriggerCallback callback, ulong identifier = default)
+        public IsTrigger(TriggerFilter filter, TriggerCallback callback, ulong userData = default)
         {
             this.filter = filter;
             this.callback = callback;
-            this.identifier = identifier;
+            this.userData = userData;
         }
 
         public readonly override int GetHashCode()

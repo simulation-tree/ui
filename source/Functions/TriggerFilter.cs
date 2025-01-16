@@ -21,9 +21,9 @@ namespace InteractionKit.Functions
         }
 #endif
 
-        public readonly void Invoke(USpan<Entity> entities, ulong identifier)
+        public readonly void Invoke(USpan<Entity> entities, ulong userData)
         {
-            Input input = new(entities, identifier);
+            Input input = new(entities, userData);
             function(input);
         }
 
@@ -34,7 +34,7 @@ namespace InteractionKit.Functions
 
         public readonly struct Input
         {
-            public readonly ulong identifier;
+            public readonly ulong userData;
 
             private readonly nint address;
             private readonly uint length;
@@ -44,9 +44,9 @@ namespace InteractionKit.Functions
             /// </summary>
             public readonly USpan<Entity> Entities => new(address, length);
 
-            public Input(USpan<Entity> entities, ulong identifier)
+            public Input(USpan<Entity> entities, ulong userData)
             {
-                this.identifier = identifier;
+                this.userData = userData;
                 this.address = entities.Address;
                 length = entities.Length;
             }
