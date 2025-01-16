@@ -916,13 +916,14 @@ namespace InteractionKit.Systems
 
                 //insert character into cursor position
                 USpan<char> newText = stackalloc char[(int)(text.Length + 1)];
-                USpan<char> firstPart = text.Slice(0, selection.index);
+                uint index = Math.Min(selection.index, text.Length);
+                USpan<char> firstPart = text.Slice(0, index);
                 firstPart.CopyTo(newText);
-                newText[selection.index] = character;
-                if (selection.index + 1 < newText.Length)
+                newText[index] = character;
+                if (index + 1 < newText.Length)
                 {
-                    USpan<char> secondPart = text.Slice(selection.index);
-                    secondPart.CopyTo(newText.Slice(selection.index + 1));
+                    USpan<char> secondPart = text.Slice(index);
+                    secondPart.CopyTo(newText.Slice(index + 1));
                 }
 
                 if (validation != default)
