@@ -54,7 +54,7 @@ namespace InteractionKit.Tests
             TypeLayout.Register<Color>();
             TypeLayout.Register<LocalToWorld>();
             TypeLayout.Register<CameraMatrices>();
-            TypeLayout.Register<CameraOrthographicSize>();
+            TypeLayout.Register<CameraSettings>();
             TypeLayout.Register<IsFontRequest>();
             TypeLayout.Register<IsDestination>();
             TypeLayout.Register<DestinationExtension>();
@@ -103,7 +103,7 @@ namespace InteractionKit.Tests
             world.Schema.RegisterComponent<Color>();
             world.Schema.RegisterComponent<LocalToWorld>();
             world.Schema.RegisterComponent<CameraMatrices>();
-            world.Schema.RegisterComponent<CameraOrthographicSize>();
+            world.Schema.RegisterComponent<CameraSettings>();
             world.Schema.RegisterComponent<IsFontRequest>();
             world.Schema.RegisterComponent<IsViewport>();
             world.Schema.RegisterComponent<IsDestination>();

@@ -49,7 +49,7 @@ namespace InteractionKit.Systems
 
             ComponentQuery<IsLabel, IsTextRenderer> labelQuery = new(world);
             labelQuery.ExcludeDisabled(true);
-            labelQuery.IncludeArray<LabelCharacter>();
+            labelQuery.RequireArray<LabelCharacter>();
             foreach (var r in labelQuery)
             {
                 ref rint textMeshReference = ref r.component2.textMeshReference;
