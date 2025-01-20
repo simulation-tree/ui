@@ -5,13 +5,13 @@ namespace InteractionKit.Components
     [Component]
     public struct ComponentMix
     {
-        public ComponentType left;
-        public ComponentType right;
-        public ComponentType output;
+        public DataType left;
+        public DataType right;
+        public DataType output;
         public byte vectorLength;
         public Operation operation;
 
-        public ComponentMix(ComponentType left, ComponentType right, ComponentType output, Operation operation, byte vectorLength = 1)
+        public ComponentMix(DataType left, DataType right, DataType output, Operation operation, byte vectorLength = 1)
         {
             this.left = left;
             this.right = right;
@@ -22,9 +22,9 @@ namespace InteractionKit.Components
 
         public static ComponentMix Create<L, R, O>(Operation operation, byte vectorLength, Schema schema) where L : unmanaged where R : unmanaged where O : unmanaged
         {
-            ComponentType left = schema.GetComponent<L>();
-            ComponentType right = schema.GetComponent<R>();
-            ComponentType output = schema.GetComponent<O>();
+            DataType left = schema.GetComponentDataType<L>();
+            DataType right = schema.GetComponentDataType<R>();
+            DataType output = schema.GetComponentDataType<O>();
             return new ComponentMix(left, right, output, operation, vectorLength);
         }
 
