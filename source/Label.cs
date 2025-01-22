@@ -3,6 +3,7 @@ using Fonts;
 using InteractionKit.Components;
 using Rendering;
 using Rendering.Components;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Transforms;
@@ -194,7 +195,7 @@ namespace InteractionKit
 
         public readonly void SetText(string text)
         {
-            SetText(text.AsUSpan());
+            SetText(text.AsSpan());
         }
 
         public readonly void SetText(FixedString text)

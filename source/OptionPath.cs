@@ -91,7 +91,7 @@ namespace InteractionKit
                     if (length > 0)
                     {
                         USpan<char> slice = path.Slice(start, length);
-                        this.path[depth] = ushort.Parse(slice.AsSystemSpan());
+                        this.path[depth] = ushort.Parse(slice);
                         depth++;
                     }
 
@@ -171,7 +171,7 @@ namespace InteractionKit
 
         public static implicit operator OptionPath(string path)
         {
-            return new(path.AsUSpan());
+            return new(path.AsSpan());
         }
     }
 }

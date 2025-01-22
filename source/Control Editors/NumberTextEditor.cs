@@ -81,7 +81,7 @@ namespace InteractionKit.ControlEditors
         {
             TextField textField = entity.As<TextField>();
             USpan<char> newText = textField.Value;
-            if (!float.TryParse(newText.AsSystemSpan(), out _))
+            if (!float.TryParse(newText, out _))
             {
                 textField.SetText(['0']);
             }

@@ -285,7 +285,7 @@ namespace InteractionKit.Systems
             }
 
             text.Slice(0, insertIndex).CopyTo(newText);
-            clipboardText.AsUSpan().CopyTo(newText.Slice(insertIndex));
+            clipboardText.AsSpan().CopyTo(newText.Slice(insertIndex));
             text.Slice(insertIndex).CopyTo(newText.Slice(insertIndex + clipboardLength));
             textLabel.SetText(newText);
             selection.index += clipboardLength;
