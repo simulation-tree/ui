@@ -18,7 +18,7 @@ namespace InteractionKit.Functions
 
         public readonly struct Input
         {
-            private readonly void* input;
+            private readonly char* input;
             private readonly uint inputLength;
             private readonly Text result;
 

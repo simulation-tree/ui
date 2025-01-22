@@ -44,7 +44,7 @@ namespace InteractionKit.Functions
 
         public readonly struct Input
         {
-            private readonly void* oldText;
+            private readonly char* oldText;
             private readonly uint oldLength;
             private readonly Text newText;
 
