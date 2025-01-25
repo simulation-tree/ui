@@ -9,6 +9,10 @@
 		<IsAotCompatible>True</IsAotCompatible>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<WarningLevel>9999</WarningLevel>
+		<Title>Interaction Kit</Title>
+		<Authors>popcron</Authors>
+		<Company>game-simulations</Company>
+		<RepositoryUrl>https://github.com/game-simulations/interaction-kit</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>

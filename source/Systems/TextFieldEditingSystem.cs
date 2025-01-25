@@ -120,7 +120,7 @@ namespace InteractionKit.Systems
                     uint cursorEntity = world.GetReference(textFieldEntity, cursorReference);
                     rint textLabelReference = component.textLabelReference;
                     uint textLabelEntity = world.GetReference(textFieldEntity, textLabelReference);
-                    Label textLabel = new(world, textLabelEntity);
+                    Label textLabel = new Entity(world, textLabelEntity).As<Label>();
 
                     if (startEditing && !startedEditing)
                     {
@@ -138,7 +138,7 @@ namespace InteractionKit.Systems
                             startedEditing = true;
                             if (component.beginEditing != default)
                             {
-                                component.beginEditing.Invoke(new(world, textFieldEntity));
+                                component.beginEditing.Invoke(new Entity(world, textFieldEntity).As<Label>());
                             }
                         }
                     }
@@ -214,7 +214,7 @@ namespace InteractionKit.Systems
                                     {
                                         if (component.submit != default)
                                         {
-                                            if (component.submit.Invoke(new(world, textFieldEntity), settings))
+                                            if (component.submit.Invoke(new Entity(world, textFieldEntity).As<Label>(), settings))
                                             {
                                                 component.editing = false;
                                                 continue;
@@ -225,7 +225,7 @@ namespace InteractionKit.Systems
                                     {
                                         if (component.cancel != default)
                                         {
-                                            component.cancel.Invoke(new(world, textFieldEntity));
+                                            component.cancel.Invoke(new Entity(world, textFieldEntity).As<Label>());
                                         }
 
                                         component.editing = false;
@@ -247,7 +247,7 @@ namespace InteractionKit.Systems
 
                         rint highlightReference = component.highlightReference;
                         uint highlightEntity = world.GetReference(textFieldEntity, highlightReference);
-                        UpdateHighlightToMatchPosition(world, textLabel, new(world, highlightEntity), ref selection);
+                        UpdateHighlightToMatchPosition(world, textLabel, new Entity(world, highlightEntity).As<Label>(), ref selection);
                     }
                     else
                     {

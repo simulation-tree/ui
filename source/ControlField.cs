@@ -20,7 +20,7 @@ namespace InteractionKit
             {
                 rint labelReference = transform.AsEntity().GetComponent<IsControlField>().labelReference;
                 uint labelEntity = transform.GetReference(labelReference);
-                return new Label(transform.GetWorld(), labelEntity);
+                return new Entity(transform.GetWorld(), labelEntity).As<Label>();
             }
         }
 

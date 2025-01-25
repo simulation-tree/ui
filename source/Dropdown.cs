@@ -34,7 +34,7 @@ namespace InteractionKit
             {
                 rint labelReference = background.AsEntity().GetComponent<IsDropdown>().labelReference;
                 uint labelEntity = background.GetReference(labelReference);
-                return new(background.GetWorld(), labelEntity);
+                return new Entity(background.GetWorld(), labelEntity).As<Label>();
             }
         }
 
@@ -114,7 +114,7 @@ namespace InteractionKit
 
                 rint labelReference = component.labelReference;
                 uint labelEntity = background.GetReference(labelReference);
-                Label dropdownLabel = new(world, labelEntity);
+                Label dropdownLabel = new Entity(world, labelEntity).As<Label>();
                 dropdownLabel.SetText(text);
             }
         }

@@ -47,7 +47,7 @@ namespace InteractionKit
             get
             {
                 uint labelEntity = transform.GetReference(transform.AsEntity().GetComponent<IsTreeNode>().labelReference);
-                return new(transform.GetWorld(), labelEntity);
+                return new Entity(transform.GetWorld(), labelEntity).As<Label>();
             }
         }
 
@@ -74,7 +74,7 @@ namespace InteractionKit
 
         public TreeNode(World world, uint existingEntity)
         {
-            transform = new(world, existingEntity);
+            transform = new Entity(world, existingEntity).As<Label>();
         }
 
         public unsafe TreeNode(FixedString text, Canvas canvas)

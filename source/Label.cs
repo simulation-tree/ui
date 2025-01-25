@@ -95,11 +95,6 @@ namespace InteractionKit
             archetype.AddArrayElementType<LabelCharacter>();
         }
 
-        public Label(World world, uint existingEntity)
-        {
-            textRenderer = new(world, existingEntity);
-        }
-
         public Label(Canvas canvas, USpan<char> text, Font font = default, float size = DefaultLabelSize)
         {
             World world = canvas.GetWorld();
