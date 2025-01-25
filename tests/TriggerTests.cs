@@ -1,28 +1,13 @@
 ﻿using InteractionKit.Components;
 using InteractionKit.Functions;
-using InteractionKit.Systems;
-using Simulation.Tests;
 using System;
 using System.Runtime.InteropServices;
-using Types;
 using Worlds;
 
 namespace InteractionKit.Tests
 {
-    public class TriggerTests : SimulationTests
+    public class TriggerTests : InteractionKitTests
     {
-        static TriggerTests()
-        {
-            TypeLayout.Register<IsTrigger>();
-        }
-
-        protected override void SetUp()
-        {
-            base.SetUp();
-            world.Schema.RegisterComponent<IsTrigger>();
-            simulator.AddSystem<InvokeTriggersSystem>();
-        }
-
         [Test]
         public unsafe void CheckTrigger()
         {

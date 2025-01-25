@@ -1,5 +1,4 @@
 ﻿using InteractionKit.Components;
-using InteractionKit.Systems;
 using System;
 using System.Numerics;
 using Worlds;
@@ -8,12 +7,6 @@ namespace InteractionKit.Tests
 {
     public class ComponentMixingTests : InteractionKitTests
     {
-        protected override void SetUp()
-        {
-            base.SetUp();
-            simulator.AddSystem<ComponentMixingSystem>();
-        }
-
         [Test]
         public void IntegerAddition()
         {
