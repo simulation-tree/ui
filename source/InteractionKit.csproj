@@ -18,7 +18,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\automations\source\Automations.csproj" />
 		<ProjectReference Include="..\..\cameras\source\Cameras.csproj" />
-		<ProjectReference Include="..\..\clipboard\Clipboard.csproj" />
+		<ProjectReference Include="..\..\clipboard\source\Clipboard.csproj" />
 		<ProjectReference Include="..\..\default-presentation-assets\source\DefaultPresentationAssets.csproj" />
 		<ProjectReference Include="..\..\meshes-9s\source\Meshes.NineSliced.csproj" />
 		<ProjectReference Include="..\..\rendering\core\Rendering.Core.csproj" />
