@@ -66,8 +66,9 @@ namespace InteractionKit.Systems
                 ref IsSelectable selectable = ref x.component1;
                 bool pressed = (selectable.state & IsSelectable.State.WasPrimaryInteractedWith) != 0;
                 pressed |= (selectable.state & IsSelectable.State.IsPrimaryInteractedWith) != 0;
-                bool selected = selectedEntities.Contains(x.entity);
-                Stateful stateful = new(world, x.entity);
+                Entity entity = new(world, x.entity);
+                Stateful stateful = entity.As<Stateful>();
+                bool selected = selectedEntities.Contains(entity);
                 stateful.SetParameter("selected", selected ? 1 : 0);
                 stateful.SetParameter("pressed", pressed ? 1 : 0);
             }
