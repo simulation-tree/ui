@@ -15,7 +15,7 @@ namespace UI.ControlEditors
             Canvas canvas = input.Canvas;
             float singleLineHeight = canvas.Settings.SingleLineHeight;
             ControlField controlField = input.ControlField;
-            controlField.AsEntity().TryGetComponent(out bool initialValue);
+            controlField.TryGetComponent(out bool initialValue);
             Toggle toggle = new(canvas, initialValue);
             toggle.SetParent(controlField);
             toggle.Size = new(singleLineHeight, singleLineHeight);

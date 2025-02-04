@@ -1,8 +1,8 @@
 ﻿using Cameras;
-using UI.Components;
 using Rendering;
 using System.Numerics;
 using Transforms;
+using UI.Components;
 using Worlds;
 
 namespace UI
@@ -37,17 +37,7 @@ namespace UI
         /// <summary>
         /// Size of the destination that this camera is rendering to.
         /// </summary>
-        public unsafe readonly ref Vector2 Size
-        {
-            get
-            {
-                ref Vector3 localScale = ref As<Transform>().LocalScale;
-                fixed (Vector3* sizePointer = &localScale)
-                {
-                    return ref *(Vector2*)sizePointer;
-                }
-            }
-        }
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
 
         /// <summary>
         /// The settings that this canvas will use.

@@ -1,17 +1,29 @@
-﻿using UI.Components;
-using System.Numerics;
+﻿using System.Numerics;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
 using Worlds;
 
 namespace UI
 {
     public readonly partial struct ScrollBar : ISelectable
     {
-        public readonly ref Vector2 Position => ref As<Image>().Position;
-        public readonly ref Vector2 Size => ref As<Image>().Size;
-        public readonly ref Anchor Anchor => ref As<Image>().Anchor;
-        public readonly ref Vector3 Pivot => ref As<Image>().Pivot;
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
+        public readonly ref float Width => ref As<UITransform>().Width;
+        public readonly ref float Height => ref As<UITransform>().Height;
+
+        public readonly float Rotation
+        {
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
+        }
+
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
 
         public readonly ref Vector4 ScrollHandleColor
@@ -117,6 +129,11 @@ namespace UI
         public static implicit operator Image(ScrollBar scrollBar)
         {
             return scrollBar.As<Image>();
+        }
+
+        public static implicit operator UITransform(ScrollBar scrollBar)
+        {
+            return scrollBar.As<UITransform>();
         }
 
         public static implicit operator Transform(ScrollBar scrollBar)

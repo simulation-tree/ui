@@ -17,47 +17,22 @@ namespace UI
     {
         public const float DefaultLabelSize = 16f;
 
-        public unsafe readonly ref Vector2 Position
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
+        public readonly ref float Width => ref As<UITransform>().Width;
+        public readonly ref float Height => ref As<UITransform>().Height;
+
+        public readonly float Rotation
         {
-            get
-            {
-                Transform transform = As<Transform>();
-                ref Vector3 localPosition = ref transform.LocalPosition;
-                fixed (Vector3* position = &localPosition)
-                {
-                    return ref *(Vector2*)position;
-                }
-            }
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
         }
 
-        public readonly ref float Z
-        {
-            get
-            {
-                Transform transform = As<Transform>();
-                ref Vector3 localPosition = ref transform.LocalPosition;
-                return ref localPosition.Z;
-            }
-        }
-
-        /// <summary>
-        /// Size of the label.
-        /// </summary>
-        public unsafe readonly ref Vector2 Size
-        {
-            get
-            {
-                Transform transform = As<Transform>();
-                ref Vector3 localPosition = ref transform.LocalScale;
-                fixed (Vector3* scale = &localPosition)
-                {
-                    return ref *(Vector2*)scale;
-                }
-            }
-        }
-
-        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly ref Vector4 Color => ref GetComponent<BaseColor>().value;
 
         public readonly USpan<char> Text
@@ -140,7 +115,7 @@ namespace UI
             transform.SetParent(canvas);
 
             Camera camera = canvas.Camera;
-            TextRenderer textRenderer = transform.AsEntity().Become<TextRenderer>();
+            TextRenderer textRenderer = transform.Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
             textRenderer.RenderMask = canvas.RenderMask;
@@ -149,7 +124,7 @@ namespace UI
 
             USpan<char> textSpan = stackalloc char[text.Length];
             uint length = text.CopyTo(textSpan);
-            textRenderer.AsEntity().CreateArray(textSpan.As<LabelCharacter>());
+            textRenderer.CreateArray(textSpan.As<LabelCharacter>());
 
             transform.LocalScale = Vector3.One * size;
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
@@ -195,6 +170,11 @@ namespace UI
         public static implicit operator TextRenderer(Label label)
         {
             return label.As<TextRenderer>();
+        }
+
+        public static implicit operator UITransform(Label label)
+        {
+            return label.As<UITransform>();
         }
 
         public static implicit operator Transform(Label label)

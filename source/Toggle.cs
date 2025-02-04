@@ -1,19 +1,30 @@
-﻿using UI.Components;
-using UI.Functions;
-using System.Numerics;
+﻿using System.Numerics;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
+using UI.Functions;
 using Worlds;
 
 namespace UI
 {
     public readonly partial struct Toggle : ISelectable
     {
-        public readonly ref Vector2 Position => ref As<Image>().Position;
-        public readonly ref Vector2 Size => ref As<Image>().Size;
-        public readonly ref float Z => ref As<Image>().Z;
-        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
+        public readonly ref float Width => ref As<UITransform>().Width;
+        public readonly ref float Height => ref As<UITransform>().Height;
+
+        public readonly float Rotation
+        {
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
+        }
+
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly ref Vector4 BackgroundColor => ref GetComponent<BaseColor>().value;
 
         public readonly ref Vector4 CheckmarkColor
@@ -53,8 +64,8 @@ namespace UI
             checkmarkBox.Anchor = new("4", "4", "0", "4", "4", "0");
             checkmarkBox.Color = new(0, 0, 0, 1);
 
-            Transform checkmarkTransform = checkmarkBox;
-            checkmarkTransform.LocalPosition = new(0f, 0f, Settings.ZScale);
+            UITransform checkmarkTransform = checkmarkBox;
+            checkmarkTransform.Z = Settings.ZScale;
 
             rint checkmarkReference = background.AddReference(checkmarkBox);
             background.AddComponent(new IsToggle(checkmarkReference, initialValue, default));
@@ -71,6 +82,11 @@ namespace UI
         public static implicit operator Image(Toggle toggle)
         {
             return toggle.As<Image>();
+        }
+
+        public static implicit operator UITransform(Toggle toggle)
+        {
+            return toggle.As<UITransform>();
         }
 
         public static implicit operator Transform(Toggle toggle)

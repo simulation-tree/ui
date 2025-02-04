@@ -1,8 +1,8 @@
-﻿using UI.Components;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
 using Unmanaged;
 using Worlds;
 
@@ -10,32 +10,22 @@ namespace UI
 {
     public readonly partial struct Tree : IEntity
     {
-        public unsafe readonly ref Vector2 Position
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
+        public readonly ref float Width => ref As<UITransform>().Width;
+        public readonly ref float Height => ref As<UITransform>().Height;
+
+        public readonly float Rotation
         {
-            get
-            {
-                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
-                fixed (Vector3* p = &localPosition)
-                {
-                    return ref *(Vector2*)p;
-                }
-            }
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
         }
 
-        public unsafe readonly ref Vector2 Size
-        {
-            get
-            {
-                ref Vector3 localScale = ref As<Transform>().LocalScale;
-                fixed (Vector3* p = &localScale)
-                {
-                    return ref *(Vector2*)p;
-                }
-            }
-        }
-
-        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly USpan<SelectedLeaf> Selected => GetArray<SelectedLeaf>();
         public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>();
 

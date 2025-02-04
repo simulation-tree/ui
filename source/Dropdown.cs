@@ -1,12 +1,11 @@
 using Cameras;
-using UI.Components;
-using UI.Functions;
 using Materials;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Transforms;
 using Transforms.Components;
+using UI.Components;
+using UI.Functions;
 using Unmanaged;
 using Worlds;
 
@@ -14,16 +13,18 @@ namespace UI
 {
     public readonly partial struct Dropdown : ISelectable
     {
-        public readonly ref Vector2 Position => ref As<Image>().Position;
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
 
-        /// <summary>
-        /// Size of the dropdown button.
-        /// </summary>
-        public readonly ref Vector2 Size => ref As<Image>().Size;
+        public readonly float Rotation
+        {
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
+        }
 
-        public readonly ref float Z => ref As<Image>().Z;
-        public readonly ref Anchor Anchor => ref As<Image>().Anchor;
-        public readonly ref Vector3 Pivot => ref As<Image>().Pivot;
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
 
         public readonly Label Label
@@ -167,8 +168,8 @@ namespace UI
             triangle.Color = new(0, 0, 0, 1);
             triangle.Pivot = new(0.5f, 0.5f, 0f);
 
-            Transform triangleTransform = triangle;
-            triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
+            UITransform triangleTransform = triangle;
+            triangleTransform.Rotation = MathF.Tau * 0.5f;
 
             Menu menu = new(canvas, optionSize, new(&ChosenOption));
             menu.Anchor = Anchor.BottomLeft;
@@ -218,7 +219,7 @@ namespace UI
         public static void ChosenOption(MenuOption option)
         {
             World world = option.rootMenu.world;
-            rint dropdownReference = option.rootMenu.AsEntity().GetComponent<DropdownMenu>().dropdownReference;
+            rint dropdownReference = option.rootMenu.GetComponent<DropdownMenu>().dropdownReference;
             uint dropdownEntity = option.rootMenu.GetReference(dropdownReference);
             Dropdown dropdown = new Entity(world, dropdownEntity).As<Dropdown>();
             dropdown.SelectedOption = option.optionPath;
@@ -257,8 +258,8 @@ namespace UI
             triangle.Color = new(0, 0, 0, 1);
             triangle.Pivot = new(0.5f, 0.5f, 0f);
 
-            Transform triangleTransform = triangle;
-            triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * 1f);
+            UITransform triangleTransform = triangle;
+            triangleTransform.Rotation = MathF.Tau * 0.5f;
 
             Menu menu = new(canvas, optionSize, new(&Dropdown.ChosenOption));
             menu.Anchor = Anchor.BottomLeft;
@@ -280,7 +281,7 @@ namespace UI
             rint menuReference = background.AddReference(menu);
             background.AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
 
-            dropdown = background.AsEntity().As<Dropdown>();
+            dropdown = background.As<Dropdown>();
             dropdown.SelectedOption = "0";
         }
 
@@ -299,9 +300,14 @@ namespace UI
             return dropdown.dropdown;
         }
 
+        public static implicit operator UITransform(Dropdown<T> dropdown)
+        {
+            return dropdown.AsEntity().As<UITransform>();
+        }
+
         public static implicit operator Entity(Dropdown<T> dropdown)
         {
-            return dropdown.dropdown;
+            return dropdown.AsEntity();
         }
     }
 }

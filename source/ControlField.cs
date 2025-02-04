@@ -23,32 +23,22 @@ namespace UI
         }
 
         public readonly ref Vector4 LabelColor => ref Label.Color;
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
+        public readonly ref float Width => ref As<UITransform>().Width;
+        public readonly ref float Height => ref As<UITransform>().Height;
 
-        public unsafe readonly ref Vector2 Position
+        public readonly float Rotation
         {
-            get
-            {
-                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
-                fixed (Vector3* position = &localPosition)
-                {
-                    return ref *(Vector2*)position;
-                }
-            }
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
         }
 
-        public unsafe readonly ref Vector2 Size
-        {
-            get
-            {
-                ref Vector3 localScale = ref As<Transform>().LocalScale;
-                fixed (Vector3* scale = &localScale)
-                {
-                    return ref *(Vector2*)scale;
-                }
-            }
-        }
-
-        public readonly ref float Z => ref As<Transform>().LocalPosition.Z;
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
 
         public readonly Entity Target
         {
@@ -65,8 +55,6 @@ namespace UI
         public readonly bool IsArrayElementType => GetComponent<IsControlField>().dataType.IsArrayElement;
         public readonly ComponentType ComponentType => GetComponent<IsControlField>().dataType.ComponentType;
         public readonly ArrayElementType ArrayElementType => GetComponent<IsControlField>().dataType.ArrayElementType;
-        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
-        public readonly ref Pivot Pivot => ref GetComponent<Pivot>();
 
         public ControlField(Canvas canvas, FixedString label, Entity target, ComponentType componentType, ControlEditor editor, uint offset = 0) :
             this(canvas, label, target, new DataType(componentType, 0), editor, offset)
@@ -100,7 +88,7 @@ namespace UI
 
             using List<Entity> createdEntities = new();
             editor.initializeControlField.Invoke(createdEntities, this, canvas, target, dataType, offset);
-            USpan<ControlEntity> referencesArray = transform.AsEntity().CreateArray<ControlEntity>(createdEntities.Count);
+            USpan<ControlEntity> referencesArray = transform.CreateArray<ControlEntity>(createdEntities.Count);
             for (uint i = 0; i < createdEntities.Count; i++)
             {
                 Entity createdEntity = createdEntities[i];
@@ -151,6 +139,11 @@ namespace UI
         public static implicit operator Transform(ControlField controlField)
         {
             return controlField.As<Transform>();
+        }
+
+        public static implicit operator UITransform(ControlField controlField)
+        {
+            return controlField.As<UITransform>();
         }
     }
 }

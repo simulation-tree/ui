@@ -1,10 +1,10 @@
-﻿using UI.Components;
-using UI.Functions;
-using System;
+﻿using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
+using UI.Functions;
 using Unmanaged;
 using Worlds;
 
@@ -12,14 +12,25 @@ namespace UI
 {
     public readonly partial struct VirtualWindow : IEntity
     {
-        public readonly ref Vector2 Position => ref As<Image>().Position;
-        public readonly ref Vector2 Size => ref As<Image>().Size;
-        public readonly ref float Z => ref As<Image>().Z;
-        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
+        public readonly ref float Width => ref As<UITransform>().Width;
+        public readonly ref float Height => ref As<UITransform>().Height;
+
+        public readonly float Rotation
+        {
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
+        }
+
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
 
-        public readonly Transform Container
+        public readonly UITransform Container
         {
             get
             {

@@ -12,32 +12,22 @@ namespace UI
 {
     public readonly partial struct TreeNode : IEntity
     {
-        public unsafe readonly ref Vector2 Position
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
+        public readonly ref float Width => ref As<UITransform>().Width;
+        public readonly ref float Height => ref As<UITransform>().Height;
+
+        public readonly float Rotation
         {
-            get
-            {
-                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
-                fixed (Vector3* pLocalPosition = &localPosition)
-                {
-                    return ref *(Vector2*)pLocalPosition;
-                }
-            }
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
         }
 
-        public unsafe readonly ref Vector2 Size
-        {
-            get
-            {
-                ref Vector3 localScale = ref As<Transform>().LocalScale;
-                fixed (Vector3* pLocalScale = &localScale)
-                {
-                    return ref *(Vector2*)pLocalScale;
-                }
-            }
-        }
-
-        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>();
 
         public readonly Label Label
@@ -87,7 +77,7 @@ namespace UI
             rint labelReference = transform.AddReference(label);
 
             transform.AddComponent(new IsTreeNode(text, boxReference, labelReference));
-            transform.AsEntity().CreateArray<TreeNodeOption>();
+            transform.CreateArray<TreeNodeOption>();
         }
 
         readonly void IEntity.Describe(ref Archetype archetype)
@@ -128,8 +118,8 @@ namespace UI
                 Image triangleImage = triangle;
                 triangleImage.Material = settings.GetTriangleMaterial(canvas.Camera);
 
-                Transform triangleTransform = triangle;
-                triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
+                UITransform triangleTransform = triangle;
+                triangleTransform.Rotation = MathF.Tau * -0.25f;
             }
 
             TreeNode node = new(text, canvas);

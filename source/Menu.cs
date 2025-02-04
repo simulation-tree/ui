@@ -1,12 +1,12 @@
 ﻿using Cameras;
-using UI.Components;
-using UI.Functions;
 using Materials;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
+using UI.Functions;
 using Unmanaged;
 using Worlds;
 
@@ -14,29 +14,13 @@ namespace UI
 {
     public readonly partial struct Menu : IEntity
     {
-        public unsafe readonly ref Vector2 Position
-        {
-            get
-            {
-                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
-                fixed (Vector3* position = &localPosition)
-                {
-                    return ref *(Vector2*)position;
-                }
-            }
-        }
-
-        public readonly ref float Z
-        {
-            get
-            {
-                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
-                return ref localPosition.Z;
-            }
-        }
-
-        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly float Rotation => As<UITransform>().Rotation;
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly uint OptionCount => GetArrayLength<IsMenuOption>();
 
         /// <summary>
@@ -146,7 +130,7 @@ namespace UI
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
             transform.AddComponent(new IsMenu(optionSize, callback));
-            transform.AsEntity().CreateArray<IsMenuOption>();
+            transform.CreateArray<IsMenuOption>();
             value = transform.value;
 
             new DropShadow(canvas, transform);
@@ -220,8 +204,8 @@ namespace UI
                 triangle.Color = new(0, 0, 0, 1);
                 triangle.Pivot = new(1f, -0.5f, 0f);
 
-                Transform triangleTransform = triangle;
-                triangleTransform.LocalRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, MathF.PI * -0.5f);
+                UITransform triangleTransform = triangle;
+                triangleTransform.Rotation = MathF.Tau * -0.25f;
 
                 addedOption.childMenuReference = AddReference(newChildMenu);
                 OptionPath pathInNew = newChildMenu.AddOption(remainder);

@@ -1,11 +1,11 @@
 ﻿using Cameras;
-using UI.Components;
 using Materials;
 using Meshes.NineSliced;
 using Rendering;
 using Rendering.Components;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
 using Worlds;
 
 namespace UI
@@ -25,7 +25,7 @@ namespace UI
             MeshRenderer dropShadowRenderer = new(world, dropShadowMesh, dropShadowMaterial);
             dropShadowRenderer.AddComponent(new Color(0f, 0f, 0f, 0.5f));
 
-            Transform transform = dropShadowRenderer.AsEntity().Become<Transform>();
+            Transform transform = dropShadowRenderer.Become<Transform>();
             transform.LocalPosition = new(0, 0, -0.02f);
             transform.AddComponent(Anchor.BottomLeft);
 

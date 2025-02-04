@@ -14,48 +14,22 @@ namespace UI
 {
     public readonly partial struct Image : IEntity
     {
-        public unsafe readonly ref Vector2 Position
-        {
-            get
-            {
-                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
-                fixed (Vector3* positionPointer = &localPosition)
-                {
-                    return ref *(Vector2*)positionPointer;
-                }
-            }
-        }
-
-        public readonly ref float Z => ref As<Transform>().LocalPosition.Z;
-
-        public unsafe readonly ref Vector2 Size
-        {
-            get
-            {
-                ref Vector3 localScale = ref As<Transform>().LocalScale;
-                fixed (Vector3* sizePointer = &localScale)
-                {
-                    return ref *(Vector2*)sizePointer;
-                }
-            }
-        }
+        public readonly ref Vector2 Position => ref As<UITransform>().Position;
+        public readonly ref float X => ref As<UITransform>().X;
+        public readonly ref float Y => ref As<UITransform>().Y;
+        public readonly ref float Z => ref As<UITransform>().Z;
+        public readonly ref Vector2 Size => ref As<UITransform>().Size;
+        public readonly ref float Width => ref As<UITransform>().Width;
+        public readonly ref float Height => ref As<UITransform>().Height;
 
         public readonly float Rotation
         {
-            get
-            {
-                Quaternion rotation = As<Transform>().LocalRotation;
-                return new EulerAngles(rotation).value.Z;
-            }
-            set
-            {
-                ref Quaternion rotation = ref As<Transform>().LocalRotation;
-                rotation = Quaternion.CreateFromYawPitchRoll(0f, 0f, value);
-            }
+            get => As<UITransform>().Rotation;
+            set => As<UITransform>().Rotation = value;
         }
 
-        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly ref Vector4 Color => ref GetComponent<BaseColor>().value;
 
         public readonly Material Material
@@ -98,7 +72,7 @@ namespace UI
             transform.SetParent(canvas);
             value = transform.value;
 
-            StatefulAutomationPlayer stateful = transform.AsEntity().Become<StatefulAutomationPlayer>();
+            StatefulAutomationPlayer stateful = transform.Become<StatefulAutomationPlayer>();
             stateful.StateMachine = settings.ControlStateMachine;
             stateful.AddParameter("pressed", 0f);
             stateful.AddParameter("selected", 1f);
@@ -106,7 +80,7 @@ namespace UI
             stateful.AddOrSetLink<ColorTint>("selected", settings.SelectedAutomation);
             stateful.AddOrSetLink<ColorTint>("pressed", settings.PressedAutomation);
 
-            MeshRenderer renderer = transform.AsEntity().Become<MeshRenderer>();
+            MeshRenderer renderer = transform.Become<MeshRenderer>();
             renderer.Mesh = settings.QuadMesh;
             renderer.Material = settings.GetSquareMaterial(canvas.Camera);
             renderer.RenderMask = canvas.RenderMask;
@@ -121,6 +95,11 @@ namespace UI
         public static implicit operator Transform(Image box)
         {
             return box.As<Transform>();
+        }
+
+        public static implicit operator UITransform(Image box)
+        {
+            return box.As<UITransform>();
         }
 
         public static implicit operator MeshRenderer(Image box)
