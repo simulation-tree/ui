@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace InteractionKit.Functions
+namespace UI.Functions
 {
     public unsafe readonly struct ToggleCallback : IEquatable<ToggleCallback>
     {

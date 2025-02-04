@@ -1,17 +1,14 @@
 ﻿using Cameras;
-using InteractionKit.Components;
+using UI.Components;
 using Rendering;
-using System;
 using System.Numerics;
 using Transforms;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct Canvas : IEntity, IEquatable<Canvas>
+    public readonly partial struct Canvas : IEntity
     {
-        private readonly Transform transform;
-
         /// <summary>
         /// The camera that all elements in the canvas will be rendered to.
         /// </summary>
@@ -19,21 +16,20 @@ namespace InteractionKit
         {
             get
             {
-                World world = transform.GetWorld();
-                ref IsCanvas component = ref transform.AsEntity().GetComponent<IsCanvas>();
-                uint cameraEntity = transform.GetReference(component.cameraReference);
+                ref IsCanvas component = ref GetComponent<IsCanvas>();
+                uint cameraEntity = GetReference(component.cameraReference);
                 return new Entity(world, cameraEntity).As<Camera>();
             }
             set
             {
-                ref IsCanvas component = ref transform.AsEntity().GetComponent<IsCanvas>();
+                ref IsCanvas component = ref GetComponent<IsCanvas>();
                 if (component.cameraReference == default)
                 {
-                    component.cameraReference = transform.AddReference(value);
+                    component.cameraReference = AddReference(value);
                 }
                 else
                 {
-                    transform.AsEntity().SetReference(component.cameraReference, value);
+                    SetReference(component.cameraReference, value);
                 }
             }
         }
@@ -45,7 +41,7 @@ namespace InteractionKit
         {
             get
             {
-                ref Vector3 localScale = ref transform.LocalScale;
+                ref Vector3 localScale = ref As<Transform>().LocalScale;
                 fixed (Vector3* sizePointer = &localScale)
                 {
                     return ref *(Vector2*)sizePointer;
@@ -60,39 +56,20 @@ namespace InteractionKit
         {
             get
             {
-                ref IsCanvas component = ref transform.AsEntity().GetComponent<IsCanvas>();
-                uint settingsEntity = transform.GetReference(component.settingsReference);
-                return new Entity(transform.GetWorld(), settingsEntity).As<Settings>();
+                ref IsCanvas component = ref GetComponent<IsCanvas>();
+                uint settingsEntity = GetReference(component.settingsReference);
+                return new Entity(world, settingsEntity).As<Settings>();
             }
         }
 
-        public readonly ref LayerMask RenderMask => ref transform.AsEntity().GetComponent<IsCanvas>().renderMask;
-        public readonly ref LayerMask SelectionMask => ref transform.AsEntity().GetComponent<IsCanvas>().selectionMask;
-
-        readonly uint IEntity.Value => transform.GetEntityValue();
-        readonly World IEntity.World => transform.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsCanvas>();
-        }
-
-#if NET
-        [Obsolete("Default constructor not available", true)]
-        public Canvas()
-        {
-            throw new NotSupportedException();
-        }
-#endif
-
-        public Canvas(World world, uint existingEntity)
-        {
-            transform = new(world, existingEntity);
-        }
+        public readonly ref LayerMask RenderMask => ref GetComponent<IsCanvas>().renderMask;
+        public readonly ref LayerMask SelectionMask => ref GetComponent<IsCanvas>().selectionMask;
 
         public Canvas(World world, Settings settings, Camera camera, LayerMask renderMask, LayerMask selectionMask)
         {
-            transform = new(world);
+            this.world = world;
+            Transform transform = new(world);
+            value = transform.value;
 
             rint cameraReference = transform.AddReference(camera);
             rint settingsReference = transform.AddReference(settings);
@@ -101,51 +78,22 @@ namespace InteractionKit
 
         public Canvas(World world, Settings settings, Camera camera)
         {
-            transform = new(world);
-
+            Transform transform = new(world);
             rint cameraReference = transform.AddReference(camera);
             rint settingsReference = transform.AddReference(settings);
             transform.AddComponent(new IsCanvas(cameraReference, settingsReference, LayerMask.All, LayerMask.All));
+            this.world = world;
+            value = transform.value;
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            transform.Dispose();
-        }
-
-        public readonly override bool Equals(object? obj)
-        {
-            return obj is Canvas canvas && Equals(canvas);
-        }
-
-        public readonly bool Equals(Canvas other)
-        {
-            return transform.Equals(other.transform);
-        }
-
-        public readonly override int GetHashCode()
-        {
-            return transform.GetHashCode();
-        }
-
-        public static bool operator ==(Canvas left, Canvas right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Canvas left, Canvas right)
-        {
-            return !(left == right);
+            archetype.AddComponentType<IsCanvas>();
         }
 
         public static implicit operator Transform(Canvas canvas)
         {
-            return canvas.transform;
-        }
-
-        public static implicit operator Entity(Canvas canvas)
-        {
-            return canvas.AsEntity();
+            return canvas.As<Transform>();
         }
     }
 }

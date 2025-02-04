@@ -1,5 +1,5 @@
 ﻿using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Rendering;
 using Simulation;
 using System;
@@ -7,7 +7,7 @@ using System.Numerics;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct SelectionSystem : ISystem
     {

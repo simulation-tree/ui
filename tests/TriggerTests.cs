@@ -1,12 +1,12 @@
-﻿using InteractionKit.Components;
-using InteractionKit.Functions;
+﻿using UI.Components;
+using UI.Functions;
 using System;
 using System.Runtime.InteropServices;
 using Worlds;
 
-namespace InteractionKit.Tests
+namespace UI.Tests
 {
-    public class TriggerTests : InteractionKitTests
+    public class TriggerTests : UITests
     {
         [Test]
         public unsafe void CheckTrigger()
@@ -50,7 +50,7 @@ namespace InteractionKit.Tests
             {
                 foreach (ref Entity entity in input.Entities)
                 {
-                    if (entity.GetEntityValue() != 1)
+                    if (entity.value != 1)
                     {
                         entity = default;
                     }

@@ -2,7 +2,7 @@
 using System.Numerics;
 using Unmanaged;
 
-namespace InteractionKit
+namespace UI
 {
     public struct UIBounds : IEquatable<UIBounds>
     {

@@ -1,10 +1,10 @@
 ﻿using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Simulation;
 using System;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct InvokeTriggersSystem : ISystem
     {
@@ -59,7 +59,7 @@ namespace InteractionKit.Systems
                 for (uint i = entities.Count - 1; i != uint.MaxValue; i--)
                 {
                     Entity entity = entities[i];
-                    if (!world.ContainsEntity(entity))
+                    if (entity.IsDestroyed)
                     {
                         entities.RemoveAt(i);
                     }

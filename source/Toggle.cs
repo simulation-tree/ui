@@ -1,65 +1,52 @@
-﻿using InteractionKit.Components;
-using InteractionKit.Functions;
+﻿using UI.Components;
+using UI.Functions;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct Toggle : ISelectable
+    public readonly partial struct Toggle : ISelectable
     {
-        private readonly Image background;
+        public readonly ref Vector2 Position => ref As<Image>().Position;
+        public readonly ref Vector2 Size => ref As<Image>().Size;
+        public readonly ref float Z => ref As<Image>().Z;
+        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Vector4 BackgroundColor => ref GetComponent<BaseColor>().value;
 
-        public readonly ref Vector2 Position => ref background.Position;
-        public readonly ref Vector2 Size => ref background.Size;
-        public readonly ref float Z => ref background.Z;
-        public readonly ref Anchor Anchor => ref background.AsEntity().GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref background.AsEntity().GetComponent<Pivot>().value;
-        public readonly ref Vector4 BackgroundColor => ref background.AsEntity().GetComponent<BaseColor>().value;
         public readonly ref Vector4 CheckmarkColor
         {
             get
             {
-                rint checkmarkReference = background.AsEntity().GetComponent<IsToggle>().checkmarkReference;
-                uint checkmarkEntity = background.GetReference(checkmarkReference);
-                return ref background.GetWorld().GetComponent<BaseColor>(checkmarkEntity).value;
+                rint checkmarkReference = GetComponent<IsToggle>().checkmarkReference;
+                uint checkmarkEntity = GetReference(checkmarkReference);
+                return ref world.GetComponent<BaseColor>(checkmarkEntity).value;
             }
         }
 
         public readonly bool Value
         {
-            get => background.AsEntity().GetComponent<IsToggle>().value;
+            get => GetComponent<IsToggle>().value;
             set
             {
-                ref IsToggle toggle = ref background.AsEntity().GetComponent<IsToggle>();
+                ref IsToggle toggle = ref GetComponent<IsToggle>();
                 toggle.value = value;
 
                 rint checkmarkReference = toggle.checkmarkReference;
-                uint checkmarkEntity = background.GetReference(checkmarkReference);
-                background.GetWorld().SetEnabled(checkmarkEntity, value);
+                uint checkmarkEntity = GetReference(checkmarkReference);
+                world.SetEnabled(checkmarkEntity, value);
             }
         }
 
-        public readonly ref ToggleCallback Callback => ref background.AsEntity().GetComponent<IsToggle>().callback;
-
-        readonly uint IEntity.Value => background.GetEntityValue();
-        readonly World IEntity.World => background.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsToggle>();
-            archetype.AddComponentType<IsSelectable>();
-        }
-
-        public Toggle(World world, uint existingEntity)
-        {
-            background = new(world, existingEntity);
-        }
+        public readonly ref ToggleCallback Callback => ref GetComponent<IsToggle>().callback;
 
         public Toggle(Canvas canvas, bool initialValue = false)
         {
-            background = new(canvas);
+            world = canvas.world;
+            Image background = new(canvas);
+            value = background.value;
 
             Image checkmarkBox = new(canvas);
             checkmarkBox.SetParent(background);
@@ -72,27 +59,23 @@ namespace InteractionKit
             rint checkmarkReference = background.AddReference(checkmarkBox);
             background.AddComponent(new IsToggle(checkmarkReference, initialValue, default));
             background.AddComponent(new IsSelectable(canvas.SelectionMask));
-            checkmarkBox.SetEnabled(initialValue);
+            checkmarkBox.IsEnabled = initialValue;
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            background.Dispose();
-        }
-
-        public static implicit operator Entity(Toggle toggle)
-        {
-            return toggle.AsEntity();
+            archetype.AddComponentType<IsToggle>();
+            archetype.AddComponentType<IsSelectable>();
         }
 
         public static implicit operator Image(Toggle toggle)
         {
-            return toggle.background;
+            return toggle.As<Image>();
         }
 
         public static implicit operator Transform(Toggle toggle)
         {
-            return toggle.background;
+            return toggle.As<Transform>();
         }
     }
 }

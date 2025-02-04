@@ -1,4 +1,4 @@
-﻿using InteractionKit.Components;
+﻿using UI.Components;
 using Simulation;
 using System;
 using System.Numerics;
@@ -6,7 +6,7 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct VirtualWindowsScrollViewSystem : ISystem
     {
@@ -41,7 +41,7 @@ namespace InteractionKit.Systems
                 Entity content = view.Content;
                 float minY = float.MaxValue;
                 float maxY = float.MinValue;
-                USpan<uint> children = content.GetChildren();
+                USpan<uint> children = content.Children;
                 for (uint i = 0; i < children.Length; i++)
                 {
                     Entity child = new(world, children[i]);

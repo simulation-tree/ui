@@ -1,6 +1,5 @@
-﻿using InteractionKit.Components;
-using InteractionKit.Functions;
-using Meshes;
+﻿using UI.Components;
+using UI.Functions;
 using Rendering;
 using Rendering.Components;
 using System.Numerics;
@@ -9,27 +8,25 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct TextField : ISelectable
+    public readonly partial struct TextField : ISelectable
     {
-        private readonly Image background;
-
-        public readonly ref Vector2 Position => ref background.Position;
-        public readonly ref Vector2 Size => ref background.Size;
-        public readonly ref float Z => ref background.Z;
-        public readonly ref bool Editing => ref background.AsEntity().GetComponent<IsTextField>().editing;
-        public readonly ref Vector4 BackgroundColor => ref background.Color;
-        public readonly ref Anchor Anchor => ref background.Anchor;
-        public readonly ref Vector3 Pivot => ref background.Pivot;
+        public readonly ref Vector2 Position => ref As<Image>().Position;
+        public readonly ref Vector2 Size => ref As<Image>().Size;
+        public readonly ref float Z => ref As<Image>().Z;
+        public readonly ref bool Editing => ref As<Image>().AsEntity().GetComponent<IsTextField>().editing;
+        public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
+        public readonly ref Anchor Anchor => ref As<Image>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<Image>().Pivot;
 
         public readonly Label TextLabel
         {
             get
             {
-                rint textReference = background.AsEntity().GetComponent<IsTextField>().textLabelReference;
-                uint textEntity = background.GetReference(textReference);
-                return new Entity(background.GetWorld(), textEntity).As<Label>();
+                rint textReference = GetComponent<IsTextField>().textLabelReference;
+                uint textEntity = GetReference(textReference);
+                return new Entity(world, textEntity).As<Label>();
             }
         }
 
@@ -37,18 +34,15 @@ namespace InteractionKit
         {
             get
             {
-                rint cursorReference = background.AsEntity().GetComponent<IsTextField>().cursorReference;
-                uint cursorEntity = background.GetReference(cursorReference);
-                return new Entity(background.GetWorld(), cursorEntity).As<Image>();
+                rint cursorReference = GetComponent<IsTextField>().cursorReference;
+                uint cursorEntity = GetReference(cursorReference);
+                return new Entity(world, cursorEntity).As<Image>();
             }
         }
 
         public readonly Vector4 TextColor
         {
-            get
-            {
-                return TextLabel.Color;
-            }
+            get => TextLabel.Color;
             set
             {
                 TextLabel.Color = value;
@@ -56,28 +50,22 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref BeginEditing BeginEditing => ref background.AsEntity().GetComponent<IsTextField>().beginEditing;
-        public readonly ref TextValidation Validation => ref background.AsEntity().GetComponent<IsTextField>().validation;
-        public readonly ref Submit Submit => ref background.AsEntity().GetComponent<IsTextField>().submit;
-        public readonly ref Cancel Cancel => ref background.AsEntity().GetComponent<IsTextField>().cancel;
+        public readonly ref BeginEditing BeginEditing => ref GetComponent<IsTextField>().beginEditing;
+        public readonly ref TextValidation Validation => ref GetComponent<IsTextField>().validation;
+        public readonly ref Submit Submit => ref GetComponent<IsTextField>().submit;
+        public readonly ref Cancel Cancel => ref GetComponent<IsTextField>().cancel;
 
         /// <summary>
         /// The content of this text field.
         /// </summary>
         public readonly USpan<char> Value => TextLabel.Text;
 
-        readonly uint IEntity.Value => background.GetEntityValue();
-        readonly World IEntity.World => background.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsTextField>();
-            archetype.AddComponentType<IsSelectable>();
-        }
-
         public unsafe TextField(Canvas canvas, FixedString defaultValue = default, BeginEditing beginEditing = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
         {
-            background = new(canvas);
+            world = canvas.world;
+            Image background = new(canvas);
+            value = background.value;
+
             background.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             Label text = new(canvas, defaultValue);
@@ -103,7 +91,7 @@ namespace InteractionKit
             highlight.Position = new(4f, -4f);
             highlight.Size = new(1, 1);
             highlight.Z = Settings.ZScale * 1.5f;
-            highlight.SetEnabled(false);
+            highlight.IsEnabled = false;
             highlight.AddComponent(new RendererScissor());
 
             MeshRenderer highlightRenderer = highlight;
@@ -116,9 +104,10 @@ namespace InteractionKit
             background.AddComponent(new IsTextField(textReference, cursorReference, highlightReference, beginEditing, validation, submit, cancel));
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            background.Dispose();
+            archetype.AddComponentType<IsTextField>();
+            archetype.AddComponentType<IsSelectable>();
         }
 
         public readonly void SetText(USpan<char> newText)
@@ -138,24 +127,19 @@ namespace InteractionKit
 
         public readonly void SetText(FixedString newText)
         {
-            USpan<char> buffer = stackalloc char[(int)newText.Length];
+            USpan<char> buffer = stackalloc char[newText.Length];
             uint length = newText.CopyTo(buffer);
             SetText(buffer.Slice(0, length));
         }
 
-        public static implicit operator Entity(TextField textField)
-        {
-            return textField.background;
-        }
-
         public static implicit operator Image(TextField textField)
         {
-            return textField.background;
+            return textField.As<Image>();
         }
 
         public static implicit operator Transform(TextField textField)
         {
-            return textField.background;
+            return textField.As<Transform>();
         }
     }
 }

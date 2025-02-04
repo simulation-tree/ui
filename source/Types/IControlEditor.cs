@@ -1,6 +1,6 @@
-﻿using InteractionKit.Functions;
+﻿using UI.Functions;
 
-namespace InteractionKit
+namespace UI
 {
     public interface IControlEditor
     {

@@ -1,5 +1,5 @@
-﻿using InteractionKit.Components;
-using InteractionKit.Functions;
+﻿using UI.Components;
+using UI.Functions;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -8,26 +8,25 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct VirtualWindow : IEntity
+    public readonly partial struct VirtualWindow : IEntity
     {
-        private readonly Image background;
-
-        public readonly ref Vector2 Position => ref background.Position;
-        public readonly ref Vector2 Size => ref background.Size;
-        public readonly ref float Z => ref background.Z;
-        public readonly ref Anchor Anchor => ref background.Anchor;
-        public readonly ref Vector3 Pivot => ref background.Pivot;
+        public readonly ref Vector2 Position => ref As<Image>().Position;
+        public readonly ref Vector2 Size => ref As<Image>().Size;
+        public readonly ref float Z => ref As<Image>().Z;
+        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
 
         public readonly Transform Container
         {
             get
             {
-                IsVirtualWindow component = background.AsEntity().GetComponent<IsVirtualWindow>();
+                IsVirtualWindow component = GetComponent<IsVirtualWindow>();
                 rint viewReference = component.viewReference;
-                uint viewEntity = background.GetReference(viewReference);
-                View view = new Entity(background.GetWorld(), viewEntity).As<View>();
+                uint viewEntity = GetReference(viewReference);
+                View view = new Entity(world, viewEntity).As<View>();
                 return view.Content;
             }
         }
@@ -36,31 +35,19 @@ namespace InteractionKit
         {
             get
             {
-                IsVirtualWindow component = background.AsEntity().GetComponent<IsVirtualWindow>();
+                IsVirtualWindow component = GetComponent<IsVirtualWindow>();
                 rint headerReference = component.headerReference;
-                uint headerEntity = background.GetReference(headerReference);
-                return new(background.GetWorld(), headerEntity);
+                uint headerEntity = GetReference(headerReference);
+                return new(world, headerEntity);
             }
-        }
-
-        public readonly ref Vector4 BackgroundColor => ref background.Color;
-
-        readonly uint IEntity.Value => background.GetEntityValue();
-        readonly World IEntity.World => background.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsVirtualWindow>();
-        }
-
-        public VirtualWindow(World world, uint existingEntity)
-        {
-            background = new(world, existingEntity);
         }
 
         private unsafe VirtualWindow(World world, Canvas canvas, FixedString titleText, VirtualWindowClose closeCallback)
         {
-            background = new(canvas);
+            this.world = world;
+            Image background = new(canvas);
+            value = background.value;
+
             background.AddComponent(new IsResizable(IsResizable.Boundary.All));
 
             Image header = new(canvas);
@@ -135,16 +122,16 @@ namespace InteractionKit
             DropShadow dropShadow = new(canvas, background);
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            background.Dispose();
+            archetype.AddComponentType<IsVirtualWindow>();
         }
 
         [UnmanagedCallersOnly]
         private static void PressedWindowCloseButton(Entity closeButtonEntity)
         {
-            Entity headerEntity = closeButtonEntity.GetParent();
-            Entity windowEntity = headerEntity.GetParent();
+            Entity headerEntity = closeButtonEntity.Parent;
+            Entity windowEntity = headerEntity.Parent;
             VirtualWindow virtualWindow = windowEntity.As<VirtualWindow>();
             ref IsVirtualWindow component = ref windowEntity.GetComponent<IsVirtualWindow>();
             if (component.closeCallback != default)
@@ -166,14 +153,14 @@ namespace InteractionKit
             return window;
         }
 
-        public static implicit operator Entity(VirtualWindow window)
+        public static implicit operator Image(VirtualWindow window)
         {
-            return window.background;
+            return window.As<Image>();
         }
 
         public static implicit operator Transform(VirtualWindow window)
         {
-            return window.background;
+            return window.As<Transform>();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using Worlds;
 
-namespace InteractionKit.Functions
+namespace UI.Functions
 {
     public unsafe readonly struct Submit : IEquatable<Submit>
     {

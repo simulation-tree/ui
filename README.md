@@ -1,25 +1,29 @@
-# Interaction Kit
+# UI
+
 Contains abstractions of pieces from various projects, with systems to fulfil them to provide
 the tools to build a retained UI environment.
 
-### Canvases and Interaction contexts
-A canvas and an interaction context are needed to build UI from. They only require a reference to an **orthographic** camera.
+### Using
+
+To use any of this library's features, there must first exist a `Settings` entity:
 ```cs
 using (World world = new())
 {
-    Window window = new(world, "Editor", new(200, 200), new(900, 720), "vulkan", new(&OnWindowClosed));
-    Camera uiCamera = new(world, window, new CameraOrthographicSize(1f));
-    Canvas canvas = new(world, uiCamera);
-    using (InteractiveContext context = new(canvas))
-    {
-        //update
-    }
+    Settings settings = new(world);
 }
 ```
-When execution is finished, the `InteractiveContext` type is expected to be disposed. UI controls are expected to be a
-descendant of a canvas.
 
-### Extending virtual windows with `IVirtualWindow` types
+### Canvases
+
+A canvas and an interaction context are needed to build UI from. They only require a reference to an **orthographic** camera.
+```cs
+Window window = new(world, "Editor", new(200, 200), new(900, 720), "vulkan");
+Camera camera = new(world, window, CameraSettings.CreateOrthographic(1f));
+Canvas canvas = new(world, settings, camera);
+```
+
+### Custom `IVirtualWindow` types
+
 The virtual window type contains the ability to display elements inside its container, can be dragged around and closed.
 This example is an example that only contains a `Hello, World!` label:
 ```cs
@@ -50,7 +54,47 @@ public readonly struct ExampleWindow : IVirtualWindow
 }
 ```
 
+### Control fields
+
+Control fields draw an editor for a component with a prefixed label:
+```cs
+Entity dataEntity = new(world);
+dataEntity.AddComponent<float>(0f);
+
+ControlField numberField = ControlField.Create<float, NumberTextEditor>(canvas, "Number", dataEntity);
+numberField.LabelColor = new(0, 0, 0, 1);
+numberField.Anchor = Anchor.TopLeft;
+numberField.Pivot = new(0f, 1f, 0f);
+numberField.Position = new(100, 100);
+numberField.Width = 180f;
+```
+
+Included are these editors:
+- `NumberTextEditor` for numeric components:
+    - `FixedString`
+    - `byte` and `sbyte`
+    - `short` and `ushort`
+    - `int` and `uint`
+    - `long` and `ulong`
+- `TextEditor` for text components and arrays:
+    - `FixedString` component
+    - array of `char`
+    - array of `LabelCharacter`
+- `BooleanEditor` for boolean components:
+    - `bool` component
+
+### Images
+
+Image entities display a colored square, with the option to display a custom texture:
+```cs
+Image image = new(canvas);
+image.Size = new(64, 64);
+image.Position = new(100, 100);
+image.Anchor = Anchor.TopLeft;
+```
+
 ### Labels
+
 Labels are entities that combine `TextRenderer` and `TextMesh` entities:
 ```cs
 Label testLabel = new(world, context, "Hello, World!");
@@ -61,6 +105,7 @@ testLabel.Pivot = new(0f, 1f, 0f);
 ```
 
 ### Buttons
+
 The `Button` type only implements the callback, so for the common labelled button that requires
 a `Label` entity to display the text:
 ```cs
@@ -80,11 +125,12 @@ testButtonLabel.Pivot = new(0f, 1f, 0f);
 [UnmanagedCallersOnly]
 static void PressedTestButton(World world, uint buttonEntity)
 {
-    Debug.WriteLine($"Pressed button `{buttonEntity}`");
+    Trace.WriteLine($"Pressed button `{buttonEntity}`");
 }
 ```
 
 ### Toggles
+
 ```cs
 bool initialValue = false;
 Toggle testToggle = new(world, context, initialValue);
@@ -97,6 +143,7 @@ testToggle.CheckmarkColor = Color.White;
 ```
 
 ### Scroll bars
+
 ```cs
 float percentageSize = 0.25f;
 ScrollBar horizontalScrollBar = new(world, context, Vector2.UnitX, percentageSize);
@@ -109,6 +156,7 @@ horizontalScrollBar.ScrollHandleColor = Color.White;
 ```
 
 ### Dropdowns
+
 ```cs
 Dropdown testDropdown = new(world, context);
 testDropdown.Parent = canvas;
@@ -138,6 +186,6 @@ testDropdown.Callback = new(&DropdownOptionChanged);
 static void DropdownOptionChanged(Dropdown dropdown, uint previous, uint current)
 {
     MenuOption option = dropdown.Options[current];
-    Debug.WriteLine($"Selected option: {option.text}");
+    Trace.WriteLine($"Selected option: {option.text}");
 }
 ```

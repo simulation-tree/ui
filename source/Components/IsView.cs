@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Worlds;
 
-namespace InteractionKit.Components
+namespace UI.Components
 {
     [Component]
     public struct IsView

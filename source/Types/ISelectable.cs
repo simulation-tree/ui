@@ -1,6 +1,6 @@
 ﻿using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
     public interface ISelectable : IEntity
     {

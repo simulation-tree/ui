@@ -1,41 +1,21 @@
 ﻿using Cameras;
-using InteractionKit.Components;
+using UI.Components;
+using Materials;
 using Meshes.NineSliced;
 using Rendering;
 using Rendering.Components;
-using System;
 using Transforms;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct DropShadow : IEntity
+    public readonly partial struct DropShadow : IEntity
     {
-        private readonly Transform transform;
-
-        readonly uint IEntity.Value => transform.GetEntityValue();
-        readonly World IEntity.World => transform.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsRenderer>();
-            archetype.AddComponentType<IsDropShadow>();
-            archetype.AddTagType<IsTransform>();
-        }
-
-#if NET
-        [Obsolete("Default constructor not supported", true)]
-        public DropShadow()
-        {
-            throw new NotSupportedException();
-        }
-#endif
-
         public DropShadow(Canvas canvas, Entity foreground)
         {
             Settings settings = canvas.Settings;
-            World world = canvas.GetWorld();
+            world = canvas.world;
             Camera camera = canvas.Camera;
 
             Mesh9Sliced dropShadowMesh = new(world, new(30f), new(0.5f));
@@ -45,7 +25,7 @@ namespace InteractionKit
             MeshRenderer dropShadowRenderer = new(world, dropShadowMesh, dropShadowMaterial);
             dropShadowRenderer.AddComponent(new Color(0f, 0f, 0f, 0.5f));
 
-            transform = dropShadowRenderer.AsEntity().Become<Transform>();
+            Transform transform = dropShadowRenderer.AsEntity().Become<Transform>();
             transform.LocalPosition = new(0, 0, -0.02f);
             transform.AddComponent(Anchor.BottomLeft);
 
@@ -53,11 +33,15 @@ namespace InteractionKit
             rint foregroundReference = transform.AddReference(foreground);
             transform.AddComponent(new IsDropShadow(dropShadowMeshReference, foregroundReference));
             transform.SetParent(canvas);
+
+            value = transform.value;
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            transform.Dispose();
+            archetype.AddComponentType<IsRenderer>();
+            archetype.AddComponentType<IsDropShadow>();
+            archetype.AddTagType<IsTransform>();
         }
     }
 }

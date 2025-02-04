@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using Worlds;
 
-namespace InteractionKit.Functions
+namespace UI.Functions
 {
     public readonly unsafe struct InitializeControlField
     {
@@ -14,10 +14,10 @@ namespace InteractionKit.Functions
             this.function = function;
         }
 
-        public readonly void Invoke(List<Entity> createdEntities, ControlField controlField, Canvas canvas, Entity target, byte typeIndex, bool isComponentType, uint offset)
+        public readonly void Invoke(List<Entity> createdEntities, ControlField controlField, Canvas canvas, Entity target, DataType dataType, uint offset)
         {
-            World world = controlField.GetWorld();
-            function(new(world, createdEntities, controlField.GetEntityValue(), canvas.GetEntityValue(), target.GetEntityValue(), typeIndex, isComponentType, offset));
+            World world = controlField.world;
+            function(new(world, createdEntities, controlField.value, canvas.value, target.value, dataType, offset));
         }
 
         public readonly struct Input
@@ -27,13 +27,12 @@ namespace InteractionKit.Functions
             public readonly uint controlField;
             public readonly uint canvas;
             public readonly uint target;
-            public readonly Boolean isComponentType;
+            public readonly DataType dataType;
 
-            private readonly byte typeIndex;
             private readonly List<Entity> createdEntities;
 
-            public readonly ControlField ControlField => new(world, controlField);
-            public readonly Canvas Canvas => new(world, canvas);
+            public readonly ControlField ControlField => new Entity(world, controlField).As<ControlField>();
+            public readonly Canvas Canvas => new Entity(world, canvas).As<Canvas>();
             public readonly Entity Target => new(world, target);
 
             public readonly ComponentType ComponentType
@@ -42,7 +41,7 @@ namespace InteractionKit.Functions
                 {
                     ThrowIfNotComponentType();
 
-                    return new(typeIndex);
+                    return dataType.ComponentType;
                 }
             }
 
@@ -52,19 +51,18 @@ namespace InteractionKit.Functions
                 {
                     ThrowIfNotArrayElementType();
 
-                    return new(typeIndex);
+                    return dataType.ArrayElementType;
                 }
             }
 
-            public Input(World world, List<Entity> createdEntities, uint controlField, uint canvas, uint target, byte typeIndex, bool isComponentType, uint offset)
+            public Input(World world, List<Entity> createdEntities, uint controlField, uint canvas, uint target, DataType dataType, uint offset)
             {
                 this.world = world;
                 this.createdEntities = createdEntities;
                 this.controlField = controlField;
                 this.canvas = canvas;
                 this.target = target;
-                this.typeIndex = typeIndex;
-                this.isComponentType = isComponentType;
+                this.dataType = dataType;
                 this.offset = offset;
             }
 
@@ -76,7 +74,7 @@ namespace InteractionKit.Functions
             [Conditional("DEBUG")]
             private readonly void ThrowIfNotComponentType()
             {
-                if (!isComponentType)
+                if (!dataType.IsComponent)
                 {
                     throw new InvalidOperationException("Target is an array type, not a component type");
                 }
@@ -85,7 +83,7 @@ namespace InteractionKit.Functions
             [Conditional("DEBUG")]
             private readonly void ThrowIfNotArrayElementType()
             {
-                if (isComponentType)
+                if (!dataType.IsArrayElement)
                 {
                     throw new InvalidOperationException("Target is a component type, not an array type");
                 }

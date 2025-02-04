@@ -1,7 +1,7 @@
 using Cameras;
-using InteractionKit.Components;
-using InteractionKit.Functions;
-using Rendering;
+using UI.Components;
+using UI.Functions;
+using Materials;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -10,31 +10,29 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct Dropdown : ISelectable
+    public readonly partial struct Dropdown : ISelectable
     {
-        public readonly Image background;
-
-        public readonly ref Vector2 Position => ref background.Position;
+        public readonly ref Vector2 Position => ref As<Image>().Position;
 
         /// <summary>
         /// Size of the dropdown button.
         /// </summary>
-        public readonly ref Vector2 Size => ref background.Size;
+        public readonly ref Vector2 Size => ref As<Image>().Size;
 
-        public readonly ref float Z => ref background.Z;
-        public readonly ref Anchor Anchor => ref background.Anchor;
-        public readonly ref Vector3 Pivot => ref background.Pivot;
-        public readonly ref Vector4 BackgroundColor => ref background.Color;
+        public readonly ref float Z => ref As<Image>().Z;
+        public readonly ref Anchor Anchor => ref As<Image>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<Image>().Pivot;
+        public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
 
         public readonly Label Label
         {
             get
             {
-                rint labelReference = background.AsEntity().GetComponent<IsDropdown>().labelReference;
-                uint labelEntity = background.GetReference(labelReference);
-                return new Entity(background.GetWorld(), labelEntity).As<Label>();
+                rint labelReference = GetComponent<IsDropdown>().labelReference;
+                uint labelEntity = GetReference(labelReference);
+                return new Entity(world, labelEntity).As<Label>();
             }
         }
 
@@ -44,9 +42,9 @@ namespace InteractionKit
         {
             get
             {
-                rint triangleReference = background.AsEntity().GetComponent<IsDropdown>().triangleReference;
-                uint triangleEntity = background.GetReference(triangleReference);
-                return new(background.GetWorld(), triangleEntity);
+                rint triangleReference = GetComponent<IsDropdown>().triangleReference;
+                uint triangleEntity = GetReference(triangleReference);
+                return new Entity(world, triangleEntity).As<Image>();
             }
         }
 
@@ -56,25 +54,20 @@ namespace InteractionKit
         {
             get
             {
-                rint menuReference = background.AsEntity().GetComponent<IsDropdown>().menuReference;
-                uint menuEntity = background.GetReference(menuReference);
-                return new Entity(background.GetWorld(), menuEntity).As<Menu>();
+                rint menuReference = GetComponent<IsDropdown>().menuReference;
+                uint menuEntity = GetReference(menuReference);
+                return new Entity(world, menuEntity).As<Menu>();
             }
         }
 
         public readonly OptionPath SelectedOption
         {
-            get
-            {
-                OptionPath selectedOption = background.AsEntity().GetComponent<IsDropdown>().selectedOption;
-                return selectedOption;
-            }
+            get => GetComponent<IsDropdown>().selectedOption;
             set
             {
-                ref IsDropdown component = ref background.AsEntity().GetComponent<IsDropdown>();
+                ref IsDropdown component = ref GetComponent<IsDropdown>();
                 component.selectedOption = value;
 
-                World world = background.GetWorld();
                 Menu menu = Menu;
                 USpan<IsMenuOption> options = menu.Options;
                 FixedString text = default;
@@ -113,7 +106,7 @@ namespace InteractionKit
                 }
 
                 rint labelReference = component.labelReference;
-                uint labelEntity = background.GetReference(labelReference);
+                uint labelEntity = GetReference(labelReference);
                 Label dropdownLabel = new Entity(world, labelEntity).As<Label>();
                 dropdownLabel.SetText(text);
             }
@@ -121,19 +114,15 @@ namespace InteractionKit
 
         public readonly bool IsExpanded
         {
-            get
-            {
-                ref IsDropdown component = ref background.AsEntity().GetComponent<IsDropdown>();
-                return component.expanded;
-            }
+            get => GetComponent<IsDropdown>().expanded;
             set
             {
-                ref IsDropdown component = ref background.AsEntity().GetComponent<IsDropdown>();
+                ref IsDropdown component = ref GetComponent<IsDropdown>();
                 component.expanded = value;
 
                 Menu menu = Menu;
                 menu.OptionSize = Size;
-                menu.SetEnabled(component.expanded);
+                menu.IsEnabled = component.expanded;
 
                 USpan<IsMenuOption> options = menu.Options;
                 for (uint i = 0; i < options.Length; i++)
@@ -147,50 +136,19 @@ namespace InteractionKit
                         }
 
                         uint childMenuEntity = menu.GetReference(option.childMenuReference);
-                        Menu childMenu = new Entity(menu.GetWorld(), childMenuEntity).As<Menu>();
-                        childMenu.SetEnabled(option.expanded);
+                        Menu childMenu = new Entity(world, childMenuEntity).As<Menu>();
+                        childMenu.IsEnabled = option.expanded;
                     }
                 }
             }
         }
 
         public readonly USpan<IsMenuOption> Options => Menu.Options;
-
-        public readonly ref DropdownCallback Callback
-        {
-            get
-            {
-                ref IsDropdown component = ref background.AsEntity().GetComponent<IsDropdown>();
-                return ref component.callback;
-            }
-        }
-
-        readonly uint IEntity.Value => background.GetEntityValue();
-        readonly World IEntity.World => background.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsTrigger>();
-            archetype.AddComponentType<IsSelectable>();
-            archetype.AddComponentType<IsDropdown>();
-        }
-
-#if NET
-        [Obsolete("Default constructor not available", true)]
-        public Dropdown()
-        {
-            throw new NotSupportedException();
-        }
-#endif
-
-        public Dropdown(World world, uint existingEntity)
-        {
-            background = new(world, existingEntity);
-        }
+        public readonly ref DropdownCallback Callback => ref GetComponent<IsDropdown>().callback;
 
         public unsafe Dropdown(Canvas canvas, Vector2 optionSize, DropdownCallback callback = default)
         {
-            background = new(canvas);
+            Image background = new(canvas);
             background.AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
             background.AddComponent(new IsSelectable(canvas.SelectionMask));
 
@@ -215,7 +173,7 @@ namespace InteractionKit
             Menu menu = new(canvas, optionSize, new(&ChosenOption));
             menu.Anchor = Anchor.BottomLeft;
             menu.Pivot = new(0f, 1f, 0f);
-            menu.SetEnabled(false);
+            menu.IsEnabled = false;
 
             rint dropdownReference = menu.AddReference(this);
             menu.AddComponent(new DropdownMenu(dropdownReference));
@@ -224,11 +182,16 @@ namespace InteractionKit
             rint triangleReference = background.AddReference(triangle);
             rint menuReference = background.AddReference(menu);
             background.AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
+
+            world = canvas.world;
+            value = background.value;
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            background.Dispose();
+            archetype.AddComponentType<IsTrigger>();
+            archetype.AddComponentType<IsSelectable>();
+            archetype.AddComponentType<IsDropdown>();
         }
 
         [UnmanagedCallersOnly]
@@ -254,7 +217,7 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         public static void ChosenOption(MenuOption option)
         {
-            World world = option.rootMenu.GetWorld();
+            World world = option.rootMenu.world;
             rint dropdownReference = option.rootMenu.AsEntity().GetComponent<DropdownMenu>().dropdownReference;
             uint dropdownEntity = option.rootMenu.GetReference(dropdownReference);
             Dropdown dropdown = new Entity(world, dropdownEntity).As<Dropdown>();
@@ -264,40 +227,14 @@ namespace InteractionKit
 
         public static Material GetTriangleMaterialFromSettings(Camera camera)
         {
-            Settings settings = camera.GetWorld().GetFirst<Settings>();
+            Settings settings = camera.world.GetFirst<Settings>();
             return settings.GetTriangleMaterial(camera);
-        }
-
-        public static implicit operator Entity(Dropdown dropdown)
-        {
-            return dropdown.background;
         }
     }
 
     public readonly struct Dropdown<T> : ISelectable where T : struct, Enum
     {
         private readonly Dropdown dropdown;
-
-        readonly uint IEntity.Value => dropdown.GetEntityValue();
-        readonly World IEntity.World => dropdown.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.Add<Dropdown>();
-        }
-
-#if NET
-        [Obsolete("Default constructor not available", true)]
-        public Dropdown()
-        {
-            throw new NotSupportedException();
-        }
-#endif
-
-        public Dropdown(World world, uint existingEntity)
-        {
-            dropdown = new(world, existingEntity);
-        }
 
         public unsafe Dropdown(Canvas canvas, Vector2 optionSize, DropdownCallback callback = default)
         {
@@ -326,7 +263,7 @@ namespace InteractionKit
             Menu menu = new(canvas, optionSize, new(&Dropdown.ChosenOption));
             menu.Anchor = Anchor.BottomLeft;
             menu.Pivot = new(0f, 1f, 0f);
-            menu.SetEnabled(false);
+            menu.IsEnabled = false;
 
             T[] options = Enum.GetValues<T>();
             for (uint i = 0; i < options.Length; i++)
@@ -345,6 +282,11 @@ namespace InteractionKit
 
             dropdown = background.AsEntity().As<Dropdown>();
             dropdown.SelectedOption = "0";
+        }
+
+        readonly void IEntity.Describe(ref Archetype archetype)
+        {
+            archetype.Add<Dropdown>();
         }
 
         public readonly void Dispose()

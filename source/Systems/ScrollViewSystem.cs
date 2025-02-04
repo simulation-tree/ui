@@ -1,5 +1,5 @@
 ﻿using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Rendering;
 using Rendering.Components;
 using Simulation;
@@ -9,7 +9,7 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct ScrollViewSystem : ISystem
     {
@@ -57,7 +57,10 @@ namespace InteractionKit.Systems
                 Vector3 viewPosition = ltw.Position;
                 Vector3 viewScale = ltw.Scale;
                 Destination destination = new Entity(world, scrollViewEntity).GetCanvas().Camera.Destination;
-                if (destination == default || destination.IsDestroyed()) continue;
+                if (destination == default || destination.IsDestroyed)
+                {
+                    continue;
+                }
 
                 LocalToWorld contentLtw = world.GetComponent<LocalToWorld>(contentEntity);
                 Vector3 contentScale = contentLtw.Scale;

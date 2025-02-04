@@ -1,7 +1,7 @@
 ﻿using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.Components
+namespace UI.Components
 {
     [ArrayElement]
     public struct IsMenuOption

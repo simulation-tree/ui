@@ -1,8 +1,8 @@
 ﻿using Clipboard;
 using Collections;
 using Fonts;
-using InteractionKit.Components;
-using InteractionKit.Functions;
+using UI.Components;
+using UI.Functions;
 using Meshes;
 using Rendering.Components;
 using Simulation;
@@ -13,7 +13,7 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public partial struct TextFieldEditingSystem : ISystem
     {
@@ -133,7 +133,7 @@ namespace InteractionKit.Systems
                                 otherComponent.editing = false;
                             }
 
-                            Pointer pointer = new(world, firstPressedPointer);
+                            Pointer pointer = new Entity(world, firstPressedPointer).As<Pointer>();
                             StartEditing(world, textFieldEntity, pointer, pressedCharacters, ref selection);
                             startedEditing = true;
                             if (component.beginEditing != default)
@@ -343,7 +343,7 @@ namespace InteractionKit.Systems
 
             ref Position cursorPosition = ref world.GetComponent<Position>(cursorEntity);
             LocalToWorld ltw = world.GetComponent<LocalToWorld>(cursorEntity);
-            Vector3 offset = world.GetComponent<Position>(textLabel.GetEntityValue()).value;
+            Vector3 offset = world.GetComponent<Position>(textLabel.value).value;
             Vector3 worldPosition = ltw.Position + new Vector3(totalSize.X + offset.X, -(totalSize.Y + cursorSize.Y - offset.Y), 0) * cursorSize;
             Matrix4x4.Invert(ltw.value, out Matrix4x4 inverseLtw);
             Vector3 localPosition = Vector3.Transform(worldPosition, inverseLtw);
@@ -372,7 +372,7 @@ namespace InteractionKit.Systems
             uint end = Math.Max(selection.start, selection.end);
             uint length = end - start;
             bool showHighlight = length > 0;
-            world.SetEnabled(highlightEntity, showHighlight);
+            highlightEntity.IsEnabled = showHighlight;
             if (showHighlight)
             {
                 //unique mesh per highlight
@@ -381,9 +381,9 @@ namespace InteractionKit.Systems
                 USpan<char> text = textLabel.Text;
                 Vector2 offset = new(4f, -4f);
                 Vector2 padding = new(2f, 2f);
-                ref IsRenderer renderer = ref world.GetComponent<IsRenderer>(highlightEntity);
+                ref IsRenderer renderer = ref highlightEntity.GetComponent<IsRenderer>();
                 rint meshReference = renderer.meshReference;
-                uint meshEntity = world.GetReference(highlightEntity, meshReference);
+                uint meshEntity = highlightEntity.GetReference(meshReference);
                 uint lineStart = 0;
                 using Array<Vector3> verticesList = new(text.Length * 4);
                 using Array<uint> indicesList = new(text.Length * 6);
@@ -471,7 +471,7 @@ namespace InteractionKit.Systems
                     lineIndex++;
                 }
 
-                Mesh highlightMesh = new(world, meshEntity);
+                Mesh highlightMesh = new Entity(world, meshEntity).As<Mesh>();
                 USpan<Vector3> positions = highlightMesh.ResizePositions(faceCount * 4);
                 USpan<uint> indices = highlightMesh.ResizeIndices(faceCount * 6);
                 USpan<Vector2> uvs = highlightMesh.ResizeUVs(faceCount * 4);

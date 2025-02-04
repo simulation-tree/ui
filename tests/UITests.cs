@@ -2,7 +2,7 @@
 using Cameras;
 using Data;
 using Fonts;
-using InteractionKit.Systems;
+using Materials;
 using Meshes;
 using Rendering;
 using Simulation.Tests;
@@ -10,16 +10,18 @@ using TextRendering;
 using Textures;
 using Transforms;
 using Types;
+using UI.Systems;
 using Worlds;
 
-namespace InteractionKit.Tests
+namespace UI.Tests
 {
-    public abstract class InteractionKitTests : SimulationTests
+    public abstract class UITests : SimulationTests
     {
-        static InteractionKitTests()
+        static UITests()
         {
             TypeRegistry.Load<RenderingTypeBank>();
-            TypeRegistry.Load<InteractionKitTypeBank>();
+            TypeRegistry.Load<MaterialsTypeBank>();
+            TypeRegistry.Load<UITypeBank>();
             TypeRegistry.Load<AutomationsTypeBank>();
             TypeRegistry.Load<TransformsTypeBank>();
             TypeRegistry.Load<MeshesTypeBank>();
@@ -28,7 +30,7 @@ namespace InteractionKit.Tests
             TypeRegistry.Load<TexturesTypeBank>();
             TypeRegistry.Load<CamerasTypeBank>();
             TypeRegistry.Load<TextRenderingTypeBank>();
-            TypeRegistry.Load<InteractionKitTestsTypeBank>();
+            TypeRegistry.Load<UITestsTypeBank>();
         }
         protected override void SetUp()
         {
@@ -41,7 +43,8 @@ namespace InteractionKit.Tests
         {
             Schema schema = base.CreateSchema();
             schema.Load<RenderingSchemaBank>();
-            schema.Load<InteractionKitSchemaBank>();
+            schema.Load<MaterialsSchemaBank>();
+            schema.Load<UISchemaBank>();
             schema.Load<AutomationsSchemaBank>();
             schema.Load<TransformsSchemaBank>();
             schema.Load<MeshesSchemaBank>();
@@ -50,7 +53,7 @@ namespace InteractionKit.Tests
             schema.Load<TexturesSchemaBank>();
             schema.Load<CamerasSchemaBank>();
             schema.Load<TextRenderingSchemaBank>();
-            schema.Load<InteractionKitTestsSchemaBank>();
+            schema.Load<UITestsSchemaBank>();
             return schema;
         }
     }

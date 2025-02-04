@@ -1,12 +1,12 @@
 ﻿using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Simulation;
 using System;
 using System.Numerics;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public partial struct ScrollHandleMovingSystem : ISystem
     {

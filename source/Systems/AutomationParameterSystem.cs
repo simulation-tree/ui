@@ -1,12 +1,12 @@
 ﻿using Automations;
 using Automations.Components;
 using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Simulation;
 using System;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct AutomationParameterSystem : ISystem
     {

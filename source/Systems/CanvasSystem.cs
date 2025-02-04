@@ -1,5 +1,5 @@
 ﻿using Cameras;
-using InteractionKit.Components;
+using UI.Components;
 using Rendering;
 using Simulation;
 using System;
@@ -8,7 +8,7 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct CanvasSystem : ISystem
     {
@@ -33,8 +33,8 @@ namespace InteractionKit.Systems
                 Vector2 size = default;
                 if (cameraEntity != default && world.ContainsEntity(cameraEntity))
                 {
-                    Camera camera = new(world, cameraEntity);
-                    if (camera.IsDestroyed() || !camera.Is())
+                    Camera camera = new Entity(world, cameraEntity).As<Camera>();
+                    if (camera.IsDestroyed || !camera.IsCompliant)
                     {
                         //todo: the check for whether the camera entity is itself a camera, shouldnt be necessary
                         //without it it sometimes fails, other times doesnt with the multiple windows program, not sure why
@@ -43,9 +43,9 @@ namespace InteractionKit.Systems
                     }
 
                     Destination destination = camera.Destination;
-                    if (destination != default && !destination.IsDestroyed())
+                    if (destination != default && !destination.IsDestroyed)
                     {
-                        size = destination.SizeAsVector2();
+                        size = destination.SizeAsVector2;
                     }
 
                     distanceFromCamera += camera.Depth.min;

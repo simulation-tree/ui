@@ -1,7 +1,7 @@
 ﻿using System;
 using Unmanaged;
 
-namespace InteractionKit
+namespace UI
 {
     public struct TextSelection : IEquatable<TextSelection>
     {

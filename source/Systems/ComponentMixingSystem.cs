@@ -1,5 +1,5 @@
 ﻿using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Simulation;
 using System;
 using System.Diagnostics;
@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct ComponentMixingSystem : ISystem
     {
@@ -465,7 +465,7 @@ namespace InteractionKit.Systems
         [Conditional("DEBUG")]
         private void ThrowIfComponentIsMissing(World world, uint entity, ComponentType componentType)
         {
-            if (!world.ContainsComponent(entity, componentType))
+            if (!world.Contains(entity, componentType))
             {
                 throw new Exception($"Entity `{entity}` is missing expected component `{componentType.ToString(world.Schema)}`");
             }

@@ -1,21 +1,19 @@
 ﻿using Worlds;
 
-namespace InteractionKit.Components
+namespace UI.Components
 {
     [Component]
     public readonly struct IsControlField
     {
         public readonly rint labelReference;
         public readonly rint entityReference;
-        public readonly byte typeIndex;
-        public readonly bool isComponentType;
+        public readonly DataType dataType;
 
-        public IsControlField(rint labelReference, rint entityReference, byte typeIndex, bool isComponentType)
+        public IsControlField(rint labelReference, rint entityReference, DataType dataType)
         {
             this.labelReference = labelReference;
             this.entityReference = entityReference;
-            this.typeIndex = typeIndex;
-            this.isComponentType = isComponentType;
+            this.dataType = dataType;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Unmanaged;
 
-namespace InteractionKit.Functions
+namespace UI.Functions
 {
     public unsafe readonly struct TryProcessLabel
     {

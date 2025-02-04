@@ -1,4 +1,4 @@
-﻿namespace InteractionKit.Tests
+﻿namespace UI.Tests
 {
     public class OptionPathTests
     {

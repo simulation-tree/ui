@@ -4,7 +4,8 @@ using Cameras.Components;
 using Data;
 using DefaultPresentationAssets;
 using Fonts;
-using InteractionKit.Components;
+using UI.Components;
+using Materials;
 using Meshes;
 using Rendering;
 using System;
@@ -15,9 +16,9 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct Settings : IEntity
+    public readonly partial struct Settings : IEntity
     {
         public const float ZScale = 0.2f;
         public const char ShiftCharacter = (char)14;
@@ -31,19 +32,17 @@ namespace InteractionKit
         public const char EscapeCharacter = '\e';
         public const char EnterCharacter = '\n';
 
-        private readonly Entity entity;
-
-        public readonly ref float SingleLineHeight => ref entity.GetComponent<UISettings>().singleLineHeight;
-        public readonly ref PressedCharacters PressedCharacters => ref entity.GetComponent<UISettings>().pressedCharacters;
+        public readonly ref float SingleLineHeight => ref GetComponent<UISettings>().singleLineHeight;
+        public readonly ref PressedCharacters PressedCharacters => ref GetComponent<UISettings>().pressedCharacters;
 
         public readonly StateMachine ControlStateMachine
         {
             get
             {
-                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
+                ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint stateMachineReference = component.stateMachineReference;
-                uint stateMachineEntity = entity.GetReference(stateMachineReference);
-                return new Entity(entity.GetWorld(), stateMachineEntity).As<StateMachine>();
+                uint stateMachineEntity = GetReference(stateMachineReference);
+                return new Entity(world, stateMachineEntity).As<StateMachine>();
             }
         }
 
@@ -51,10 +50,10 @@ namespace InteractionKit
         {
             get
             {
-                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
+                ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint idleAutomationReference = component.idleAutomationReference;
-                uint idleAutomationEntity = entity.GetReference(idleAutomationReference);
-                return new Entity(entity.GetWorld(), idleAutomationEntity).As<Automation<Vector4>>();
+                uint idleAutomationEntity = GetReference(idleAutomationReference);
+                return new Entity(world, idleAutomationEntity).As<Automation<Vector4>>();
             }
         }
 
@@ -62,10 +61,10 @@ namespace InteractionKit
         {
             get
             {
-                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
+                ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint selectedAutomationReference = component.selectedAutomationReference;
-                uint selectedAutomationEntity = entity.GetReference(selectedAutomationReference);
-                return new Entity(entity.GetWorld(), selectedAutomationEntity).As<Automation<Vector4>>();
+                uint selectedAutomationEntity = GetReference(selectedAutomationReference);
+                return new Entity(world, selectedAutomationEntity).As<Automation<Vector4>>();
             }
         }
 
@@ -73,10 +72,10 @@ namespace InteractionKit
         {
             get
             {
-                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
+                ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint pressedAutomationReference = component.pressedAutomationReference;
-                uint pressedAutomationEntity = entity.GetReference(pressedAutomationReference);
-                return new Entity(entity.GetWorld(), pressedAutomationEntity).As<Automation<Vector4>>();
+                uint pressedAutomationEntity = GetReference(pressedAutomationReference);
+                return new Entity(world, pressedAutomationEntity).As<Automation<Vector4>>();
             }
         }
 
@@ -84,10 +83,10 @@ namespace InteractionKit
         {
             get
             {
-                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
+                ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint quadMeshReference = component.quadMeshReference;
-                uint quadMeshEntity = entity.GetReference(quadMeshReference);
-                return new Entity(entity.GetWorld(), quadMeshEntity).As<Mesh>();
+                uint quadMeshEntity = GetReference(quadMeshReference);
+                return new Entity(world, quadMeshEntity).As<Mesh>();
             }
         }
 
@@ -95,45 +94,21 @@ namespace InteractionKit
         {
             get
             {
-                ref AssetReferences component = ref entity.GetComponent<AssetReferences>();
+                ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint fontReference = component.fontReference;
-                uint fontEntity = entity.GetReference(fontReference);
-                return new Entity(entity.GetWorld(), fontEntity).As<Font>();
+                uint fontEntity = GetReference(fontReference);
+                return new Entity(world, fontEntity).As<Font>();
             }
         }
 
-        public readonly ref TextSelection TextSelection
-        {
-            get
-            {
-                ref TextEditState component = ref entity.GetComponent<TextEditState>();
-                return ref component.value;
-            }
-        }
-
-        readonly uint IEntity.Value => entity.GetEntityValue();
-        readonly World IEntity.World => entity.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<AssetReferences>();
-            archetype.AddComponentType<UISettings>();
-            archetype.AddComponentType<TextEditState>();
-            archetype.AddArrayElementType<MaterialSettings>();
-        }
-
-#if NET
-        [Obsolete("Default constructor not supported", true)]
-        public Settings()
-        {
-            throw new NotSupportedException();
-        }
-#endif
+        public readonly ref TextSelection TextSelection => ref GetComponent<TextEditState>().value;
 
         public Settings(World world)
         {
             ThrowIfAlreadyExists(world);
-            entity = new(world);
+
+            this.world = world;
+            value = world.CreateEntity();
 
             USpan<AvailableState> states = stackalloc AvailableState[3];
             states[0] = new("idle");
@@ -179,46 +154,46 @@ namespace InteractionKit
             quadMesh.AddTriangle(0, 1, 2);
             quadMesh.AddTriangle(2, 3, 0);
 
-            Texture squareTexture = new(world, Address.Get<SquareTexture>());
-            Texture triangleTexture = new(world, Address.Get<TriangleTexture>());
-            Texture radialGradientTexture = new(world, Address.Get<RadialGradientAlphaTexture>());
+            Texture squareTexture = new(world, EmbeddedResourceRegistry.Get<SquareTexture>());
+            Texture triangleTexture = new(world, EmbeddedResourceRegistry.Get<TriangleTexture>());
+            Texture radialGradientTexture = new(world, EmbeddedResourceRegistry.Get<RadialGradientAlphaTexture>());
 
             //create default coloured unlit material
-            Material squareMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            Material squareMaterial = new(world, EmbeddedResourceRegistry.Get<UnlitTexturedMaterial>());
             squareMaterial.AddPushBinding<Color>();
             squareMaterial.AddPushBinding<LocalToWorld>();
-            squareMaterial.AddComponentBinding<CameraMatrices>(0, 0, default(Entity));
-            squareMaterial.AddTextureBinding(1, 0, squareTexture);
+            squareMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
+            squareMaterial.AddTextureBinding(new(1, 0), squareTexture);
 
-            Material triangleMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            Material triangleMaterial = new(world, EmbeddedResourceRegistry.Get<UnlitTexturedMaterial>());
             triangleMaterial.AddPushBinding<Color>();
             triangleMaterial.AddPushBinding<LocalToWorld>();
-            triangleMaterial.AddComponentBinding<CameraMatrices>(0, 0, default(Entity));
-            triangleMaterial.AddTextureBinding(1, 0, triangleTexture);
+            triangleMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
+            triangleMaterial.AddTextureBinding(new(1, 0), triangleTexture);
 
-            Material textMaterial = new(world, Address.Get<TextMaterial>());
-            textMaterial.AddComponentBinding<CameraMatrices>(1, 0, default(Entity));
+            Material textMaterial = new(world, EmbeddedResourceRegistry.Get<TextMaterial>());
+            textMaterial.AddComponentBinding<CameraMatrices>(new(1, 0), default(Entity));
             textMaterial.AddPushBinding<Color>();
             textMaterial.AddPushBinding<LocalToWorld>();
 
-            Material dropShadowMaterial = new(world, Address.Get<UnlitTexturedMaterial>());
+            Material dropShadowMaterial = new(world, EmbeddedResourceRegistry.Get<UnlitTexturedMaterial>());
             dropShadowMaterial.AddPushBinding<Color>();
             dropShadowMaterial.AddPushBinding<LocalToWorld>();
-            dropShadowMaterial.AddComponentBinding<CameraMatrices>(0, 0, default(Entity));
-            dropShadowMaterial.AddTextureBinding(1, 0, radialGradientTexture);
+            dropShadowMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
+            dropShadowMaterial.AddTextureBinding(new(1, 0), radialGradientTexture);
 
-            Font defaultFont = new(world, Address.Get<CascadiaMonoFont>());
+            Font defaultFont = new(world, EmbeddedResourceRegistry.Get<CascadiaMonoFont>());
 
-            rint quadMeshReference = entity.AddReference(quadMesh);
-            rint squareMaterialReference = entity.AddReference(squareMaterial);
-            rint triangleMaterialReference = entity.AddReference(triangleMaterial);
-            rint textMaterialReference = entity.AddReference(textMaterial);
-            rint dropShadowMaterialReference = entity.AddReference(dropShadowMaterial);
-            rint fontReference = entity.AddReference(defaultFont);
-            rint stateMachineReference = entity.AddReference(controlStateMachine);
-            rint idleAutomationReference = entity.AddReference(idleAutomation);
-            rint selectedAutomationReference = entity.AddReference(selectedAutomation);
-            rint pressedAutomationReference = entity.AddReference(pressedAutomation);
+            rint quadMeshReference = AddReference(quadMesh);
+            rint squareMaterialReference = AddReference(squareMaterial);
+            rint triangleMaterialReference = AddReference(triangleMaterial);
+            rint textMaterialReference = AddReference(textMaterial);
+            rint dropShadowMaterialReference = AddReference(dropShadowMaterial);
+            rint fontReference = AddReference(defaultFont);
+            rint stateMachineReference = AddReference(controlStateMachine);
+            rint idleAutomationReference = AddReference(idleAutomation);
+            rint selectedAutomationReference = AddReference(selectedAutomation);
+            rint pressedAutomationReference = AddReference(pressedAutomation);
 
             AssetReferences assetReferences = new();
             assetReferences.stateMachineReference = stateMachineReference;
@@ -231,62 +206,64 @@ namespace InteractionKit
             UISettings uiSettings = new();
             uiSettings.singleLineHeight = 24f;
 
-            entity.AddComponent(assetReferences);
-            entity.AddComponent(uiSettings);
-            entity.AddComponent(new TextEditState());
+            AddComponent(assetReferences);
+            AddComponent(uiSettings);
+            AddComponent(new TextEditState());
 
             MaterialSettings materialSettings = new(default, squareMaterialReference, triangleMaterialReference, textMaterialReference, dropShadowMaterialReference);
-            entity.CreateArray([materialSettings]);
+            CreateArray([materialSettings]);
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            entity.Dispose();
+            archetype.AddComponentType<AssetReferences>();
+            archetype.AddComponentType<UISettings>();
+            archetype.AddComponentType<TextEditState>();
+            archetype.AddArrayType<MaterialSettings>();
         }
 
         public readonly Material GetSquareMaterial(Camera camera)
         {
             MaterialSettings component = GetMaterialSettings(camera);
             rint squareMaterialReference = component.squareMaterialReference;
-            uint squareMaterialEntity = entity.GetReference(squareMaterialReference);
-            return new Entity(entity.GetWorld(), squareMaterialEntity).As<Material>();
+            uint squareMaterialEntity = GetReference(squareMaterialReference);
+            return new Entity(world, squareMaterialEntity).As<Material>();
         }
 
         public readonly Material GetTriangleMaterial(Camera camera)
         {
             MaterialSettings component = GetMaterialSettings(camera);
             rint triangleMaterialReference = component.triangleMaterialReference;
-            uint triangleMaterialEntity = entity.GetReference(triangleMaterialReference);
-            return new Entity(entity.GetWorld(), triangleMaterialEntity).As<Material>();
+            uint triangleMaterialEntity = GetReference(triangleMaterialReference);
+            return new Entity(world, triangleMaterialEntity).As<Material>();
         }
 
         public readonly Material GetTextMaterial(Camera camera)
         {
             MaterialSettings component = GetMaterialSettings(camera);
             rint textMaterialReference = component.textMaterialReference;
-            uint textMaterialEntity = entity.GetReference(textMaterialReference);
-            return new Entity(entity.GetWorld(), textMaterialEntity).As<Material>();
+            uint textMaterialEntity = GetReference(textMaterialReference);
+            return new Entity(world, textMaterialEntity).As<Material>();
         }
 
         public readonly Material GetDropShadowMaterial(Camera camera)
         {
             MaterialSettings component = GetMaterialSettings(camera);
             rint dropShadowMaterialReference = component.dropShadowMaterialReference;
-            uint dropShadowMaterialEntity = entity.GetReference(dropShadowMaterialReference);
-            return new Entity(entity.GetWorld(), dropShadowMaterialEntity).As<Material>();
+            uint dropShadowMaterialEntity = GetReference(dropShadowMaterialReference);
+            return new Entity(world, dropShadowMaterialEntity).As<Material>();
         }
 
         private readonly MaterialSettings GetMaterialSettings(Camera camera)
         {
-            World world = entity.GetWorld();
-            USpan<MaterialSettings> settings = entity.GetArray<MaterialSettings>();
+            USpan<MaterialSettings> settings = GetArray<MaterialSettings>();
             uint settingsCount = settings.Length;
             for (uint i = 1; i < settingsCount; i++)
             {
                 MaterialSettings materialSettings = settings[i];
                 rint cameraReference = materialSettings.cameraReference;
-                uint cameraEntity = entity.GetReference(cameraReference);
-                if (cameraEntity == camera.GetEntityValue())
+                uint cameraEntity = GetReference(cameraReference);
+                if (cameraEntity == camera.value)
                 {
                     return materialSettings;
                 }
@@ -297,31 +274,31 @@ namespace InteractionKit
             rint triangleMaterialReference = defaultSettings.triangleMaterialReference;
             rint textMaterialReference = defaultSettings.textMaterialReference;
             rint dropShadowMaterialReference = defaultSettings.dropShadowMaterialReference;
-            uint squareMaterialEntity = entity.GetReference(squareMaterialReference);
-            uint triangleMaterialEntity = entity.GetReference(triangleMaterialReference);
-            uint textMaterialEntity = entity.GetReference(textMaterialReference);
-            uint dropShadowMaterialEntity = entity.GetReference(dropShadowMaterialReference);
-            Material squareMaterial = new(world, squareMaterialEntity);
-            Material triangleMaterial = new(world, triangleMaterialEntity);
-            Material textMaterial = new(world, textMaterialEntity);
-            Material dropShadowMaterial = new(world, dropShadowMaterialEntity);
+            uint squareMaterialEntity = GetReference(squareMaterialReference);
+            uint triangleMaterialEntity = GetReference(triangleMaterialReference);
+            uint textMaterialEntity = GetReference(textMaterialReference);
+            uint dropShadowMaterialEntity = GetReference(dropShadowMaterialReference);
+            Material squareMaterial = new Entity(world, squareMaterialEntity).As<Material>();
+            Material triangleMaterial = new Entity(world, triangleMaterialEntity).As<Material>();
+            Material textMaterial = new Entity(world, textMaterialEntity).As<Material>();
+            Material dropShadowMaterial = new Entity(world, dropShadowMaterialEntity).As<Material>();
             //todo: why exactly are these being cloned? its wasteful isnt it?
             //i guess its because it will be different cameras
             squareMaterial = squareMaterial.Clone();
             triangleMaterial = triangleMaterial.Clone();
             textMaterial = textMaterial.Clone();
             dropShadowMaterial = dropShadowMaterial.Clone();
-            squareMaterial.SetComponentBinding<CameraMatrices>(0, 0, camera);
-            triangleMaterial.SetComponentBinding<CameraMatrices>(0, 0, camera);
-            textMaterial.SetComponentBinding<CameraMatrices>(1, 0, camera);
-            dropShadowMaterial.SetComponentBinding<CameraMatrices>(0, 0, camera);
+            squareMaterial.SetComponentBinding<CameraMatrices>(new(0, 0), camera);
+            triangleMaterial.SetComponentBinding<CameraMatrices>(new(0, 0), camera);
+            textMaterial.SetComponentBinding<CameraMatrices>(new(1, 0), camera);
+            dropShadowMaterial.SetComponentBinding<CameraMatrices>(new(0, 0), camera);
             MaterialSettings newSettings = defaultSettings;
-            newSettings.cameraReference = entity.AddReference(camera);
-            newSettings.squareMaterialReference = entity.AddReference(squareMaterial);
-            newSettings.triangleMaterialReference = entity.AddReference(triangleMaterial);
-            newSettings.textMaterialReference = entity.AddReference(textMaterial);
-            newSettings.dropShadowMaterialReference = entity.AddReference(dropShadowMaterial);
-            settings = entity.ResizeArray<MaterialSettings>(settingsCount + 1);
+            newSettings.cameraReference = AddReference(camera);
+            newSettings.squareMaterialReference = AddReference(squareMaterial);
+            newSettings.triangleMaterialReference = AddReference(triangleMaterial);
+            newSettings.textMaterialReference = AddReference(textMaterial);
+            newSettings.dropShadowMaterialReference = AddReference(dropShadowMaterial);
+            settings = ResizeArray<MaterialSettings>(settingsCount + 1);
             settings[settingsCount] = newSettings;
             return newSettings;
         }
@@ -331,7 +308,7 @@ namespace InteractionKit
         {
             if (world.TryGetFirst<Settings>(out _))
             {
-                throw new InvalidOperationException($"An entity with `{nameof(Settings)}` already exists in world, only 1 is permitted");
+                throw new InvalidOperationException($"A `{nameof(Settings)}` entity already exists in world, only 1 is permitted");
             }
         }
 
@@ -340,13 +317,8 @@ namespace InteractionKit
         {
             if (!world.TryGetFirst<Settings>(out _))
             {
-                throw new InvalidOperationException($"An entity with `{nameof(Settings)}` component is missing from the world");
+                throw new InvalidOperationException($"A `{nameof(Settings)}` entity is missing from the world");
             }
-        }
-
-        public static implicit operator Entity(Settings settings)
-        {
-            return settings.entity;
         }
     }
 }

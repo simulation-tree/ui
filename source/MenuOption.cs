@@ -1,8 +1,8 @@
-﻿using InteractionKit.Components;
+﻿using UI.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
     public readonly struct MenuOption
     {
@@ -26,8 +26,8 @@ namespace InteractionKit
         {
             uint length = 0;
             byte depth = optionPath.Depth;
-            uint entity = rootMenu.GetEntityValue();
-            World world = rootMenu.GetWorld();
+            uint entity = rootMenu.value;
+            World world = rootMenu.world;
             for (byte d = 0; d < depth; d++)
             {
                 uint optionIndex = optionPath[d];

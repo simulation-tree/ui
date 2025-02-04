@@ -1,14 +1,13 @@
 ﻿using Collections;
-using InteractionKit.Components;
-using InteractionKit.Functions;
+using UI.Components;
+using UI.Functions;
 using Rendering.Components;
 using Simulation;
 using System;
-using System.Diagnostics;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct LabelTextSystem : ISystem
     {
@@ -76,7 +75,7 @@ namespace InteractionKit.Systems
                     if (lengthChanged || !targetText.SequenceEqual(result.AsSpan()))
                     {
                         ref IsTextMeshRequest request = ref world.GetComponent<IsTextMeshRequest>(textMeshEntity);
-                        request.version++;
+                        request.loaded = false;
                         result.CopyTo(targetText);
                     }
                 }

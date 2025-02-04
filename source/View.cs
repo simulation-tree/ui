@@ -1,20 +1,18 @@
-﻿using InteractionKit.Components;
+﻿using UI.Components;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct View : IEntity
+    public readonly partial struct View : IEntity
     {
-        private readonly Transform transform;
-
         public unsafe readonly ref Vector2 ViewPosition
         {
             get
             {
-                ref Vector3 localPosition = ref transform.LocalPosition;
+                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
                 fixed (Vector3* pLocalPosition = &localPosition)
                 {
                     return ref *(Vector2*)pLocalPosition;
@@ -26,7 +24,7 @@ namespace InteractionKit
         {
             get
             {
-                ref Vector3 localScale = ref transform.LocalScale;
+                ref Vector3 localScale = ref As<Transform>().LocalScale;
                 fixed (Vector3* pLocalScale = &localScale)
                 {
                     return ref *(Vector2*)pLocalScale;
@@ -38,9 +36,9 @@ namespace InteractionKit
         {
             get
             {
-                rint contentReference = transform.AsEntity().GetComponent<IsView>().contentReference;
-                uint contentEntity = transform.GetReference(contentReference);
-                return new(transform.GetWorld(), contentEntity);
+                rint contentReference = GetComponent<IsView>().contentReference;
+                uint contentEntity = GetReference(contentReference);
+                return new Entity(world, contentEntity).As<Transform>();
             }
         }
 
@@ -70,67 +68,58 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
+        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
 
-        readonly uint IEntity.Value => transform.GetEntityValue();
-        readonly World IEntity.World => transform.GetWorld();
+        public View(World world, Canvas canvas)
+        {
+            this.world = world;
+            Transform transform = new(world);
+            value = transform.value;
+            transform.LocalPosition = new(0f, 0f, Settings.ZScale);
+
+            SetParent(canvas);
+            AddComponent(new Anchor());
+            AddComponent(new Pivot());
+
+            Transform content = new(world);
+            content.SetParent(transform);
+            content.AddComponent(new Anchor());
+
+            rint contentReference = transform.AddReference(content);
+            AddComponent(new IsView(contentReference));
+        }
 
         readonly void IEntity.Describe(ref Archetype archetype)
         {
             archetype.AddComponentType<IsView>();
         }
 
-        public View(World world, Canvas canvas)
-        {
-            transform = new Transform(world);
-            transform.LocalPosition = new(0f, 0f, Settings.ZScale);
-            transform.SetParent(canvas);
-            transform.AddComponent(new Anchor());
-            transform.AddComponent(new Pivot());
-
-            Transform content = new(world);
-            content.SetParent(transform);
-            content.AddComponent(new Anchor());
-            rint contentReference = transform.AddReference(content);
-            transform.AddComponent(new IsView(contentReference));
-        }
-
-        public readonly void Dispose()
-        {
-            transform.Dispose();
-        }
-
         public readonly void SetScrollBar(ScrollBar scrollBar)
         {
-            ref ViewScrollBarLink link = ref transform.AsEntity().TryGetComponent<ViewScrollBarLink>(out bool contains);
+            ref ViewScrollBarLink link = ref TryGetComponent<ViewScrollBarLink>(out bool contains);
             if (!contains)
             {
-                rint scrollBarReference = transform.AddReference(scrollBar);
-                transform.AddComponent(new ViewScrollBarLink(scrollBarReference));
+                rint scrollBarReference = AddReference(scrollBar);
+                AddComponent(new ViewScrollBarLink(scrollBarReference));
             }
             else
             {
                 if (link.scrollBarReference != default)
                 {
-                    transform.SetReference(link.scrollBarReference, scrollBar);
+                    SetReference(link.scrollBarReference, scrollBar);
                 }
                 else
                 {
-                    rint scrollBarReference = transform.AddReference(scrollBar);
+                    rint scrollBarReference = AddReference(scrollBar);
                     link.scrollBarReference = scrollBarReference;
                 }
             }
         }
 
-        public static implicit operator Entity(View view)
-        {
-            return view.transform;
-        }
-
         public static implicit operator Transform(View view)
         {
-            return view.transform;
+            return view.As<Transform>();
         }
     }
 }

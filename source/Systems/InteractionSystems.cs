@@ -2,7 +2,7 @@
 using System;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct InteractionSystems : ISystem
     {

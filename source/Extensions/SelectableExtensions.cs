@@ -1,13 +1,13 @@
 ﻿using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
     public static class SelectableExtensions
     {
         public static bool IsSelected<T>(this T selectable, Pointer pointer) where T : unmanaged, ISelectable
         {
             Entity currentlySelected = pointer.HoveringOver;
-            return selectable.Value == currentlySelected.value;
+            return selectable.GetEntityValue() == currentlySelected.value;
         }
     }
 }

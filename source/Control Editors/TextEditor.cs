@@ -1,10 +1,11 @@
-﻿using InteractionKit.Functions;
-using Rendering.Components;
+﻿using Rendering.Components;
 using System.Runtime.InteropServices;
+using UI.Components;
+using UI.Functions;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.ControlEditors
+namespace UI.ControlEditors
 {
     public unsafe readonly struct TextEditor : IControlEditor
     {
@@ -24,9 +25,9 @@ namespace InteractionKit.ControlEditors
             textField.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1);
             textField.TextColor = new(1, 1, 1, 1);
 
-            Schema schema = canvas.GetWorld().Schema;
+            Schema schema = canvas.world.Schema;
             Entity target = input.Target;
-            if (input.isComponentType)
+            if (input.dataType.IsComponent)
             {
                 ComponentType componentType = input.ComponentType;
                 if (componentType == schema.GetComponent<FixedString>())
@@ -40,6 +41,10 @@ namespace InteractionKit.ControlEditors
                 if (arrayElementType == schema.GetArrayElement<char>())
                 {
                     textField.SetText(target.GetArray<char>());
+                }
+                else if (arrayElementType == schema.GetArrayElement<LabelCharacter>())
+                {
+                    textField.SetText(target.GetArray<LabelCharacter>().As<char>());
                 }
             }
 

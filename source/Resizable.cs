@@ -1,23 +1,18 @@
-﻿using InteractionKit.Components;
+﻿using UI.Components;
 using Rendering;
 using System.Numerics;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct Resizable : IEntity
+    public readonly partial struct Resizable : IEntity
     {
         private const float PositiveDistance = 12f;
         private const float NegativeDistance = -2f;
 
-        private readonly Entity entity;
-
-        public readonly ref IsResizable.Boundary Boundary => ref entity.GetComponent<IsResizable>().resize;
-        public readonly ref LayerMask SelectionMask => ref entity.GetComponent<IsResizable>().selectionMask;
-
-        readonly uint IEntity.Value => entity.GetEntityValue();
-        readonly World IEntity.World => entity.GetWorld();
+        public readonly ref IsResizable.Boundary Boundary => ref GetComponent<IsResizable>().resize;
+        public readonly ref LayerMask SelectionMask => ref GetComponent<IsResizable>().selectionMask;
 
         readonly void IEntity.Describe(ref Archetype archetype)
         {
@@ -25,22 +20,12 @@ namespace InteractionKit
             archetype.AddComponentType<LocalToWorld>();
         }
 
-        public Resizable(World world, uint existingEntity)
-        {
-            entity = new Entity(world, existingEntity);
-        }
-
-        public readonly void Dispose()
-        {
-            entity.Dispose();
-        }
-
         public readonly IsResizable.Boundary GetBoundary(Vector2 pointerPosition)
         {
-            LocalToWorld ltw = entity.GetComponent<LocalToWorld>();
+            LocalToWorld ltw = GetComponent<LocalToWorld>();
             Vector3 position = ltw.Position;
             Vector3 scale = ltw.Scale;
-            ref WorldRotation worldRotationComponent = ref entity.TryGetComponent<WorldRotation>(out bool hasWorldRotation);
+            ref WorldRotation worldRotationComponent = ref TryGetComponent<WorldRotation>(out bool hasWorldRotation);
             if (hasWorldRotation)
             {
                 scale = Vector3.Transform(scale, worldRotationComponent.value);
@@ -95,11 +80,6 @@ namespace InteractionKit
             }
 
             return boundary;
-        }
-
-        public static implicit operator Entity(Resizable resizable)
-        {
-            return resizable.entity;
         }
     }
 }

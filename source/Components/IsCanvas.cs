@@ -2,7 +2,7 @@
 using System;
 using Worlds;
 
-namespace InteractionKit.Components
+namespace UI.Components
 {
     [Component]
     public struct IsCanvas

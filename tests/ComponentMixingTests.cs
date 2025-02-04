@@ -1,11 +1,11 @@
-﻿using InteractionKit.Components;
+﻿using UI.Components;
 using System;
 using System.Numerics;
 using Worlds;
 
-namespace InteractionKit.Tests
+namespace UI.Tests
 {
-    public class ComponentMixingTests : InteractionKitTests
+    public class ComponentMixingTests : UITests
     {
         [Test]
         public void IntegerAddition()

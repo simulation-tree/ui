@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Unmanaged;
 
-namespace InteractionKit
+namespace UI
 {
     public unsafe struct PressedCharacters : IEquatable<PressedCharacters>
     {

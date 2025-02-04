@@ -1,11 +1,11 @@
-﻿using InteractionKit.Components;
+﻿using UI.Components;
 using Simulation;
 using System;
 using System.Numerics;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct UpdateDropShadowTransformSystem : ISystem
     {

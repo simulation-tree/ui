@@ -1,9 +1,9 @@
-﻿using InteractionKit.Functions;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Transforms.Components;
+using UI.Functions;
 using Worlds;
 
-namespace InteractionKit.ControlEditors
+namespace UI.ControlEditors
 {
     public unsafe readonly struct BooleanEditor : IControlEditor
     {
@@ -31,7 +31,7 @@ namespace InteractionKit.ControlEditors
         [UnmanagedCallersOnly]
         private static void BooleanToggled(Toggle toggle, Boolean newValue)
         {
-            ControlField controlField = toggle.GetParent().As<ControlField>();
+            ControlField controlField = toggle.Parent.As<ControlField>();
             Entity target = controlField.Target;
             target.SetComponent<bool>(newValue);
         }

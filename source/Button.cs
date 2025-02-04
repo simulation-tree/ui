@@ -1,52 +1,36 @@
-﻿using InteractionKit.Components;
-using InteractionKit.Functions;
-using System;
+﻿using UI.Components;
+using UI.Functions;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct Button : IEntity, ISelectable
+    public readonly partial struct Button : IEntity, ISelectable
     {
-        private readonly Image image;
+        public readonly ref Vector2 Position => ref As<Image>().Position;
+        public readonly ref Vector2 Size => ref As<Image>().Size;
+        public readonly ref float Z => ref As<Image>().Z;
+        public readonly ref Anchor Anchor => ref As<Image>().Anchor;
+        public readonly ref Vector3 Pivot => ref As<Image>().Pivot;
+        public readonly ref Vector4 Color => ref As<Image>().Color;
 
-        public readonly ref Vector2 Position => ref image.Position;
-        public readonly ref Vector2 Size => ref image.Size;
-        public readonly ref float Z => ref image.Z;
-        public readonly ref Anchor Anchor => ref image.Anchor;
-        public readonly ref Vector3 Pivot => ref image.Pivot;
-        public readonly ref Vector4 Color => ref image.Color;
+        public unsafe Button(TriggerCallback callback, Canvas canvas)
+        {
+            world = canvas.world;
+            Image image = new(canvas);
+            value = image.value;
 
-        readonly uint IEntity.Value => image.GetEntityValue();
-        readonly World IEntity.World => image.GetWorld();
+            image.AddComponent(new IsTrigger(new(&Filter), callback));
+            image.AddComponent(new IsSelectable(canvas.SelectionMask));
+        }
 
         readonly void IEntity.Describe(ref Archetype archetype)
         {
             archetype.AddComponentType<IsTrigger>();
             archetype.AddComponentType<IsSelectable>();
-        }
-
-#if NET
-        [Obsolete("Default constructor not available", true)]
-        public Button()
-        {
-            throw new NotSupportedException();
-        }
-#endif
-
-        public unsafe Button(TriggerCallback callback, Canvas canvas)
-        {
-            image = new(canvas);
-            image.AddComponent(new IsTrigger(new(&Filter), callback));
-            image.AddComponent(new IsSelectable(canvas.SelectionMask));
-        }
-
-        public readonly void Dispose()
-        {
-            image.Dispose();
         }
 
         [UnmanagedCallersOnly]
@@ -63,19 +47,14 @@ namespace InteractionKit
             }
         }
 
-        public static implicit operator Entity(Button button)
-        {
-            return button.AsEntity();
-        }
-
         public static implicit operator Image(Button button)
         {
-            return button.image;
+            return button.As<Image>();
         }
 
         public static implicit operator Transform(Button button)
         {
-            return button.image;
+            return button.As<Transform>();
         }
     }
 }

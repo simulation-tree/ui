@@ -1,5 +1,5 @@
 ﻿using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Rendering;
 using Simulation;
 using System;
@@ -7,7 +7,7 @@ using System.Numerics;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public partial struct ResizingSystem : ISystem
     {
@@ -57,7 +57,7 @@ namespace InteractionKit.Systems
                 resizableQuery.ExcludeDisabled(true);
                 foreach (var r in resizableQuery)
                 {
-                    Resizable resizable = new(world, r.entity);
+                    Resizable resizable = new Entity(world, r.entity).As<Resizable>();
                     LayerMask resizableMask = r.component1.selectionMask;
                     foreach (var p in pointerQuery)
                     {
@@ -73,7 +73,7 @@ namespace InteractionKit.Systems
                                 {
                                     resizingEntity = resizable;
                                     resizeBoundary = boundary;
-                                    activePointer = new(world, p.entity);
+                                    activePointer = new Entity(world, p.entity).As<Pointer>();
                                     lastPointerPosition = pointerPosition;
                                     break;
                                 }

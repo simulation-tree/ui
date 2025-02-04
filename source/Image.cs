@@ -1,25 +1,24 @@
 ﻿using Automations;
-using InteractionKit.Components;
+using Materials;
+using Materials.Components;
 using Rendering;
 using Rendering.Components;
-using System;
 using System.Numerics;
 using Textures;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct Image : IRenderer, ITransform
+    public readonly partial struct Image : IEntity
     {
-        private readonly Transform transform;
-
         public unsafe readonly ref Vector2 Position
         {
             get
             {
-                ref Vector3 localPosition = ref transform.LocalPosition;
+                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
                 fixed (Vector3* positionPointer = &localPosition)
                 {
                     return ref *(Vector2*)positionPointer;
@@ -27,20 +26,13 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref float Z
-        {
-            get
-            {
-                ref Vector3 localPosition = ref transform.LocalPosition;
-                return ref localPosition.Z;
-            }
-        }
+        public readonly ref float Z => ref As<Transform>().LocalPosition.Z;
 
         public unsafe readonly ref Vector2 Size
         {
             get
             {
-                ref Vector3 localScale = ref transform.LocalScale;
+                ref Vector3 localScale = ref As<Transform>().LocalScale;
                 fixed (Vector3* sizePointer = &localScale)
                 {
                     return ref *(Vector2*)sizePointer;
@@ -52,85 +44,50 @@ namespace InteractionKit
         {
             get
             {
-                Quaternion rotation = transform.LocalRotation;
+                Quaternion rotation = As<Transform>().LocalRotation;
                 return new EulerAngles(rotation).value.Z;
             }
             set
             {
-                ref Quaternion rotation = ref transform.LocalRotation;
+                ref Quaternion rotation = ref As<Transform>().LocalRotation;
                 rotation = Quaternion.CreateFromYawPitchRoll(0f, 0f, value);
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
-        public readonly ref Vector4 Color => ref transform.AsEntity().GetComponent<BaseColor>().value;
+        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Vector4 Color => ref GetComponent<BaseColor>().value;
 
         public readonly Material Material
         {
-            get
-            {
-                rint materialReference = transform.AsEntity().GetComponent<IsRenderer>().materialReference;
-                uint materialEntity = transform.GetReference(materialReference);
-                return new(transform.GetWorld(), materialEntity);
-            }
-            set
-            {
-                ref IsRenderer renderer = ref transform.AsEntity().GetComponent<IsRenderer>();
-                if (renderer.materialReference != default)
-                {
-                    transform.SetReference(renderer.materialReference, value.GetEntityValue());
-                }
-                else
-                {
-                    renderer.materialReference = transform.AddReference(value.GetEntityValue());
-                }
-            }
+            get => As<MeshRenderer>().Material;
+            set => As<MeshRenderer>().Material = value;
         }
 
         public readonly Texture Texture
         {
             get
             {
-                MaterialTextureBinding binding = Material.GetTextureBindingRef(1, 0);
-                uint textureEntity = binding.TextureEntity;
-                return new(transform.GetWorld(), textureEntity);
+                DescriptorResourceKey key = new(1, 0);
+                TextureBinding binding = Material.GetTextureBinding(key);
+                uint textureEntity = binding.Entity;
+                return new Entity(world, textureEntity).As<Texture>();
             }
             set
             {
-                ref MaterialTextureBinding binding = ref Material.GetTextureBindingRef(1, 0);
+                DescriptorResourceKey key = new(1, 0);
+                ref TextureBinding binding = ref Material.GetTextureBinding(key);
                 binding.SetTexture(value);
             }
         }
 
-        readonly uint IEntity.Value => transform.GetEntityValue();
-        readonly World IEntity.World => transform.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsRenderer>();
-            archetype.AddTagType<IsTransform>();
-        }
-
-#if NET
-        [Obsolete("Default constructor not available", true)]
-        public Image()
-        {
-            throw new NotSupportedException();
-        }
-#endif
-        public Image(World world, uint existingEntity)
-        {
-            transform = new(world, existingEntity);
-        }
-
         public Image(Canvas canvas)
         {
-            World world = canvas.GetWorld();
+            world = canvas.world;
             Settings settings = canvas.Settings;
             Schema schema = world.Schema;
 
-            transform = new(world);
+            Transform transform = new(world);
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
@@ -139,6 +96,7 @@ namespace InteractionKit
             transform.AddComponent(new Color(new Vector4(1f)));
             transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4, schema));
             transform.SetParent(canvas);
+            value = transform.value;
 
             StatefulAutomationPlayer stateful = transform.AsEntity().Become<StatefulAutomationPlayer>();
             stateful.StateMachine = settings.ControlStateMachine;
@@ -154,24 +112,20 @@ namespace InteractionKit
             renderer.RenderMask = canvas.RenderMask;
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            transform.Dispose();
-        }
-
-        public static implicit operator Entity(Image box)
-        {
-            return box.AsEntity();
+            archetype.AddComponentType<IsRenderer>();
+            archetype.AddTagType<IsTransform>();
         }
 
         public static implicit operator Transform(Image box)
         {
-            return box.transform;
+            return box.As<Transform>();
         }
 
         public static implicit operator MeshRenderer(Image box)
         {
-            return box.AsEntity().As<MeshRenderer>();
+            return box.As<MeshRenderer>();
         }
     }
 }

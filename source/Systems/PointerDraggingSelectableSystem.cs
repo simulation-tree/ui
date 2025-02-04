@@ -1,12 +1,12 @@
 ﻿using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Simulation;
 using System;
 using System.Numerics;
 using Transforms.Components;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public partial struct PointerDraggingSelectableSystem : ISystem
     {
@@ -102,7 +102,7 @@ namespace InteractionKit.Systems
                 }
             }
 
-            if (dragTarget != default && world.ContainsEntity(dragTarget))
+            if (dragTarget != default && !dragTarget.IsDestroyed)
             {
                 Vector2 position = dragPointer.GetComponent<IsPointer>().position;
                 Vector2 pointerDelta = position - lastPosition;

@@ -1,4 +1,4 @@
-﻿namespace InteractionKit
+﻿namespace UI
 {
     public readonly struct Boolean : System.IEquatable<Boolean>
     {

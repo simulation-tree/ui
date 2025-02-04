@@ -1,8 +1,8 @@
-﻿using InteractionKit.Components;
+﻿using UI.Components;
 using System;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
     public static class EntityExtensions
     {

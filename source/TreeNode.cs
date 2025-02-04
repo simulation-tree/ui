@@ -1,5 +1,5 @@
-﻿using InteractionKit.Components;
-using InteractionKit.Functions;
+﻿using UI.Components;
+using UI.Functions;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -8,17 +8,15 @@ using Transforms.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct TreeNode : IEntity
+    public readonly partial struct TreeNode : IEntity
     {
-        private readonly Transform transform;
-
         public unsafe readonly ref Vector2 Position
         {
             get
             {
-                ref Vector3 localPosition = ref transform.LocalPosition;
+                ref Vector3 localPosition = ref As<Transform>().LocalPosition;
                 fixed (Vector3* pLocalPosition = &localPosition)
                 {
                     return ref *(Vector2*)pLocalPosition;
@@ -30,7 +28,7 @@ namespace InteractionKit
         {
             get
             {
-                ref Vector3 localScale = ref transform.LocalScale;
+                ref Vector3 localScale = ref As<Transform>().LocalScale;
                 fixed (Vector3* pLocalScale = &localScale)
                 {
                     return ref *(Vector2*)pLocalScale;
@@ -38,16 +36,16 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref transform.AsEntity().GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref transform.AsEntity().GetComponent<Pivot>().value;
-        public readonly USpan<TreeNodeOption> Nodes => transform.AsEntity().GetArray<TreeNodeOption>();
+        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>();
 
         public readonly Label Label
         {
             get
             {
-                uint labelEntity = transform.GetReference(transform.AsEntity().GetComponent<IsTreeNode>().labelReference);
-                return new Entity(transform.GetWorld(), labelEntity).As<Label>();
+                uint labelEntity = GetReference(GetComponent<IsTreeNode>().labelReference);
+                return new Entity(world, labelEntity).As<Label>();
             }
         }
 
@@ -55,32 +53,20 @@ namespace InteractionKit
         {
             get
             {
-                rint boxReference = transform.AsEntity().GetComponent<IsTreeNode>().boxReference;
-                uint boxEntity = transform.GetReference(boxReference);
-                return ref new Entity(transform.GetWorld(), boxEntity).As<Image>().Color;
+                rint boxReference = GetComponent<IsTreeNode>().boxReference;
+                uint boxEntity = GetReference(boxReference);
+                return ref new Entity(world, boxEntity).As<Image>().Color;
             }
         }
 
-        public readonly bool IsExpanded => transform.AsEntity().GetComponent<IsTreeNode>().expanded;
-
-        readonly uint IEntity.Value => transform.GetEntityValue();
-        readonly World IEntity.World => transform.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsTreeNode>();
-            archetype.AddArrayElementType<TreeNodeOption>();
-        }
-
-        public TreeNode(World world, uint existingEntity)
-        {
-            transform = new Entity(world, existingEntity).As<Label>();
-        }
+        public readonly bool IsExpanded => GetComponent<IsTreeNode>().expanded;
 
         public unsafe TreeNode(FixedString text, Canvas canvas)
         {
-            World world = canvas.GetWorld();
-            transform = new(world);
+            world = canvas.world;
+            Transform transform = new(world);
+            value = transform.value;
+
             transform.AddComponent(new Anchor());
 
             Image box = new(canvas);
@@ -104,9 +90,10 @@ namespace InteractionKit
             transform.AsEntity().CreateArray<TreeNodeOption>();
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            transform.Dispose();
+            archetype.AddComponentType<IsTreeNode>();
+            archetype.AddArrayType<TreeNodeOption>();
         }
 
         public override string ToString()
@@ -123,17 +110,16 @@ namespace InteractionKit
 
         public unsafe readonly TreeNode AddLeaf(FixedString text)
         {
-            World world = transform.GetWorld();
             Vector2 size = Size;
             Canvas canvas = this.GetCanvas();
             Settings settings = canvas.Settings;
-            uint nodeCount = transform.AsEntity().GetArrayLength<TreeNodeOption>();
+            uint nodeCount = GetArrayLength<TreeNodeOption>();
             if (nodeCount == 0)
             {
                 //the button that toggles expanded state
                 float triangleButtonSize = 16f;
                 Button triangle = new(new(&ToggleExpanded), canvas);
-                triangle.SetParent(transform);
+                triangle.SetParent(value);
                 triangle.Anchor = Anchor.TopLeft;
                 triangle.Size = new(triangleButtonSize, triangleButtonSize);
                 triangle.Color = new(0, 0, 0, 1);
@@ -147,13 +133,13 @@ namespace InteractionKit
             }
 
             TreeNode node = new(text, canvas);
-            node.SetParent(transform);
+            node.SetParent(value);
             node.Position = new(30, -(nodeCount + 1) * size.Y);
             node.Size = size;
-            node.SetEnabled(false);
+            node.IsEnabled = false;
 
-            rint childNodeReference = transform.AddReference(node);
-            USpan<TreeNodeOption> nodes = transform.AsEntity().ResizeArray<TreeNodeOption>(nodeCount + 1);
+            rint childNodeReference = AddReference(node);
+            USpan<TreeNodeOption> nodes = ResizeArray<TreeNodeOption>(nodeCount + 1);
             nodes[nodeCount] = new(childNodeReference);
             return node;
         }
@@ -166,8 +152,8 @@ namespace InteractionKit
             for (uint i = 0; i < nodes.Length; i++)
             {
                 rint nodeReference = nodes[i].childNodeReference;
-                uint nodeEntity = transform.GetReference(nodeReference);
-                TreeNode node = new Entity(transform.GetWorld(), nodeEntity).As<TreeNode>();
+                uint nodeEntity = GetReference(nodeReference);
+                TreeNode node = new Entity(world, nodeEntity).As<TreeNode>();
                 node.Position = new(30, -y);
                 if (node.IsExpanded)
                 {
@@ -189,9 +175,9 @@ namespace InteractionKit
             for (uint i = 0; i < nodes.Length; i++)
             {
                 rint nodeReference = nodes[i].childNodeReference;
-                uint nodeEntity = transform.GetReference(nodeReference);
-                TreeNode node = new Entity(transform.GetWorld(), nodeEntity).As<TreeNode>();
-                node.SetEnabled(expanded);
+                uint nodeEntity = GetReference(nodeReference);
+                TreeNode node = new Entity(world, nodeEntity).As<TreeNode>();
+                node.IsEnabled = expanded;
                 if (node.IsExpanded)
                 {
                     node.UpdateChildEnabledStates();
@@ -215,18 +201,18 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void ToggleSelected(Entity boxEntity)
         {
-            World world = boxEntity.GetWorld();
-            Entity nodeEntity = boxEntity.GetParent();
-            uint parentEntity = nodeEntity.GetParent();
-            while (parentEntity != default)
+            World world = boxEntity.world;
+            Entity nodeEntity = boxEntity.Parent;
+            Entity current = nodeEntity.Parent;
+            while (current != default)
             {
-                if (world.ContainsComponent<IsTree>(parentEntity))
+                if (current.ContainsComponent<IsTree>())
                 {
                     break;
                 }
-                else if (world.ContainsComponent<IsTreeNode>(parentEntity))
+                else if (current.ContainsComponent<IsTreeNode>())
                 {
-                    parentEntity = world.GetParent(parentEntity);
+                    current = current.Parent;
                 }
                 else
                 {
@@ -234,7 +220,7 @@ namespace InteractionKit
                 }
             }
 
-            Tree tree = new Entity(world, parentEntity).As<Tree>();
+            Tree tree = current.As<Tree>();
             Settings settings = world.GetFirst<Settings>();
             bool selectMultiple = settings.PressedCharacters.Contains(Settings.ShiftCharacter);
             if (!selectMultiple)
@@ -250,7 +236,7 @@ namespace InteractionKit
                     selectedNode.Label.Color = new(0, 0, 0, 1);
                 }
 
-                tree.AsEntity().ResizeArray<SelectedLeaf>(0);
+                tree.ResizeArray<SelectedLeaf>(0);
             }
 
             TreeNode node = nodeEntity.As<TreeNode>();
@@ -261,7 +247,7 @@ namespace InteractionKit
         [UnmanagedCallersOnly]
         private static void ToggleExpanded(Entity expandButtonEntity)
         {
-            Entity treeNodeEntity = expandButtonEntity.GetParent();
+            Entity treeNodeEntity = expandButtonEntity.Parent;
             ref IsTreeNode component = ref treeNodeEntity.GetComponent<IsTreeNode>();
             component.expanded = !component.expanded;
             TreeNode treeNode = treeNodeEntity.As<TreeNode>();
@@ -280,30 +266,30 @@ namespace InteractionKit
             }
 
             //set enable state of children
-            World world = expandButtonEntity.GetWorld();
+            World world = expandButtonEntity.world;
             USpan<TreeNodeOption> nodes = treeNode.Nodes;
             for (uint i = 0; i < nodes.Length; i++)
             {
                 rint nodeReference = nodes[i].childNodeReference;
                 uint nodeEntity = treeNode.GetReference(nodeReference);
                 TreeNode node = new Entity(world, nodeEntity).As<TreeNode>();
-                node.SetEnabled(component.expanded);
+                node.IsEnabled = component.expanded;
                 node.UpdateChildEnabledStates();
             }
 
             //ask parent trees to update their positions
-            uint parentEntity = treeNodeEntity.GetParent();
-            while (parentEntity != default)
+            Entity current = treeNodeEntity.Parent;
+            while (current != default)
             {
-                if (world.ContainsComponent<IsTree>(parentEntity))
+                if (current.ContainsComponent<IsTree>())
                 {
-                    Tree tree = new Entity(world, parentEntity).As<Tree>();
+                    Tree tree = current.As<Tree>();
                     tree.UpdatePositions();
                     break;
                 }
-                else if (world.ContainsComponent<IsTreeNode>(parentEntity))
+                else if (current.ContainsComponent<IsTreeNode>())
                 {
-                    parentEntity = world.GetParent(parentEntity);
+                    current = current.Parent;
                 }
                 else
                 {
@@ -312,14 +298,9 @@ namespace InteractionKit
             }
         }
 
-        public static implicit operator Entity(TreeNode node)
-        {
-            return node.transform;
-        }
-
         public static implicit operator Transform(TreeNode node)
         {
-            return node.transform;
+            return node.As<Transform>();
         }
     }
 }

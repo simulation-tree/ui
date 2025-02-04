@@ -1,7 +1,7 @@
 ﻿using Unmanaged;
 using Worlds;
 
-namespace InteractionKit.Functions
+namespace UI.Functions
 {
     public unsafe readonly struct TriggerFilter
     {

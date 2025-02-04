@@ -1,8 +1,8 @@
-﻿using InteractionKit.Functions;
+﻿using UI.Functions;
 using Transforms;
 using Unmanaged;
 
-namespace InteractionKit
+namespace UI
 {
     public interface IVirtualWindow
     {

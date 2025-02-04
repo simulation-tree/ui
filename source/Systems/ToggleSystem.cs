@@ -1,10 +1,10 @@
 ﻿using Collections;
-using InteractionKit.Components;
+using UI.Components;
 using Simulation;
 using System;
 using Worlds;
 
-namespace InteractionKit.Systems
+namespace UI.Systems
 {
     public readonly partial struct ToggleSystem : ISystem
     {
@@ -63,16 +63,17 @@ namespace InteractionKit.Systems
                             uint selectedEntity = world.GetReference(entity, hoveringOverReference);
                             if (toggleEntities.Contains(selectedEntity))
                             {
-                                ref IsToggle toggle = ref world.GetComponent<IsToggle>(selectedEntity);
-                                toggle.value = !toggle.value;
+                                ref IsToggle component = ref world.GetComponent<IsToggle>(selectedEntity);
+                                component.value = !component.value;
 
-                                rint checkmarkReference = toggle.checkmarkReference;
+                                rint checkmarkReference = component.checkmarkReference;
                                 uint checkmarkEntity = world.GetReference(selectedEntity, checkmarkReference);
-                                world.SetEnabled(checkmarkEntity, toggle.value);
+                                world.SetEnabled(checkmarkEntity, component.value);
 
-                                if (toggle.callback != default)
+                                if (component.callback != default)
                                 {
-                                    toggle.callback.Invoke(new(world, selectedEntity), toggle.value);
+                                    Toggle toggle = new Entity(world, selectedEntity).As<Toggle>();
+                                    component.callback.Invoke(toggle, component.value);
                                 }
                             }
                         }

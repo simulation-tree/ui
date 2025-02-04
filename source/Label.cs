@@ -1,6 +1,5 @@
 ﻿using Cameras;
 using Fonts;
-using InteractionKit.Components;
 using Rendering;
 using Rendering.Components;
 using System;
@@ -8,22 +7,21 @@ using System.Collections.Generic;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
 using Unmanaged;
 using Worlds;
 
-namespace InteractionKit
+namespace UI
 {
-    public readonly struct Label : ISelectable
+    public readonly partial struct Label : ISelectable
     {
         public const float DefaultLabelSize = 16f;
-
-        private readonly TextRenderer textRenderer;
 
         public unsafe readonly ref Vector2 Position
         {
             get
             {
-                Transform transform = textRenderer.AsEntity().As<Transform>();
+                Transform transform = As<Transform>();
                 ref Vector3 localPosition = ref transform.LocalPosition;
                 fixed (Vector3* position = &localPosition)
                 {
@@ -36,7 +34,7 @@ namespace InteractionKit
         {
             get
             {
-                Transform transform = textRenderer.AsEntity().As<Transform>();
+                Transform transform = As<Transform>();
                 ref Vector3 localPosition = ref transform.LocalPosition;
                 return ref localPosition.Z;
             }
@@ -49,7 +47,7 @@ namespace InteractionKit
         {
             get
             {
-                Transform transform = textRenderer.AsEntity().As<Transform>();
+                Transform transform = As<Transform>();
                 ref Vector3 localPosition = ref transform.LocalScale;
                 fixed (Vector3* scale = &localPosition)
                 {
@@ -58,15 +56,15 @@ namespace InteractionKit
             }
         }
 
-        public readonly ref Anchor Anchor => ref textRenderer.AsEntity().GetComponent<Anchor>();
-        public readonly ref Vector3 Pivot => ref textRenderer.AsEntity().GetComponent<Pivot>().value;
-        public readonly ref Vector4 Color => ref textRenderer.AsEntity().GetComponent<BaseColor>().value;
+        public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
+        public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+        public readonly ref Vector4 Color => ref GetComponent<BaseColor>().value;
 
         public readonly USpan<char> Text
         {
             get
             {
-                TextMesh textMesh = textRenderer.TextMesh;
+                TextMesh textMesh = As<TextRenderer>().TextMesh;
                 return textMesh.Text;
             }
         }
@@ -75,29 +73,19 @@ namespace InteractionKit
         {
             get
             {
-                TextMesh textMesh = textRenderer.TextMesh;
+                TextMesh textMesh = As<TextRenderer>().TextMesh;
                 return textMesh.Font;
             }
             set
             {
-                TextMesh textMesh = textRenderer.TextMesh;
+                TextMesh textMesh = As<TextRenderer>().TextMesh;
                 textMesh.Font = value;
             }
         }
 
-        readonly uint IEntity.Value => textRenderer.GetEntityValue();
-        readonly World IEntity.World => textRenderer.GetWorld();
-
-        readonly void IEntity.Describe(ref Archetype archetype)
-        {
-            archetype.AddComponentType<IsLabel>();
-            archetype.AddComponentType<IsTextRenderer>();
-            archetype.AddArrayElementType<LabelCharacter>();
-        }
-
         public Label(Canvas canvas, USpan<char> text, Font font = default, float size = DefaultLabelSize)
         {
-            World world = canvas.GetWorld();
+            world = canvas.world;
             Settings settings = canvas.Settings;
             Schema schema = world.Schema;
             if (font == default)
@@ -117,22 +105,22 @@ namespace InteractionKit
             transform.SetParent(canvas);
 
             Camera camera = canvas.Camera;
-            textRenderer = transform.AsEntity().Become<TextRenderer>();
+            TextRenderer textRenderer = transform.Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
             textRenderer.RenderMask = canvas.RenderMask;
-
             textRenderer.AddComponent(new IsLabel());
-
-            textRenderer.AsEntity().CreateArray(text.As<LabelCharacter>());
+            textRenderer.CreateArray(text.As<LabelCharacter>());
 
             transform.LocalScale = Vector3.One * size;
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
+
+            value = transform.value;
         }
 
         public Label(Canvas canvas, FixedString text, Font font = default, float size = DefaultLabelSize)
         {
-            World world = canvas.GetWorld();
+            world = canvas.world;
             Settings settings = canvas.Settings;
             Schema schema = world.Schema;
             if (font == default)
@@ -152,7 +140,7 @@ namespace InteractionKit
             transform.SetParent(canvas);
 
             Camera camera = canvas.Camera;
-            textRenderer = transform.AsEntity().Become<TextRenderer>();
+            TextRenderer textRenderer = transform.AsEntity().Become<TextRenderer>();
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
             textRenderer.RenderMask = canvas.RenderMask;
@@ -165,6 +153,8 @@ namespace InteractionKit
 
             transform.LocalScale = Vector3.One * size;
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
+
+            value = transform.value;
         }
 
         public Label(Canvas canvas, IEnumerable<char> text, Font font = default, float size = DefaultLabelSize)
@@ -177,14 +167,16 @@ namespace InteractionKit
         {
         }
 
-        public readonly void Dispose()
+        readonly void IEntity.Describe(ref Archetype archetype)
         {
-            textRenderer.Dispose();
+            archetype.AddComponentType<IsLabel>();
+            archetype.AddComponentType<IsTextRenderer>();
+            archetype.AddArrayType<LabelCharacter>();
         }
 
         public readonly void SetText(USpan<char> text)
         {
-            USpan<LabelCharacter> array = textRenderer.AsEntity().ResizeArray<LabelCharacter>(text.Length);
+            USpan<LabelCharacter> array = ResizeArray<LabelCharacter>(text.Length);
             text.CopyTo(array.As<char>());
         }
 
@@ -200,19 +192,14 @@ namespace InteractionKit
             SetText(buffer.Slice(0, length));
         }
 
-        public static implicit operator Entity(Label label)
-        {
-            return label.textRenderer.AsEntity();
-        }
-
         public static implicit operator TextRenderer(Label label)
         {
-            return label.textRenderer;
+            return label.As<TextRenderer>();
         }
 
         public static implicit operator Transform(Label label)
         {
-            return label.textRenderer.AsEntity().As<Transform>();
+            return label.As<Transform>();
         }
     }
 }

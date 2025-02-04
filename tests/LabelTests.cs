@@ -1,10 +1,9 @@
 ﻿using Cameras;
 using Rendering;
-using Worlds;
 
-namespace InteractionKit.Tests
+namespace UI.Tests
 {
-    public class LabelTests : InteractionKitTests
+    public class LabelTests : UITests
     {
         [Test]
         public void CheckIfLabelIsLabel()
@@ -14,7 +13,7 @@ namespace InteractionKit.Tests
             Camera camera = Camera.CreateOrthographic(world, destination, 1f);
             Canvas canvas = new(world, settings, camera);
             Label label = new(canvas, "Test");
-            Assert.That(label.Is(), Is.True);
+            Assert.That(label.IsCompliant, Is.True);
         }
     }
 }
