@@ -28,11 +28,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\data-systems\source\Data.Systems.csproj" />
-		<ProjectReference Include="..\..\material-systems\source\Materials.Systems.csproj" />
-		<ProjectReference Include="..\..\simulation\core\Simulation.Core.csproj" />
-		<ProjectReference Include="..\..\simulation\tests\Simulation.Tests.csproj" />
 		<ProjectReference Include="..\..\unmanaged\source\Unmanaged.csproj" />
+		<ProjectReference Include="..\..\worlds\tests\Worlds.Tests.csproj" />
 		<ProjectReference Include="..\source\UI.csproj" />
 		<ProjectReference Include="..\..\types\generator\Types.Generator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>

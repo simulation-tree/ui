@@ -18,17 +18,12 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\automations\source\Automations.csproj" />
 		<ProjectReference Include="..\..\cameras\source\Cameras.csproj" />
-		<ProjectReference Include="..\..\clipboard\source\Clipboard.csproj" />
 		<ProjectReference Include="..\..\default-presentation-assets\source\DefaultPresentationAssets.csproj" />
 		<ProjectReference Include="..\..\materials\source\Materials.csproj" />
 		<ProjectReference Include="..\..\meshes-9s\source\Meshes.NineSliced.csproj" />
 		<ProjectReference Include="..\..\rendering\source\Rendering.csproj" />
 		<ProjectReference Include="..\..\text-rendering\source\TextRendering.csproj" />
 		<ProjectReference Include="..\..\transforms\source\Transforms.csproj" />
-		<ProjectReference Include="..\..\simulation\generator\Simulation.Generator.csproj">
-			<OutputItemType>Analyzer</OutputItemType>
-			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-		</ProjectReference>
 		<ProjectReference Include="..\..\types\generator\Types.Generator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>

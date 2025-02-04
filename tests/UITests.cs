@@ -5,17 +5,16 @@ using Fonts;
 using Materials;
 using Meshes;
 using Rendering;
-using Simulation.Tests;
 using TextRendering;
 using Textures;
 using Transforms;
 using Types;
-using UI.Systems;
 using Worlds;
+using Worlds.Tests;
 
 namespace UI.Tests
 {
-    public abstract class UITests : SimulationTests
+    public abstract class UITests : WorldTests
     {
         static UITests()
         {
@@ -30,13 +29,6 @@ namespace UI.Tests
             TypeRegistry.Load<TexturesTypeBank>();
             TypeRegistry.Load<CamerasTypeBank>();
             TypeRegistry.Load<TextRenderingTypeBank>();
-            TypeRegistry.Load<UITestsTypeBank>();
-        }
-        protected override void SetUp()
-        {
-            base.SetUp();
-            simulator.AddSystem<ComponentMixingSystem>();
-            simulator.AddSystem<InvokeTriggersSystem>();
         }
 
         protected override Schema CreateSchema()
@@ -53,7 +45,6 @@ namespace UI.Tests
             schema.Load<TexturesSchemaBank>();
             schema.Load<CamerasSchemaBank>();
             schema.Load<TextRenderingSchemaBank>();
-            schema.Load<UITestsSchemaBank>();
             return schema;
         }
     }

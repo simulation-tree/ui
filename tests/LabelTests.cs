@@ -1,5 +1,6 @@
 ﻿using Cameras;
 using Rendering;
+using Worlds;
 
 namespace UI.Tests
 {
@@ -8,6 +9,7 @@ namespace UI.Tests
         [Test]
         public void CheckIfLabelIsLabel()
         {
+            using World world = CreateWorld();
             Settings settings = new(world);
             Destination destination = new(world, new(1920, 1080), "dummy");
             Camera camera = Camera.CreateOrthographic(world, destination, 1f);

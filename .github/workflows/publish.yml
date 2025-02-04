@@ -64,20 +64,6 @@ jobs:
           token: ${{ secrets.PAT }}
           path: text-rendering
 
-      - name: Checkout `simulation`
-        uses: actions/checkout@v4.1.2
-        with:
-          repository: game-simulations/simulation
-          token: ${{ secrets.PAT }}
-          path: simulation
-
-      - name: Checkout `serialization`
-        uses: actions/checkout@v4.1.2
-        with:
-          repository: game-simulations/serialization
-          token: ${{ secrets.PAT }}
-          path: serialization
-
       - name: Checkout `shaders`
         uses: actions/checkout@v4.1.2
         with:
@@ -98,13 +84,6 @@ jobs:
           repository: game-simulations/cameras
           token: ${{ secrets.PAT }}
           path: cameras
-
-      - name: Checkout `clipboard`
-        uses: actions/checkout@v4.1.2
-        with:
-          repository: game-simulations/clipboard
-          token: ${{ secrets.PAT }}
-          path: clipboard
 
       - name: Checkout `default-presentation-assets`
         uses: actions/checkout@v4.1.2
@@ -134,12 +113,12 @@ jobs:
           token: ${{ secrets.PAT }}
           path: transforms
 
-      - name: Checkout `transform-systems`
+      - name: Checkout `materials`
         uses: actions/checkout@v4.1.2
         with:
-          repository: game-simulations/transform-systems
+          repository: game-simulations/materials
           token: ${{ secrets.PAT }}
-          path: transform-systems
+          path: materials
 
       - name: Checkout `meshes`
         uses: actions/checkout@v4.1.2
