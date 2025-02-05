@@ -2,7 +2,7 @@
 
 namespace UI.Components
 {
-    [Component]
+    [Tag]
     public struct IsLabel
     {
     }

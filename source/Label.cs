@@ -84,7 +84,7 @@ namespace UI
             textRenderer.TextMesh = textMesh;
             textRenderer.Material = settings.GetTextMaterial(camera);
             textRenderer.RenderMask = canvas.RenderMask;
-            textRenderer.AddComponent(new IsLabel());
+            textRenderer.AddTag<IsLabel>();
             textRenderer.CreateArray(text.As<LabelCharacter>());
 
             transform.LocalScale = Vector3.One * size;
@@ -120,7 +120,7 @@ namespace UI
             textRenderer.Material = settings.GetTextMaterial(camera);
             textRenderer.RenderMask = canvas.RenderMask;
 
-            textRenderer.AddComponent(new IsLabel());
+            textRenderer.AddTag<IsLabel>();
 
             USpan<char> textSpan = stackalloc char[text.Length];
             uint length = text.CopyTo(textSpan);
@@ -144,7 +144,7 @@ namespace UI
 
         readonly void IEntity.Describe(ref Archetype archetype)
         {
-            archetype.AddComponentType<IsLabel>();
+            archetype.AddTagType<IsLabel>();
             archetype.AddComponentType<IsTextRenderer>();
             archetype.AddArrayType<LabelCharacter>();
         }

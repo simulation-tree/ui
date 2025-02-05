@@ -196,7 +196,7 @@ namespace UI
             Entity current = nodeEntity.Parent;
             while (current != default)
             {
-                if (current.ContainsComponent<IsTree>())
+                if (current.ContainsTag<IsTree>())
                 {
                     break;
                 }
@@ -271,7 +271,7 @@ namespace UI
             Entity current = treeNodeEntity.Parent;
             while (current != default)
             {
-                if (current.ContainsComponent<IsTree>())
+                if (current.ContainsTag<IsTree>())
                 {
                     Tree tree = current.As<Tree>();
                     tree.UpdatePositions();

@@ -39,14 +39,14 @@ namespace UI
             SetParent(canvas);
             AddComponent(new Anchor());
             AddComponent(new Pivot());
-            AddComponent(new IsTree());
+            AddTag<IsTree>();
             CreateArray<SelectedLeaf>();
             CreateArray<TreeNodeOption>();
         }
 
         readonly void IEntity.Describe(ref Archetype archetype)
         {
-            archetype.AddComponentType<IsTree>();
+            archetype.AddTagType<IsTree>();
             archetype.AddArrayType<SelectedLeaf>();
             archetype.AddArrayType<TreeNodeOption>();
         }
