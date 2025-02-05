@@ -104,6 +104,69 @@ jobs:
           repository: game-simulations/unmanaged
           token: ${{ secrets.PAT }}
           path: unmanaged
+      
+      - name: Checkout `simulation`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/simulation
+          token: ${{ secrets.PAT }}
+          path: simulation
+      
+      - name: Checkout `collections`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/collections
+          token: ${{ secrets.PAT }}
+          path: collections
+      
+      - name: Checkout `transform-systems`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/transform-systems
+          token: ${{ secrets.PAT }}
+          path: transform-systems
+      
+      - name: Checkout `data`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/data
+          token: ${{ secrets.PAT }}
+          path: data
+      
+      - name: Checkout `shaders`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/shaders
+          token: ${{ secrets.PAT }}
+          path: shaders
+      
+      - name: Checkout `meshes`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/meshes
+          token: ${{ secrets.PAT }}
+          path: meshes
+      
+      - name: Checkout `textures`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/textures
+          token: ${{ secrets.PAT }}
+          path: textures
+      
+      - name: Checkout `fonts`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/fonts
+          token: ${{ secrets.PAT }}
+          path: fonts
+      
+      - name: Checkout `bin-packer`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: game-simulations/bin-packer
+          token: ${{ secrets.PAT }}
+          path: bin-packer
             
       - name: Setup
         uses: actions/setup-dotnet@v4
