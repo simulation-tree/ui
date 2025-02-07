@@ -28,7 +28,7 @@ namespace UI
             byte depth = optionPath.Depth;
             uint entity = rootMenu.value;
             World world = rootMenu.world;
-            for (byte d = 0; d < depth; d++)
+            for (uint d = 0; d < depth; d++)
             {
                 uint optionIndex = optionPath[d];
                 IsMenuOption option = world.GetArrayElement<IsMenuOption>(entity, optionIndex);

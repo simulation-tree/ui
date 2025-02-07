@@ -6,12 +6,24 @@ namespace UI
 {
     public unsafe struct OptionPath
     {
-        public const uint MaxDepth = 32;
+        public const uint Capacity = 32;
+
+        public const uint MaxDepth = 31;
 
         private fixed ushort path[(int)MaxDepth];
         private byte depth;
 
         public readonly ushort this[byte depth] => path[depth];
+
+        public readonly ushort this[uint depth]
+        {
+            get
+            {
+                ThrowIfTooDeep(depth);
+
+                return path[depth];
+            }
+        }
 
         /// <summary>
         /// How deep this option is.
@@ -20,7 +32,8 @@ namespace UI
 
         public OptionPath(params USpan<ushort> path)
         {
-            ThrowIfTooDeep((ushort)path.Length);
+            ThrowIfTooDeep(path.Length);
+
             depth = (byte)path.Length;
             for (uint i = 0; i < path.Length; i++)
             {
@@ -90,6 +103,8 @@ namespace UI
                     uint length = atEnd ? path.Length - index : index - start;
                     if (length > 0)
                     {
+                        ThrowIfTooDeep(depth);
+
                         USpan<char> slice = path.Slice(start, length);
                         this.path[depth] = ushort.Parse(slice);
                         depth++;
@@ -161,9 +176,9 @@ namespace UI
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfTooDeep(ushort index)
+        private static void ThrowIfTooDeep(uint index)
         {
-            if (index >= MaxDepth)
+            if (index > MaxDepth)
             {
                 throw new IndexOutOfRangeException("Menu option path is too deep");
             }
