@@ -26,7 +26,7 @@ namespace UI.Functions
 
             public Input(USpan<char> originalText, Text result)
             {
-                this.input = originalText.Pointer;
+                this.input = originalText;
                 this.inputLength = originalText.Length;
                 this.result = result;
             }

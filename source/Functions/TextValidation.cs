@@ -53,7 +53,7 @@ namespace UI.Functions
 
             public Input(USpan<char> oldText, Text newText)
             {
-                this.oldText = oldText.Pointer;
+                this.oldText = oldText;
                 this.oldLength = oldText.Length;
                 this.newText = newText;
             }

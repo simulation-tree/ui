@@ -1,4 +1,5 @@
 ﻿using Rendering.Components;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UI.Functions;
 using Unmanaged;
@@ -6,6 +7,7 @@ using Worlds;
 
 namespace UI.ControlEditors
 {
+    [SkipLocalsInit]
     public unsafe readonly struct NumberTextEditor : IControlEditor
     {
         readonly InitializeControlField IControlEditor.InitializeControlField => new(&InitializeControlField);

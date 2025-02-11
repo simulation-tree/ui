@@ -5,6 +5,7 @@ using Rendering.Components;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Transforms;
 using Transforms.Components;
 using UI.Components;
@@ -13,6 +14,7 @@ using Worlds;
 
 namespace UI
 {
+    [SkipLocalsInit]
     public readonly partial struct Label : ISelectable
     {
         public const float DefaultLabelSize = 16f;
@@ -123,7 +125,7 @@ namespace UI
             textRenderer.AddTag<IsLabel>();
 
             USpan<char> textSpan = stackalloc char[text.Length];
-            uint length = text.CopyTo(textSpan);
+            text.CopyTo(textSpan);
             textRenderer.CreateArray(textSpan.As<LabelCharacter>());
 
             transform.LocalScale = Vector3.One * size;
@@ -163,8 +165,7 @@ namespace UI
         public readonly void SetText(FixedString text)
         {
             USpan<char> buffer = stackalloc char[text.Length];
-            uint length = text.CopyTo(buffer);
-            SetText(buffer.Slice(0, length));
+            SetText(buffer);
         }
 
         public static implicit operator TextRenderer(Label label)
