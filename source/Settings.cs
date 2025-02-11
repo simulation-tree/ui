@@ -46,36 +46,36 @@ namespace UI
             }
         }
 
-        public readonly Automation<Vector4> IdleAutomation
+        public readonly AutomationEntity<Vector4> IdleAutomation
         {
             get
             {
                 ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint idleAutomationReference = component.idleAutomationReference;
                 uint idleAutomationEntity = GetReference(idleAutomationReference);
-                return new Entity(world, idleAutomationEntity).As<Automation<Vector4>>();
+                return new Entity(world, idleAutomationEntity).As<AutomationEntity<Vector4>>();
             }
         }
 
-        public readonly Automation<Vector4> SelectedAutomation
+        public readonly AutomationEntity<Vector4> SelectedAutomation
         {
             get
             {
                 ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint selectedAutomationReference = component.selectedAutomationReference;
                 uint selectedAutomationEntity = GetReference(selectedAutomationReference);
-                return new Entity(world, selectedAutomationEntity).As<Automation<Vector4>>();
+                return new Entity(world, selectedAutomationEntity).As<AutomationEntity<Vector4>>();
             }
         }
 
-        public readonly Automation<Vector4> PressedAutomation
+        public readonly AutomationEntity<Vector4> PressedAutomation
         {
             get
             {
                 ref AssetReferences component = ref GetComponent<AssetReferences>();
                 rint pressedAutomationReference = component.pressedAutomationReference;
                 uint pressedAutomationEntity = GetReference(pressedAutomationReference);
-                return new Entity(world, pressedAutomationEntity).As<Automation<Vector4>>();
+                return new Entity(world, pressedAutomationEntity).As<AutomationEntity<Vector4>>();
             }
         }
 
@@ -126,13 +126,13 @@ namespace UI
             //automations for each state
             USpan<Vector4> keyframes = stackalloc Vector4[1];
             keyframes[0] = new Vector4(0.8f, 0.8f, 0.8f, 1f);
-            Automation<Vector4> idleAutomation = new(world, [0f], keyframes);
+            AutomationEntity<Vector4> idleAutomation = new(world, [0f], keyframes);
 
             keyframes[0] = new Vector4(1.4f, 1.4f, 1.4f, 1f);
-            Automation<Vector4> selectedAutomation = new(world, [0f], keyframes);
+            AutomationEntity<Vector4> selectedAutomation = new(world, [0f], keyframes);
 
             keyframes[0] = new Vector4(0.6f, 0.6f, 0.6f, 1f);
-            Automation<Vector4> pressedAutomation = new(world, [0f], keyframes);
+            AutomationEntity<Vector4> pressedAutomation = new(world, [0f], keyframes);
 
             //create default quad mesh
             Mesh quadMesh = new(world);

@@ -76,9 +76,9 @@ namespace UI
             stateful.StateMachine = settings.ControlStateMachine;
             stateful.AddParameter("pressed", 0f);
             stateful.AddParameter("selected", 1f);
-            stateful.AddOrSetLink<ColorTint>("idle", settings.IdleAutomation);
-            stateful.AddOrSetLink<ColorTint>("selected", settings.SelectedAutomation);
-            stateful.AddOrSetLink<ColorTint>("pressed", settings.PressedAutomation);
+            stateful.AddOrSetLinkToComponent<ColorTint>("idle", settings.IdleAutomation);
+            stateful.AddOrSetLinkToComponent<ColorTint>("selected", settings.SelectedAutomation);
+            stateful.AddOrSetLinkToComponent<ColorTint>("pressed", settings.PressedAutomation);
 
             MeshRenderer renderer = transform.Become<MeshRenderer>();
             renderer.Mesh = settings.QuadMesh;
