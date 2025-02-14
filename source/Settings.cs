@@ -154,35 +154,35 @@ namespace UI
             quadMesh.AddTriangle(0, 1, 2);
             quadMesh.AddTriangle(2, 3, 0);
 
-            Texture squareTexture = new(world, EmbeddedResourceRegistry.Get<SquareTexture>());
-            Texture triangleTexture = new(world, EmbeddedResourceRegistry.Get<TriangleTexture>());
-            Texture radialGradientTexture = new(world, EmbeddedResourceRegistry.Get<RadialGradientAlphaTexture>());
+            Texture squareTexture = new(world, EmbeddedResourceRegistry.GetAddress<SquareTexture>());
+            Texture triangleTexture = new(world, EmbeddedResourceRegistry.GetAddress<TriangleTexture>());
+            Texture radialGradientTexture = new(world, EmbeddedResourceRegistry.GetAddress<RadialGradientAlphaTexture>());
 
             //create default coloured unlit material
-            Material squareMaterial = new(world, EmbeddedResourceRegistry.Get<UnlitTexturedMaterial>());
+            Material squareMaterial = new(world, EmbeddedResourceRegistry.GetAddress<UnlitTexturedMaterial>());
             squareMaterial.AddPushBinding<Color>();
             squareMaterial.AddPushBinding<LocalToWorld>();
             squareMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             squareMaterial.AddTextureBinding(new(1, 0), squareTexture);
 
-            Material triangleMaterial = new(world, EmbeddedResourceRegistry.Get<UnlitTexturedMaterial>());
+            Material triangleMaterial = new(world, EmbeddedResourceRegistry.GetAddress<UnlitTexturedMaterial>());
             triangleMaterial.AddPushBinding<Color>();
             triangleMaterial.AddPushBinding<LocalToWorld>();
             triangleMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             triangleMaterial.AddTextureBinding(new(1, 0), triangleTexture);
 
-            Material textMaterial = new(world, EmbeddedResourceRegistry.Get<TextMaterial>());
+            Material textMaterial = new(world, EmbeddedResourceRegistry.GetAddress<TextMaterial>());
             textMaterial.AddComponentBinding<CameraMatrices>(new(1, 0), default(Entity));
             textMaterial.AddPushBinding<Color>();
             textMaterial.AddPushBinding<LocalToWorld>();
 
-            Material dropShadowMaterial = new(world, EmbeddedResourceRegistry.Get<UnlitTexturedMaterial>());
+            Material dropShadowMaterial = new(world, EmbeddedResourceRegistry.GetAddress<UnlitTexturedMaterial>());
             dropShadowMaterial.AddPushBinding<Color>();
             dropShadowMaterial.AddPushBinding<LocalToWorld>();
             dropShadowMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             dropShadowMaterial.AddTextureBinding(new(1, 0), radialGradientTexture);
 
-            Font defaultFont = new(world, EmbeddedResourceRegistry.Get<CascadiaMonoFont>());
+            Font defaultFont = new(world, EmbeddedResourceRegistry.GetAddress<CascadiaMonoFont>());
 
             rint quadMeshReference = AddReference(quadMesh);
             rint squareMaterialReference = AddReference(squareMaterial);
