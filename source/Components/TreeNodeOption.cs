@@ -2,7 +2,6 @@
 
 namespace UI.Components
 {
-    [ArrayElement]
     public struct TreeNodeOption
     {
         public rint childNodeReference;

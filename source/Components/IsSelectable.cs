@@ -1,10 +1,8 @@
 ﻿using Rendering;
 using System;
-using Worlds;
 
 namespace UI.Components
 {
-    [Component]
     public struct IsSelectable
     {
         public State state;

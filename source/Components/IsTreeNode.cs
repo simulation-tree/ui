@@ -3,7 +3,6 @@ using Worlds;
 
 namespace UI.Components
 {
-    [Component]
     public struct IsTreeNode
     {
         public FixedString text;

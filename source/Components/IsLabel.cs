@@ -1,8 +1,5 @@
-﻿using Worlds;
-
-namespace UI.Components
+﻿namespace UI.Components
 {
-    [Tag]
     public struct IsLabel
     {
     }

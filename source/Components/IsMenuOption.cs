@@ -3,7 +3,6 @@ using Worlds;
 
 namespace UI.Components
 {
-    [ArrayElement]
     public struct IsMenuOption
     {
         public FixedString text;

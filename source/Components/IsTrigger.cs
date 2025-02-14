@@ -1,10 +1,8 @@
-﻿using UI.Functions;
-using System;
-using Worlds;
+﻿using System;
+using UI.Functions;
 
 namespace UI.Components
 {
-    [Component]
     public struct IsTrigger
     {
         public TriggerFilter filter;

@@ -2,7 +2,6 @@
 
 namespace UI.Components
 {
-    [Component]
     public struct IsDraggable
     {
         public rint targetReference;

@@ -2,7 +2,6 @@
 
 namespace UI.Components
 {
-    [Component]
     public readonly struct IsControlField
     {
         public readonly rint labelReference;

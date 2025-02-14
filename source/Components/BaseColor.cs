@@ -1,9 +1,7 @@
 ﻿using System.Numerics;
-using Worlds;
 
 namespace UI.Components
 {
-    [Component]
     public struct BaseColor
     {
         public Vector4 value;

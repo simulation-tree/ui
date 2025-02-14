@@ -1,12 +1,9 @@
-﻿using Worlds;
-
-namespace UI.Components
+﻿namespace UI.Components
 {
-    [ArrayElement]
     public struct LabelCharacter
     {
         public char value;
-        
+
         public LabelCharacter(char value)
         {
             this.value = value;

@@ -2,7 +2,6 @@
 
 namespace UI.Components
 {
-    [Component]
     public struct ComponentMix
     {
         public DataType left;

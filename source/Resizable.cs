@@ -11,7 +11,7 @@ namespace UI
         private const float PositiveDistance = 12f;
         private const float NegativeDistance = -2f;
 
-        public readonly ref IsResizable.Boundary Boundary => ref GetComponent<IsResizable>().resize;
+        public readonly ref IsResizable.EdgeMask Boundary => ref GetComponent<IsResizable>().edgeMask;
         public readonly ref LayerMask SelectionMask => ref GetComponent<IsResizable>().selectionMask;
 
         readonly void IEntity.Describe(ref Archetype archetype)
@@ -20,7 +20,7 @@ namespace UI
             archetype.AddComponentType<LocalToWorld>();
         }
 
-        public readonly IsResizable.Boundary GetBoundary(Vector2 pointerPosition)
+        public readonly IsResizable.EdgeMask GetBoundary(Vector2 pointerPosition)
         {
             LocalToWorld ltw = GetComponent<LocalToWorld>();
             Vector3 position = ltw.Position;
@@ -42,41 +42,41 @@ namespace UI
             UIBounds topLeft = new(new(min.X - PositiveDistance, max.Y + NegativeDistance), new(min.X - NegativeDistance, max.Y + PositiveDistance));
             UIBounds bottomRight = new(new(max.X + NegativeDistance, min.Y - PositiveDistance), new(max.X + PositiveDistance, min.Y - NegativeDistance));
             UIBounds bottomLeft = new(new(min.X - PositiveDistance, min.Y - PositiveDistance), new(min.X - NegativeDistance, min.Y - NegativeDistance));
-            IsResizable.Boundary boundary = default;
+            IsResizable.EdgeMask boundary = default;
 
             if (right.Contains(pointerPosition))
             {
-                boundary |= IsResizable.Boundary.Right;
+                boundary |= IsResizable.EdgeMask.Right;
             }
             else if (left.Contains(pointerPosition))
             {
-                boundary |= IsResizable.Boundary.Left;
+                boundary |= IsResizable.EdgeMask.Left;
             }
 
             if (top.Contains(pointerPosition))
             {
-                boundary |= IsResizable.Boundary.Top;
+                boundary |= IsResizable.EdgeMask.Top;
             }
             else if (bottom.Contains(pointerPosition))
             {
-                boundary |= IsResizable.Boundary.Bottom;
+                boundary |= IsResizable.EdgeMask.Bottom;
             }
 
             else if (topRight.Contains(pointerPosition))
             {
-                boundary = IsResizable.Boundary.TopRight;
+                boundary = IsResizable.EdgeMask.TopRight;
             }
             else if (topLeft.Contains(pointerPosition))
             {
-                boundary = IsResizable.Boundary.TopLeft;
+                boundary = IsResizable.EdgeMask.TopLeft;
             }
             else if (bottomRight.Contains(pointerPosition))
             {
-                boundary = IsResizable.Boundary.BottomRight;
+                boundary = IsResizable.EdgeMask.BottomRight;
             }
             else if (bottomLeft.Contains(pointerPosition))
             {
-                boundary = IsResizable.Boundary.BottomLeft;
+                boundary = IsResizable.EdgeMask.BottomLeft;
             }
 
             return boundary;

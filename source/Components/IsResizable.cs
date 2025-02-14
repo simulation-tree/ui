@@ -1,13 +1,11 @@
 ﻿using Rendering;
 using System;
-using Worlds;
 
 namespace UI.Components
 {
-    [Component]
     public struct IsResizable
     {
-        public Boundary resize;
+        public EdgeMask edgeMask;
         public LayerMask selectionMask;
 
 #if NET
@@ -18,20 +16,20 @@ namespace UI.Components
         }
 #endif
 
-        public IsResizable(Boundary resize, LayerMask selectionMask)
+        public IsResizable(EdgeMask edgeMask, LayerMask selectionMask)
         {
-            this.resize = resize;
+            this.edgeMask = edgeMask;
             this.selectionMask = selectionMask;
         }
 
-        public IsResizable(Boundary resize)
+        public IsResizable(EdgeMask edgeMask)
         {
-            this.resize = resize;
+            this.edgeMask = edgeMask;
             this.selectionMask = LayerMask.All;
         }
 
         [Flags]
-        public enum Boundary : byte
+        public enum EdgeMask : byte
         {
             None = 0,
             Right = 1,

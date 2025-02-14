@@ -4,7 +4,6 @@ using Worlds;
 
 namespace UI.Components
 {
-    [Component]
     public struct IsCanvas
     {
         public rint cameraReference;

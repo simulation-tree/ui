@@ -2,7 +2,6 @@
 
 namespace UI.Components
 {
-    [ArrayElement]
     public struct MaterialSettings
     {
         public rint cameraReference;

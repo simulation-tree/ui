@@ -5,7 +5,6 @@ using Worlds;
 
 namespace UI.Components
 {
-    [Component]
     public struct IsPointer
     {
         public Vector2 position;

@@ -1,10 +1,8 @@
-﻿using UI.Functions;
-using System.Numerics;
-using Worlds;
+﻿using System.Numerics;
+using UI.Functions;
 
 namespace UI.Components
 {
-    [Component]
     public struct IsMenu
     {
         public Vector2 optionSize;

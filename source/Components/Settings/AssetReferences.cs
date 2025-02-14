@@ -2,7 +2,6 @@
 
 namespace UI.Components
 {
-    [Component]
     public struct AssetReferences
     {
         public rint quadMeshReference;

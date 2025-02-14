@@ -2,7 +2,6 @@
 
 namespace UI.Components
 {
-    [Component]
     public readonly struct IsDropShadow
     {
         public readonly rint meshReference;

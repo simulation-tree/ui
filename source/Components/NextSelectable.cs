@@ -2,7 +2,6 @@
 
 namespace UI.Components
 {
-    [Component]
     public struct NextSelectable
     {
         public rint reference;

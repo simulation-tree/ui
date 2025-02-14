@@ -1,8 +1,5 @@
-﻿using Worlds;
-
-namespace UI.Components
+﻿namespace UI.Components
 {
-    [Component]
     public struct TextEditState
     {
         public TextSelection value;

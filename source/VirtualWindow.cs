@@ -59,7 +59,7 @@ namespace UI
             Image background = new(canvas);
             value = background.value;
 
-            background.AddComponent(new IsResizable(IsResizable.Boundary.All));
+            background.AddComponent(new IsResizable(IsResizable.EdgeMask.All));
 
             Image header = new(canvas);
             header.Anchor = new(new(0f, false), new(1f, false), default, new(1f, false), new(1f, false), default);
