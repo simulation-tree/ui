@@ -28,7 +28,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\unmanaged\source\Unmanaged.csproj" />
+		<ProjectReference Include="..\..\unmanaged\core\Unmanaged.Core.csproj" />
 		<ProjectReference Include="..\..\worlds\tests\Worlds.Tests.csproj" />
 		<ProjectReference Include="..\source\UI.csproj" />
 		<ProjectReference Include="..\..\types\generator\Types.Generator.csproj">
