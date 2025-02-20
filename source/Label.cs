@@ -40,7 +40,7 @@ namespace UI
         /// <summary>
         /// Displayed text of the label after being processed.
         /// </summary>
-        public readonly USpan<char> ProcessedText => As<TextRenderer>().TextMesh.Text;
+        public readonly USpan<char> ProcessedText => As<TextRenderer>().TextMesh.Content;
 
         /// <summary>
         /// The original and underlying text of the label.
