@@ -95,7 +95,7 @@ namespace UI
         public readonly uint ToString(USpan<char> buffer)
         {
             Label text = Label;
-            return text.Text.ToString(buffer);
+            return text.ProcessedText.ToString(buffer);
         }
 
         public unsafe readonly TreeNode AddLeaf(FixedString text)

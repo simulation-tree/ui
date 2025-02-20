@@ -69,7 +69,7 @@ namespace UI
         /// <summary>
         /// The content of this text field.
         /// </summary>
-        public readonly USpan<char> Value => TextLabel.Text;
+        public readonly USpan<char> Value => TextLabel.ProcessedText;
 
         public unsafe TextField(Canvas canvas, FixedString defaultValue = default, BeginEditing beginEditing = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
         {

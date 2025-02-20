@@ -152,6 +152,8 @@ namespace UI
             Image background = new(canvas);
             background.AddComponent(new IsTrigger(new(&Filter), new(&ToggleDropdown)));
             background.AddComponent(new IsSelectable(canvas.SelectionMask));
+            world = canvas.world;
+            value = background.value;
 
             Label label = new(canvas, default(FixedString));
             label.SetParent(background);
@@ -183,9 +185,6 @@ namespace UI
             rint triangleReference = background.AddReference(triangle);
             rint menuReference = background.AddReference(menu);
             background.AddComponent(new IsDropdown(labelReference, triangleReference, menuReference, callback));
-
-            world = canvas.world;
-            value = background.value;
         }
 
         readonly void IEntity.Describe(ref Archetype archetype)
@@ -270,7 +269,8 @@ namespace UI
             for (uint i = 0; i < options.Length; i++)
             {
                 T option = options[i];
-                menu.AddOption(option.ToString());
+                string optionText = option.ToString();
+                menu.AddOption(optionText);
             }
 
             rint dropdownReference = menu.AddReference(background);

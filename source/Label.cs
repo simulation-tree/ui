@@ -37,14 +37,15 @@ namespace UI
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly ref Vector4 Color => ref GetComponent<BaseColor>().value;
 
-        public readonly USpan<char> Text
-        {
-            get
-            {
-                TextMesh textMesh = As<TextRenderer>().TextMesh;
-                return textMesh.Text;
-            }
-        }
+        /// <summary>
+        /// Displayed text of the label after being processed.
+        /// </summary>
+        public readonly USpan<char> ProcessedText => As<TextRenderer>().TextMesh.Text;
+
+        /// <summary>
+        /// The original and underlying text of the label.
+        /// </summary>
+        public readonly USpan<char> UnderlyingText => GetArray<LabelCharacter>().As<char>();
 
         public readonly Font Font
         {
@@ -105,7 +106,7 @@ namespace UI
                 font = settings.Font;
             }
 
-            TextMesh textMesh = new(world, default(FixedString), font);
+            TextMesh textMesh = new(world, text, font);
 
             Transform transform = new(world);
             transform.AddComponent(new Anchor());
@@ -151,20 +152,30 @@ namespace UI
             archetype.AddArrayType<LabelCharacter>();
         }
 
+        /// <summary>
+        /// Updates the underlying text of the label.
+        /// </summary>
         public readonly void SetText(USpan<char> text)
         {
             USpan<LabelCharacter> array = ResizeArray<LabelCharacter>(text.Length);
             text.CopyTo(array.As<char>());
         }
 
+        /// <summary>
+        /// Updates the underlying text of the label.
+        /// </summary>
         public readonly void SetText(string text)
         {
             SetText(text.AsSpan());
         }
 
+        /// <summary>
+        /// Updates the underlying text of the label.
+        /// </summary>
         public readonly void SetText(FixedString text)
         {
             USpan<char> buffer = stackalloc char[text.Length];
+            text.CopyTo(buffer);
             SetText(buffer);
         }
 

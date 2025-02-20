@@ -55,9 +55,9 @@ namespace UI
         public readonly ref LayerMask RenderMask => ref GetComponent<IsCanvas>().renderMask;
         public readonly ref LayerMask SelectionMask => ref GetComponent<IsCanvas>().selectionMask;
 
-        public Canvas(World world, Settings settings, Camera camera, LayerMask renderMask, LayerMask selectionMask)
+        public Canvas(Settings settings, Camera camera, LayerMask renderMask, LayerMask selectionMask)
         {
-            this.world = world;
+            world = settings.world;
             Transform transform = new(world);
             value = transform.value;
 
@@ -66,13 +66,13 @@ namespace UI
             transform.AddComponent(new IsCanvas(cameraReference, settingsReference, renderMask, selectionMask));
         }
 
-        public Canvas(World world, Settings settings, Camera camera)
+        public Canvas(Settings settings, Camera camera)
         {
+            world = settings.world;
             Transform transform = new(world);
             rint cameraReference = transform.AddReference(camera);
             rint settingsReference = transform.AddReference(settings);
             transform.AddComponent(new IsCanvas(cameraReference, settingsReference, LayerMask.All, LayerMask.All));
-            this.world = world;
             value = transform.value;
         }
 
