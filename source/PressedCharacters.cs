@@ -67,7 +67,8 @@ namespace UI
 
             fixed (ushort* p = pressedCharacters)
             {
-                return new USpan<char>(p, length).CopyTo(destination);
+                new USpan<char>(p, length).CopyTo(destination);
+                return length;
             }
         }
 
