@@ -121,7 +121,7 @@ namespace UI
             if (dataType.IsComponent)
             {
                 ComponentType componentType = dataType.ComponentType;
-                if (!entity.Contains(componentType))
+                if (!entity.ContainsComponent(componentType))
                 {
                     throw new NullReferenceException($"Entity `{entity}` is missing component `{componentType.ToString(entity.world.Schema)}`");
                 }
@@ -129,7 +129,7 @@ namespace UI
             else if (dataType.IsArrayElement)
             {
                 ArrayElementType arrayElementType = dataType.ArrayElementType;
-                if (!entity.Contains(arrayElementType))
+                if (!entity.ContainsArray(arrayElementType))
                 {
                     throw new NullReferenceException($"Entity `{entity}` is missing array `{arrayElementType.ToString(entity.world.Schema)}`");
                 }
