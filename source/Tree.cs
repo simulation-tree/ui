@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -26,8 +27,8 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly USpan<SelectedLeaf> Selected => GetArray<SelectedLeaf>();
-        public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>();
+        public readonly USpan<SelectedLeaf> Selected => GetArray<SelectedLeaf>().AsSpan();
+        public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>().AsSpan();
 
         public Tree(Canvas canvas)
         {
@@ -54,14 +55,15 @@ namespace UI
         public unsafe readonly TreeNode AddLeaf(FixedString text)
         {
             Vector2 size = Size;
-            uint nodeCount = GetArrayLength<TreeNodeOption>();
+            Array<TreeNodeOption> options = GetArray<TreeNodeOption>();
+            uint nodeCount = options.Length;
             TreeNode node = new(text, this.GetCanvas());
             node.SetParent(value);
             node.Position = new(0, -nodeCount * size.Y);
             node.Size = size;
             rint nodeReference = AddReference(node);
-            USpan<TreeNodeOption> nodes = ResizeArray<TreeNodeOption>(nodeCount + 1);
-            nodes[nodeCount] = new(nodeReference);
+            options.Length++;
+            options[nodeCount] = new(nodeReference);
             return node;
         }
 
@@ -106,13 +108,14 @@ namespace UI
 
         public readonly void SetSelected(TreeNode node, bool state)
         {
-            uint selectedCount = GetArrayLength<SelectedLeaf>();
+            Array<SelectedLeaf> selected = GetArray<SelectedLeaf>();
+            uint selectedCount = selected.Length;
             if (state)
             {
                 ThrowIfSelected(node);
 
                 rint nodeReference = AddReference(node);
-                USpan<SelectedLeaf> selected = ResizeArray<SelectedLeaf>(selectedCount + 1);
+                selected.Length++;
                 selected[selectedCount] = new(nodeReference);
                 node.BackgroundColor = new(0, 0.5f, 1, 1);
                 node.Label.Color = new(1, 1, 1, 1);
@@ -121,7 +124,6 @@ namespace UI
             {
                 ThrowIfNotSelected(node);
 
-                USpan<SelectedLeaf> selected = GetArray<SelectedLeaf>();
                 uint index = 0;
                 for (uint i = 0; i < selected.Length; i++)
                 {
@@ -134,12 +136,13 @@ namespace UI
                     }
                 }
 
+                //shift back
                 for (uint i = index; i < selected.Length - 1; i++)
                 {
                     selected[i] = selected[i + 1];
                 }
 
-                ResizeArray<SelectedLeaf>(selectedCount - 1);
+                selected.Length--;
                 node.BackgroundColor = new(1, 1, 1, 1);
                 node.Label.Color = new(0, 0, 0, 1);
             }

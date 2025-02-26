@@ -1,4 +1,5 @@
 ﻿using Cameras;
+using Collections.Generic;
 using Materials;
 using System;
 using System.Numerics;
@@ -26,7 +27,7 @@ namespace UI
         /// <summary>
         /// All options of this menu not including descendants.
         /// </summary>
-        public readonly USpan<IsMenuOption> Options => GetArray<IsMenuOption>();
+        public readonly USpan<IsMenuOption> Options => GetArray<IsMenuOption>().AsSpan();
 
         public readonly ref MenuCallback Callback => ref GetComponent<IsMenu>().callback;
 
@@ -151,18 +152,18 @@ namespace UI
             Vector2 optionSize = OptionSize;
             Entity entity = this;
             Canvas canvas = entity.GetCanvas();
-            uint optionCount = entity.GetArrayLength<IsMenuOption>();
+            Array<IsMenuOption> options = entity.GetArray<IsMenuOption>();
+            uint optionCount = options.Length;
             bool hasPath = label.TryIndexOf('/', out uint slashIndex);
             FixedString remainder = hasPath ? label.Slice(slashIndex + 1) : default;
             label = hasPath ? label.Slice(0, slashIndex) : label;
             if (hasPath)
             {
                 //try to find existing option with same text
-                USpan<IsMenuOption> existingOptions = entity.GetArray<IsMenuOption>();
                 OptionPath path = default;
-                for (uint i = 0; i < existingOptions.Length; i++)
+                for (uint i = 0; i < options.Length; i++)
                 {
-                    ref IsMenuOption existingOption = ref existingOptions[i];
+                    ref IsMenuOption existingOption = ref options[i];
                     if (existingOption.text == label)
                     {
                         if (existingOption.childMenuReference != default)
@@ -229,7 +230,7 @@ namespace UI
                 optionButtonLabel.Pivot = new(0f, 1f, 0f);
 
                 rint childMenuReference = default;
-                USpan<IsMenuOption> options = entity.ResizeArray<IsMenuOption>(optionCount + 1);
+                options.Length++;
                 rint buttonReference = AddReference(optionButton);
                 rint buttonLabelReference = AddReference(optionButtonLabel);
                 options[optionCount] = new(label, buttonReference, buttonLabelReference, childMenuReference);
@@ -308,7 +309,7 @@ namespace UI
                     return path;
                 }
 
-                USpan<IsMenuOption> options = world.GetArray<IsMenuOption>(parent);
+                Array<IsMenuOption> options = world.GetArray<IsMenuOption>(parent);
                 for (uint i = 0; i < options.Length; i++)
                 {
                     rint childMenuReference = options[i].childMenuReference;

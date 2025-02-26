@@ -1,4 +1,5 @@
-﻿using Rendering.Components;
+﻿using Collections.Generic;
+using Rendering.Components;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UI.Functions;
@@ -48,7 +49,7 @@ namespace UI.ControlEditors
                 ArrayElementType arrayElementType = input.ArrayElementType;
                 if (arrayElementType == schema.GetArrayElement<char>())
                 {
-                    textField.SetText(target.GetArray<char>());
+                    textField.SetText(target.GetArray<char>().AsSpan());
                 }
             }
 
@@ -103,7 +104,9 @@ namespace UI.ControlEditors
             }
             else
             {
-                entity.ResizeArray<TextCharacter>(originalText.Length).CopyFrom(originalText.As<TextCharacter>());
+                Array<TextCharacter> array = entity.GetArray<TextCharacter>();
+                array.Length = originalText.Length;
+                array.CopyFrom(originalText.As<TextCharacter>());
             }
         }
 
@@ -112,8 +115,8 @@ namespace UI.ControlEditors
         {
             //revert
             TextField textField = entity.As<TextField>();
-            USpan<TextCharacter> originalText = entity.GetArray<TextCharacter>();
-            textField.SetText(originalText.As<char>());
+            Array<TextCharacter> originalText = entity.GetArray<TextCharacter>();
+            textField.SetText(originalText.AsSpan<char>());
         }
     }
 }

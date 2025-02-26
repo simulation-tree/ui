@@ -1,6 +1,7 @@
 ﻿using Automations;
 using Cameras;
 using Cameras.Components;
+using Collections.Generic;
 using Data;
 using DefaultPresentationAssets;
 using Fonts;
@@ -256,7 +257,7 @@ namespace UI
 
         private readonly MaterialSettings GetMaterialSettings(Camera camera)
         {
-            USpan<MaterialSettings> settings = GetArray<MaterialSettings>();
+            Array<MaterialSettings> settings = GetArray<MaterialSettings>();
             uint settingsCount = settings.Length;
             for (uint i = 1; i < settingsCount; i++)
             {
@@ -298,7 +299,7 @@ namespace UI
             newSettings.triangleMaterialReference = AddReference(triangleMaterial);
             newSettings.textMaterialReference = AddReference(textMaterial);
             newSettings.dropShadowMaterialReference = AddReference(dropShadowMaterial);
-            settings = ResizeArray<MaterialSettings>(settingsCount + 1);
+            settings.Length++;
             settings[settingsCount] = newSettings;
             return newSettings;
         }

@@ -1,4 +1,5 @@
 ﻿using Cameras;
+using Collections.Generic;
 using Fonts;
 using Rendering;
 using Rendering.Components;
@@ -45,7 +46,7 @@ namespace UI
         /// <summary>
         /// The original and underlying text of the label.
         /// </summary>
-        public readonly USpan<char> UnderlyingText => GetArray<LabelCharacter>().As<char>();
+        public readonly USpan<char> UnderlyingText => GetArray<LabelCharacter>().AsSpan<char>();
 
         public readonly Font Font
         {
@@ -157,8 +158,9 @@ namespace UI
         /// </summary>
         public readonly void SetText(USpan<char> text)
         {
-            USpan<LabelCharacter> array = ResizeArray<LabelCharacter>(text.Length);
-            text.CopyTo(array.As<char>());
+            Array<LabelCharacter> array = GetArray<LabelCharacter>();
+            array.Length = text.Length;
+            text.CopyTo(array.AsSpan<char>());
         }
 
         /// <summary>

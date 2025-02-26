@@ -1,10 +1,11 @@
-﻿using UI.Components;
-using UI.Functions;
+﻿using Collections.Generic;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
+using UI.Components;
+using UI.Functions;
 using Unmanaged;
 using Worlds;
 
@@ -28,7 +29,7 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>();
+        public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>().AsSpan();
 
         public readonly Label Label
         {
@@ -103,7 +104,8 @@ namespace UI
             Vector2 size = Size;
             Canvas canvas = this.GetCanvas();
             Settings settings = canvas.Settings;
-            uint nodeCount = GetArrayLength<TreeNodeOption>();
+            Array<TreeNodeOption> options = GetArray<TreeNodeOption>();
+            uint nodeCount = options.Length;
             if (nodeCount == 0)
             {
                 //the button that toggles expanded state
@@ -129,8 +131,8 @@ namespace UI
             node.IsEnabled = false;
 
             rint childNodeReference = AddReference(node);
-            USpan<TreeNodeOption> nodes = ResizeArray<TreeNodeOption>(nodeCount + 1);
-            nodes[nodeCount] = new(childNodeReference);
+            options.Length++;
+            options[nodeCount] = new(childNodeReference);
             return node;
         }
 
@@ -216,7 +218,7 @@ namespace UI
             if (!selectMultiple)
             {
                 //deselect all
-                USpan<SelectedLeaf> currentSelection = tree.Selected;
+                Array<SelectedLeaf> currentSelection = tree.GetArray<SelectedLeaf>();
                 for (uint i = 0; i < currentSelection.Length; i++)
                 {
                     rint nodeReference = currentSelection[i].nodeReference;
@@ -226,7 +228,7 @@ namespace UI
                     selectedNode.Label.Color = new(0, 0, 0, 1);
                 }
 
-                tree.ResizeArray<SelectedLeaf>(0);
+                currentSelection.Length = 0;
             }
 
             TreeNode node = nodeEntity.As<TreeNode>();
