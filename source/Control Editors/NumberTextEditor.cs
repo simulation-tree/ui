@@ -32,11 +32,11 @@ namespace UI.ControlEditors
             if (input.dataType.IsComponent)
             {
                 ComponentType componentType = input.ComponentType;
-                if (componentType == schema.GetComponent<FixedString>())
+                if (componentType == schema.GetComponentType<FixedString>())
                 {
                     textField.SetText(target.GetComponent<FixedString>());
                 }
-                else if (componentType == schema.GetComponent<float>())
+                else if (componentType == schema.GetComponentType<float>())
                 {
                     USpan<char> buffer = stackalloc char[32];
                     float value = target.GetComponent<float>();
@@ -47,7 +47,7 @@ namespace UI.ControlEditors
             else
             {
                 ArrayElementType arrayElementType = input.ArrayElementType;
-                if (arrayElementType == schema.GetArrayElement<char>())
+                if (arrayElementType == schema.GetArrayType<char>())
                 {
                     textField.SetText(target.GetArray<char>().AsSpan());
                 }

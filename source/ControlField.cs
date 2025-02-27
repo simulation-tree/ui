@@ -54,7 +54,7 @@ namespace UI
         public readonly bool IsComponentType => GetComponent<IsControlField>().dataType.IsComponent;
         public readonly bool IsArrayElementType => GetComponent<IsControlField>().dataType.IsArrayElement;
         public readonly ComponentType ComponentType => GetComponent<IsControlField>().dataType.ComponentType;
-        public readonly ArrayElementType ArrayElementType => GetComponent<IsControlField>().dataType.ArrayElementType;
+        public readonly ArrayElementType ArrayElementType => GetComponent<IsControlField>().dataType.ArrayType;
 
         public ControlField(Canvas canvas, FixedString label, Entity target, ComponentType componentType, ControlEditor editor, uint offset = 0) :
             this(canvas, label, target, new DataType(componentType, 0), editor, offset)
@@ -110,7 +110,7 @@ namespace UI
         public static ControlField Create<C, E>(Canvas canvas, FixedString label, Entity target) where C : unmanaged where E : unmanaged, IControlEditor
         {
             Schema schema = canvas.world.Schema;
-            ComponentType componentType = schema.GetComponent<C>();
+            ComponentType componentType = schema.GetComponentType<C>();
             ControlEditor editor = ControlEditor.Get<E>();
             return new ControlField(canvas, label, target, componentType, editor);
         }
@@ -128,7 +128,7 @@ namespace UI
             }
             else if (dataType.IsArrayElement)
             {
-                ArrayElementType arrayElementType = dataType.ArrayElementType;
+                ArrayElementType arrayElementType = dataType.ArrayType;
                 if (!entity.ContainsArray(arrayElementType))
                 {
                     throw new NullReferenceException($"Entity `{entity}` is missing array `{arrayElementType.ToString(entity.world.Schema)}`");

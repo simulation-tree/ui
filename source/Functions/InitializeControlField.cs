@@ -51,7 +51,7 @@ namespace UI.Functions
                 {
                     ThrowIfNotArrayElementType();
 
-                    return dataType.ArrayElementType;
+                    return dataType.ArrayType;
                 }
             }
 
