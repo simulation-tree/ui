@@ -35,7 +35,7 @@ namespace UI
         {
             USpan<char> buffer = stackalloc char[64];
             uint length = ToString(buffer);
-            return buffer.Slice(0, length).ToString();
+            return buffer.GetSpan(length).ToString();
         }
 
         public readonly uint ToString(USpan<char> buffer)

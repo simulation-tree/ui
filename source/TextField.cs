@@ -139,8 +139,8 @@ namespace UI
         public readonly void SetText(FixedString newText)
         {
             USpan<char> buffer = stackalloc char[newText.Length];
-            uint length = newText.CopyTo(buffer);
-            SetText(buffer.Slice(0, length));
+            newText.CopyTo(buffer);
+            SetText(buffer);
         }
 
         public static implicit operator Image(TextField textField)

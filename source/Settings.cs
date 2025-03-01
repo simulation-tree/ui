@@ -1,7 +1,6 @@
 ﻿using Automations;
 using Cameras;
 using Cameras.Components;
-using Collections.Generic;
 using Data;
 using DefaultPresentationAssets;
 using Fonts;
@@ -257,7 +256,7 @@ namespace UI
 
         private readonly MaterialSettings GetMaterialSettings(Camera camera)
         {
-            Array<MaterialSettings> settings = GetArray<MaterialSettings>();
+            Values<MaterialSettings> settings = GetArray<MaterialSettings>();
             uint settingsCount = settings.Length;
             for (uint i = 1; i < settingsCount; i++)
             {

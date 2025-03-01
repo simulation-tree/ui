@@ -1,5 +1,4 @@
-﻿using Collections.Generic;
-using Rendering.Components;
+﻿using Rendering.Components;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UI.Functions;
@@ -41,7 +40,7 @@ namespace UI.ControlEditors
                     USpan<char> buffer = stackalloc char[32];
                     float value = target.GetComponent<float>();
                     uint length = value.ToString(buffer);
-                    textField.SetText(buffer.Slice(0, length));
+                    textField.SetText(buffer.GetSpan(length));
                 }
             }
             else
@@ -76,7 +75,7 @@ namespace UI.ControlEditors
                 }
             }
 
-            input.SetNewText(validatedText.Slice(0, validatedLength));
+            input.SetNewText(validatedText.GetSpan(validatedLength));
         }
 
         [UnmanagedCallersOnly]
@@ -104,7 +103,7 @@ namespace UI.ControlEditors
             }
             else
             {
-                Array<TextCharacter> array = entity.GetArray<TextCharacter>();
+                Values<TextCharacter> array = entity.GetArray<TextCharacter>();
                 array.Length = originalText.Length;
                 array.CopyFrom(originalText.As<TextCharacter>());
             }
@@ -115,7 +114,7 @@ namespace UI.ControlEditors
         {
             //revert
             TextField textField = entity.As<TextField>();
-            Array<TextCharacter> originalText = entity.GetArray<TextCharacter>();
+            Values<TextCharacter> originalText = entity.GetArray<TextCharacter>();
             textField.SetText(originalText.AsSpan<char>());
         }
     }

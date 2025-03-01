@@ -1,5 +1,4 @@
-﻿using Collections.Generic;
-using System;
+﻿using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
@@ -104,7 +103,7 @@ namespace UI
             Vector2 size = Size;
             Canvas canvas = this.GetCanvas();
             Settings settings = canvas.Settings;
-            Array<TreeNodeOption> options = GetArray<TreeNodeOption>();
+            Values<TreeNodeOption> options = GetArray<TreeNodeOption>();
             uint nodeCount = options.Length;
             if (nodeCount == 0)
             {
@@ -218,7 +217,7 @@ namespace UI
             if (!selectMultiple)
             {
                 //deselect all
-                Array<SelectedLeaf> currentSelection = tree.GetArray<SelectedLeaf>();
+                Values<SelectedLeaf> currentSelection = tree.GetArray<SelectedLeaf>();
                 for (uint i = 0; i < currentSelection.Length; i++)
                 {
                     rint nodeReference = currentSelection[i].nodeReference;

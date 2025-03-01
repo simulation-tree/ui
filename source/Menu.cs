@@ -1,5 +1,4 @@
 ﻿using Cameras;
-using Collections.Generic;
 using Materials;
 using System;
 using System.Numerics;
@@ -152,7 +151,7 @@ namespace UI
             Vector2 optionSize = OptionSize;
             Entity entity = this;
             Canvas canvas = entity.GetCanvas();
-            Array<IsMenuOption> options = entity.GetArray<IsMenuOption>();
+            Values<IsMenuOption> options = entity.GetArray<IsMenuOption>();
             uint optionCount = options.Length;
             bool hasPath = label.TryIndexOf('/', out uint slashIndex);
             FixedString remainder = hasPath ? label.Slice(slashIndex + 1) : default;
@@ -309,7 +308,7 @@ namespace UI
                     return path;
                 }
 
-                Array<IsMenuOption> options = world.GetArray<IsMenuOption>(parent);
+                Values<IsMenuOption> options = world.GetArray<IsMenuOption>(parent);
                 for (uint i = 0; i < options.Length; i++)
                 {
                     rint childMenuReference = options[i].childMenuReference;

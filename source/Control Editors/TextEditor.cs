@@ -1,5 +1,4 @@
-﻿using Collections.Generic;
-using Rendering.Components;
+﻿using Rendering.Components;
 using System.Runtime.InteropServices;
 using UI.Components;
 using UI.Functions;
@@ -80,7 +79,7 @@ namespace UI.ControlEditors
             }
             else
             {
-                Array<TextCharacter> array = entity.GetArray<TextCharacter>();
+                Values<TextCharacter> array = entity.GetArray<TextCharacter>();
                 array.Length = originalText.Length;
                 array.CopyFrom(originalText.As<TextCharacter>());
             }
@@ -91,7 +90,7 @@ namespace UI.ControlEditors
         {
             //revert
             TextField textField = entity.As<TextField>();
-            Array<TextCharacter> originalText = entity.GetArray<TextCharacter>();
+            Values<TextCharacter> originalText = entity.GetArray<TextCharacter>();
             textField.SetText(originalText.AsSpan<char>());
         }
     }

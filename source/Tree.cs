@@ -1,5 +1,4 @@
-﻿using Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -55,7 +54,7 @@ namespace UI
         public unsafe readonly TreeNode AddLeaf(FixedString text)
         {
             Vector2 size = Size;
-            Array<TreeNodeOption> options = GetArray<TreeNodeOption>();
+            Values<TreeNodeOption> options = GetArray<TreeNodeOption>();
             uint nodeCount = options.Length;
             TreeNode node = new(text, this.GetCanvas());
             node.SetParent(value);
@@ -108,7 +107,7 @@ namespace UI
 
         public readonly void SetSelected(TreeNode node, bool state)
         {
-            Array<SelectedLeaf> selected = GetArray<SelectedLeaf>();
+            Values<SelectedLeaf> selected = GetArray<SelectedLeaf>();
             uint selectedCount = selected.Length;
             if (state)
             {

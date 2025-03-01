@@ -1,5 +1,4 @@
 ﻿using Cameras;
-using Collections.Generic;
 using Fonts;
 using Rendering;
 using Rendering.Components;
@@ -158,7 +157,7 @@ namespace UI
         /// </summary>
         public readonly void SetText(USpan<char> text)
         {
-            Array<LabelCharacter> array = GetArray<LabelCharacter>();
+            Values<LabelCharacter> array = GetArray<LabelCharacter>();
             array.Length = text.Length;
             text.CopyTo(array.AsSpan<char>());
         }
