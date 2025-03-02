@@ -136,17 +136,17 @@ namespace UI
 
             //create default quad mesh
             Mesh quadMesh = new(world);
-            USpan<Vector3> positions = quadMesh.CreatePositions(4);
+            Mesh.Collection<Vector3> positions = quadMesh.CreatePositions(4);
             positions[0] = new(0, 0, 0);
             positions[1] = new(1, 0, 0);
             positions[2] = new(1, 1, 0);
             positions[3] = new(0, 1, 0);
-            USpan<Vector2> uvs = quadMesh.CreateUVs(4);
+            Mesh.Collection<Vector2> uvs = quadMesh.CreateUVs(4);
             uvs[0] = new(0, 0);
             uvs[1] = new(1, 0);
             uvs[2] = new(1, 1);
             uvs[3] = new(0, 1);
-            USpan<Vector3> normals = quadMesh.CreateNormals(4);
+            Mesh.Collection<Vector3> normals = quadMesh.CreateNormals(4);
             normals[0] = new(0, 0, 1);
             normals[1] = new(0, 0, 1);
             normals[2] = new(0, 0, 1);
@@ -160,25 +160,25 @@ namespace UI
 
             //create default coloured unlit material
             Material squareMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedMaterial>());
-            squareMaterial.AddPushBinding<Color>();
-            squareMaterial.AddPushBinding<LocalToWorld>();
+            squareMaterial.AddInstanceBinding<Color>();
+            squareMaterial.AddInstanceBinding<LocalToWorld>();
             squareMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             squareMaterial.AddTextureBinding(new(1, 0), squareTexture);
 
             Material triangleMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedMaterial>());
-            triangleMaterial.AddPushBinding<Color>();
-            triangleMaterial.AddPushBinding<LocalToWorld>();
+            triangleMaterial.AddInstanceBinding<Color>();
+            triangleMaterial.AddInstanceBinding<LocalToWorld>();
             triangleMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             triangleMaterial.AddTextureBinding(new(1, 0), triangleTexture);
 
             Material textMaterial = new(world, EmbeddedResource.GetAddress<TextMaterial>());
             textMaterial.AddComponentBinding<CameraMatrices>(new(1, 0), default(Entity));
-            textMaterial.AddPushBinding<Color>();
-            textMaterial.AddPushBinding<LocalToWorld>();
+            textMaterial.AddInstanceBinding<Color>();
+            textMaterial.AddInstanceBinding<LocalToWorld>();
 
             Material dropShadowMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedMaterial>());
-            dropShadowMaterial.AddPushBinding<Color>();
-            dropShadowMaterial.AddPushBinding<LocalToWorld>();
+            dropShadowMaterial.AddInstanceBinding<Color>();
+            dropShadowMaterial.AddInstanceBinding<LocalToWorld>();
             dropShadowMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             dropShadowMaterial.AddTextureBinding(new(1, 0), radialGradientTexture);
 
