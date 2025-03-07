@@ -146,7 +146,7 @@ namespace UI
         /// Adds a new option.
         /// </summary>
         /// <returns>Index path towards this specific option local to this menu.</returns>
-        public unsafe readonly OptionPath AddOption(FixedString label)
+        public unsafe readonly OptionPath AddOption(ASCIIText256 label)
         {
             Vector2 optionSize = OptionSize;
             Entity entity = this;
@@ -154,7 +154,7 @@ namespace UI
             Values<IsMenuOption> options = entity.GetArray<IsMenuOption>();
             uint optionCount = options.Length;
             bool hasPath = label.TryIndexOf('/', out uint slashIndex);
-            FixedString remainder = hasPath ? label.Slice(slashIndex + 1) : default;
+            ASCIIText256 remainder = hasPath ? label.Slice(slashIndex + 1) : default;
             label = hasPath ? label.Slice(0, slashIndex) : label;
             if (hasPath)
             {

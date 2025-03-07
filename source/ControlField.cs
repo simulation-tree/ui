@@ -56,17 +56,17 @@ namespace UI
         public readonly ComponentType ComponentType => GetComponent<IsControlField>().dataType.ComponentType;
         public readonly ArrayElementType ArrayElementType => GetComponent<IsControlField>().dataType.ArrayType;
 
-        public ControlField(Canvas canvas, FixedString label, Entity target, ComponentType componentType, ControlEditor editor, uint offset = 0) :
+        public ControlField(Canvas canvas, ASCIIText256 label, Entity target, ComponentType componentType, ControlEditor editor, uint offset = 0) :
             this(canvas, label, target, new DataType(componentType, 0), editor, offset)
         {
         }
 
-        public ControlField(Canvas canvas, FixedString label, Entity target, ArrayElementType arrayElementType, ControlEditor editor, uint offset = 0) :
+        public ControlField(Canvas canvas, ASCIIText256 label, Entity target, ArrayElementType arrayElementType, ControlEditor editor, uint offset = 0) :
             this(canvas, label, target, new DataType(arrayElementType, 0), editor, offset)
         {
         }
 
-        private ControlField(Canvas canvas, FixedString label, Entity target, DataType dataType, ControlEditor editor, uint offset)
+        private ControlField(Canvas canvas, ASCIIText256 label, Entity target, DataType dataType, ControlEditor editor, uint offset)
         {
             ThrowIfMissingData(target, dataType);
 
@@ -107,7 +107,7 @@ namespace UI
             archetype.AddArrayType<ControlEntity>();
         }
 
-        public static ControlField Create<C, E>(Canvas canvas, FixedString label, Entity target) where C : unmanaged where E : unmanaged, IControlEditor
+        public static ControlField Create<C, E>(Canvas canvas, ASCIIText256 label, Entity target) where C : unmanaged where E : unmanaged, IControlEditor
         {
             Schema schema = canvas.world.Schema;
             ComponentType componentType = schema.GetComponentType<C>();

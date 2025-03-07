@@ -53,7 +53,7 @@ namespace UI
             }
         }
 
-        private unsafe VirtualWindow(World world, Canvas canvas, FixedString titleText, VirtualWindowClose closeCallback)
+        private unsafe VirtualWindow(World world, Canvas canvas, ASCIIText256 titleText, VirtualWindowClose closeCallback)
         {
             this.world = world;
             Image background = new(canvas);
@@ -157,7 +157,7 @@ namespace UI
 
         public unsafe static VirtualWindow Create<T>(World world, Canvas canvas) where T : unmanaged, IVirtualWindow
         {
-            FixedString title = default(T).Title;
+            ASCIIText256 title = default(T).Title;
             VirtualWindowClose closeCallback = default(T).CloseCallback;
             VirtualWindow window = new(world, canvas, title, closeCallback);
             default(T).OnCreated(window.Container, canvas);

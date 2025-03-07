@@ -71,7 +71,7 @@ namespace UI
                 font = settings.Font;
             }
 
-            TextMesh textMesh = new(world, default(FixedString), font);
+            TextMesh textMesh = new(world, default(ASCIIText256), font);
 
             Transform transform = new(world);
             transform.AddComponent(new Anchor());
@@ -96,7 +96,7 @@ namespace UI
             value = transform.value;
         }
 
-        public Label(Canvas canvas, FixedString text, Font font = default, float size = DefaultLabelSize)
+        public Label(Canvas canvas, ASCIIText256 text, Font font = default, float size = DefaultLabelSize)
         {
             world = canvas.world;
             Settings settings = canvas.Settings;
@@ -136,12 +136,12 @@ namespace UI
         }
 
         public Label(Canvas canvas, IEnumerable<char> text, Font font = default, float size = DefaultLabelSize)
-            : this(canvas, new FixedString(text), font, size)
+            : this(canvas, new ASCIIText256(text), font, size)
         {
         }
 
         public Label(Canvas canvas, string text, Font font = default, float size = DefaultLabelSize)
-            : this(canvas, new FixedString(text), font, size)
+            : this(canvas, new ASCIIText256(text), font, size)
         {
         }
 
@@ -173,7 +173,7 @@ namespace UI
         /// <summary>
         /// Updates the underlying text of the label.
         /// </summary>
-        public readonly void SetText(FixedString text)
+        public readonly void SetText(ASCIIText256 text)
         {
             USpan<char> buffer = stackalloc char[text.Length];
             text.CopyTo(buffer);

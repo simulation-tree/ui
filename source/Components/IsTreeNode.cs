@@ -5,12 +5,12 @@ namespace UI.Components
 {
     public struct IsTreeNode
     {
-        public FixedString text;
+        public ASCIIText256 text;
         public rint boxReference;
         public rint labelReference;
         public bool expanded;
 
-        public IsTreeNode(FixedString text, rint boxReference, rint labelReference)
+        public IsTreeNode(ASCIIText256 text, rint boxReference, rint labelReference)
         {
             this.text = text;
             this.boxReference = boxReference;

@@ -51,7 +51,7 @@ namespace UI
 
         public readonly bool IsExpanded => GetComponent<IsTreeNode>().expanded;
 
-        public unsafe TreeNode(FixedString text, Canvas canvas)
+        public unsafe TreeNode(ASCIIText256 text, Canvas canvas)
         {
             world = canvas.world;
             Transform transform = new(world);
@@ -98,7 +98,7 @@ namespace UI
             return text.ProcessedText.ToString(buffer);
         }
 
-        public unsafe readonly TreeNode AddLeaf(FixedString text)
+        public unsafe readonly TreeNode AddLeaf(ASCIIText256 text)
         {
             Vector2 size = Size;
             Canvas canvas = this.GetCanvas();

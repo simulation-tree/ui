@@ -41,7 +41,7 @@ namespace UI
             }
         }
 
-        public OptionPath(FixedString path)
+        public OptionPath(ASCIIText256 path)
         {
             USpan<char> buffer = stackalloc char[path.Length];
             path.CopyTo(buffer);

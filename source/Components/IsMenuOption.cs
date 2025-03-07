@@ -5,7 +5,7 @@ namespace UI.Components
 {
     public struct IsMenuOption
     {
-        public FixedString text;
+        public ASCIIText256 text;
         public rint buttonReference;
         public rint buttonLabelReference;
         public rint childMenuReference;
@@ -13,7 +13,7 @@ namespace UI.Components
 
         public readonly bool HasChildMenu => childMenuReference != default;
 
-        public IsMenuOption(FixedString label, rint buttonReference, rint buttonLabelReference, rint childMenuReference)
+        public IsMenuOption(ASCIIText256 label, rint buttonReference, rint buttonLabelReference, rint childMenuReference)
         {
             this.text = label;
             this.buttonReference = buttonReference;

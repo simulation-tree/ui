@@ -6,7 +6,7 @@ namespace UI
 {
     public interface IVirtualWindow
     {
-        FixedString Title { get; }
+        ASCIIText256 Title { get; }
 
         /// <summary>
         /// Callback for handling what happens when virtual window's close button is pressed.

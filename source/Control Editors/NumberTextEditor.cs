@@ -31,9 +31,9 @@ namespace UI.ControlEditors
             if (input.dataType.IsComponent)
             {
                 ComponentType componentType = input.ComponentType;
-                if (componentType == schema.GetComponentType<FixedString>())
+                if (componentType == schema.GetComponentType<ASCIIText256>())
                 {
-                    textField.SetText(target.GetComponent<FixedString>());
+                    textField.SetText(target.GetComponent<ASCIIText256>());
                 }
                 else if (componentType == schema.GetComponentType<float>())
                 {

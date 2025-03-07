@@ -71,7 +71,7 @@ namespace UI
         /// </summary>
         public readonly USpan<char> Value => TextLabel.ProcessedText;
 
-        public unsafe TextField(Canvas canvas, FixedString defaultValue = default, BeginEditing beginEditing = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
+        public unsafe TextField(Canvas canvas, ASCIIText256 defaultValue = default, BeginEditing beginEditing = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
         {
             world = canvas.world;
             Image background = new(canvas);
@@ -136,7 +136,7 @@ namespace UI
             }
         }
 
-        public readonly void SetText(FixedString newText)
+        public readonly void SetText(ASCIIText256 newText)
         {
             USpan<char> buffer = stackalloc char[newText.Length];
             newText.CopyTo(buffer);

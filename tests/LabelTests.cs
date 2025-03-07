@@ -19,7 +19,7 @@ namespace UI.Tests
             Label label = new(canvas, "Test");
             Assert.That(label.IsCompliant, Is.True);
 
-            FixedString text = "ababish";
+            ASCIIText256 text = "ababish";
 
             label.SetText(text);
 
@@ -39,7 +39,7 @@ namespace UI.Tests
 
             Assert.That(label.UnderlyingText.ToString(), Is.EqualTo("Test"));
 
-            FixedString text = "ababish";
+            ASCIIText256 text = "ababish";
 
             label.SetText(text);
 

@@ -51,7 +51,7 @@ namespace UI
             archetype.AddArrayType<TreeNodeOption>();
         }
 
-        public unsafe readonly TreeNode AddLeaf(FixedString text)
+        public unsafe readonly TreeNode AddLeaf(ASCIIText256 text)
         {
             Vector2 size = Size;
             Values<TreeNodeOption> options = GetArray<TreeNodeOption>();

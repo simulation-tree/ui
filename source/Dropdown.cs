@@ -71,7 +71,7 @@ namespace UI
 
                 Menu menu = Menu;
                 USpan<IsMenuOption> options = menu.Options;
-                FixedString text = default;
+                ASCIIText256 text = default;
                 OptionPath path = value;
                 while (path.Depth > 0)
                 {
@@ -155,7 +155,7 @@ namespace UI
             world = canvas.world;
             value = background.value;
 
-            Label label = new(canvas, default(FixedString));
+            Label label = new(canvas, default(ASCIIText256));
             label.SetParent(background);
             label.Anchor = Anchor.TopLeft;
             label.Color = new(0, 0, 0, 1);
@@ -242,7 +242,7 @@ namespace UI
             background.AddComponent(new IsTrigger(new(&Dropdown.Filter), new(&Dropdown.ToggleDropdown)));
             background.AddComponent(new IsSelectable(canvas.SelectionMask));
 
-            Label label = new(canvas, default(FixedString));
+            Label label = new(canvas, default(ASCIIText256));
             label.SetParent(background);
             label.Anchor = Anchor.TopLeft;
             label.Color = new(0, 0, 0, 1);
