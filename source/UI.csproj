@@ -11,8 +11,8 @@
         <WarningLevel>9999</WarningLevel>
         <Title>UI</Title>
         <Authors>popcron</Authors>
-        <Company>game-simulations</Company>
-        <RepositoryUrl>https://github.com/game-simulations/ui</RepositoryUrl>
+        <Company>simulation-tree</Company>
+        <RepositoryUrl>https://github.com/simulation-tree/ui</RepositoryUrl>
         <PackageId/>
     </PropertyGroup>
 
