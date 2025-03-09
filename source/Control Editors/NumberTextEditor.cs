@@ -1,4 +1,5 @@
 ﻿using Rendering.Components;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UI.Functions;
@@ -37,10 +38,10 @@ namespace UI.ControlEditors
                 }
                 else if (componentType == schema.GetComponentType<float>())
                 {
-                    USpan<char> buffer = stackalloc char[32];
+                    Span<char> buffer = stackalloc char[32];
                     float value = target.GetComponent<float>();
-                    uint length = value.ToString(buffer);
-                    textField.SetText(buffer.GetSpan(length));
+                    int length = value.ToString(buffer);
+                    textField.SetText(buffer.Slice(0, length));
                 }
             }
             else
@@ -63,10 +64,10 @@ namespace UI.ControlEditors
         [UnmanagedCallersOnly]
         private static void Validate(TextValidation.Input input)
         {
-            USpan<char> newText = input.NewText;
-            USpan<char> validatedText = stackalloc char[(int)newText.Length];
-            uint validatedLength = 0;
-            for (uint i = 0; i < newText.Length; i++)
+            ReadOnlySpan<char> newText = input.NewText;
+            Span<char> validatedText = stackalloc char[(int)newText.Length];
+            int validatedLength = 0;
+            for (int i = 0; i < newText.Length; i++)
             {
                 char c = newText[i];
                 if (c == '.' || c == '-' || (c >= '0' && c <= '9'))
@@ -75,14 +76,14 @@ namespace UI.ControlEditors
                 }
             }
 
-            input.SetNewText(validatedText.GetSpan(validatedLength));
+            input.SetNewText(validatedText.Slice(0, validatedLength));
         }
 
         [UnmanagedCallersOnly]
         private static Boolean Submit(Entity entity, Settings settings)
         {
             TextField textField = entity.As<TextField>();
-            USpan<char> newText = textField.Value;
+            ReadOnlySpan<char> newText = textField.Value;
             if (!float.TryParse(newText, out _))
             {
                 textField.SetText(['0']);
@@ -96,16 +97,16 @@ namespace UI.ControlEditors
         {
             //store original state
             TextField textField = entity.As<TextField>();
-            USpan<char> originalText = textField.Value;
+            ReadOnlySpan<char> originalText = textField.Value;
             if (!entity.ContainsArray<TextCharacter>())
             {
-                entity.CreateArray(originalText.As<TextCharacter>());
+                entity.CreateArray(originalText.As<char, TextCharacter>());
             }
             else
             {
                 Values<TextCharacter> array = entity.GetArray<TextCharacter>();
                 array.Length = originalText.Length;
-                array.CopyFrom(originalText.As<TextCharacter>());
+                array.CopyFrom(originalText.As<char, TextCharacter>());
             }
         }
 

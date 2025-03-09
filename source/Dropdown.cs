@@ -70,7 +70,7 @@ namespace UI
                 component.selectedOption = value;
 
                 Menu menu = Menu;
-                USpan<IsMenuOption> options = menu.Options;
+                System.Span<IsMenuOption> options = menu.Options;
                 ASCIIText256 text = default;
                 OptionPath path = value;
                 while (path.Depth > 0)
@@ -80,7 +80,7 @@ namespace UI
                     {
                         if (index < options.Length)
                         {
-                            IsMenuOption option = options[index];
+                            IsMenuOption option = options[(int)index];
                             if (option.childMenuReference != default)
                             {
                                 uint childMenuEntity = menu.GetReference(option.childMenuReference);
@@ -98,7 +98,7 @@ namespace UI
                     {
                         if (index < options.Length)
                         {
-                            IsMenuOption option = options[index];
+                            IsMenuOption option = options[(int)index];
                             text = option.text;
                         }
 
@@ -125,8 +125,8 @@ namespace UI
                 menu.OptionSize = Size;
                 menu.IsEnabled = component.expanded;
 
-                USpan<IsMenuOption> options = menu.Options;
-                for (uint i = 0; i < options.Length; i++)
+                Span<IsMenuOption> options = menu.Options;
+                for (int i = 0; i < options.Length; i++)
                 {
                     ref IsMenuOption option = ref options[i];
                     if (option.childMenuReference != default)
@@ -144,7 +144,7 @@ namespace UI
             }
         }
 
-        public readonly USpan<IsMenuOption> Options => Menu.Options;
+        public readonly System.Span<IsMenuOption> Options => Menu.Options;
         public readonly ref DropdownCallback Callback => ref GetComponent<IsDropdown>().callback;
 
         public unsafe Dropdown(Canvas canvas, Vector2 optionSize, DropdownCallback callback = default)

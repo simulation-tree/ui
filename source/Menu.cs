@@ -21,12 +21,12 @@ namespace UI
         public readonly float Rotation => As<UITransform>().Rotation;
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly uint OptionCount => GetArrayLength<IsMenuOption>();
+        public readonly int OptionCount => GetArrayLength<IsMenuOption>();
 
         /// <summary>
         /// All options of this menu not including descendants.
         /// </summary>
-        public readonly USpan<IsMenuOption> Options => GetArray<IsMenuOption>().AsSpan();
+        public readonly Span<IsMenuOption> Options => GetArray<IsMenuOption>().AsSpan();
 
         public readonly ref MenuCallback Callback => ref GetComponent<IsMenu>().callback;
 
@@ -38,8 +38,8 @@ namespace UI
                 ref IsMenu component = ref GetComponent<IsMenu>();
                 component.optionSize = value;
 
-                USpan<IsMenuOption> options = Options;
-                for (uint i = 0; i < options.Length; i++)
+                Span<IsMenuOption> options = Options;
+                for (int i = 0; i < options.Length; i++)
                 {
                     IsMenuOption option = options[i];
                     rint buttonReference = option.buttonReference;
@@ -91,8 +91,8 @@ namespace UI
                 IsEnabled = value;
 
                 //keep nested menus disabled
-                USpan<IsMenuOption> options = Options;
-                for (uint i = 0; i < options.Length; i++)
+                Span<IsMenuOption> options = Options;
+                for (int i = 0; i < options.Length; i++)
                 {
                     ref IsMenuOption option = ref options[i];
                     if (value)
@@ -110,11 +110,11 @@ namespace UI
             }
         }
 
-        public readonly MenuOption this[uint index]
+        public readonly MenuOption this[int index]
         {
             get
             {
-                USpan<IsMenuOption> options = Options;
+                Span<IsMenuOption> options = Options;
                 ref IsMenuOption option = ref options[index];
                 OptionPath path = GetPath(this, index);
                 return new(this, path);
@@ -152,15 +152,15 @@ namespace UI
             Entity entity = this;
             Canvas canvas = entity.GetCanvas();
             Values<IsMenuOption> options = entity.GetArray<IsMenuOption>();
-            uint optionCount = options.Length;
-            bool hasPath = label.TryIndexOf('/', out uint slashIndex);
+            int optionCount = options.Length;
+            bool hasPath = label.TryIndexOf('/', out int slashIndex);
             ASCIIText256 remainder = hasPath ? label.Slice(slashIndex + 1) : default;
             label = hasPath ? label.Slice(0, slashIndex) : label;
             if (hasPath)
             {
                 //try to find existing option with same text
                 OptionPath path = default;
-                for (uint i = 0; i < options.Length; i++)
+                for (int i = 0; i < options.Length; i++)
                 {
                     ref IsMenuOption existingOption = ref options[i];
                     if (existingOption.text == label)
@@ -244,9 +244,9 @@ namespace UI
         {
             World world = optionButtonEntity.world;
             Entity menuEntity = optionButtonEntity.Parent;
-            USpan<uint> menuChildren = menuEntity.Children;
-            uint chosenIndex = 0;
-            for (uint i = 0; i < menuChildren.Length; i++)
+            ReadOnlySpan<uint> menuChildren = menuEntity.Children;
+            int chosenIndex = 0;
+            for (int i = 0; i < menuChildren.Length; i++)
             {
                 uint childEntity = menuChildren[i];
                 if (childEntity == optionButtonEntity.value)
@@ -294,7 +294,7 @@ namespace UI
         /// <summary>
         /// Retrieves the full path that referes to this local index.
         /// </summary>
-        public static OptionPath GetPath(Menu menu, uint localIndex)
+        public static OptionPath GetPath(Menu menu, int localIndex)
         {
             World world = menu.world;
             uint entity = menu.value;
@@ -309,7 +309,7 @@ namespace UI
                 }
 
                 Values<IsMenuOption> options = world.GetArray<IsMenuOption>(parent);
-                for (uint i = 0; i < options.Length; i++)
+                for (int i = 0; i < options.Length; i++)
                 {
                     rint childMenuReference = options[i].childMenuReference;
                     if (childMenuReference != default && world.GetReference(parent, childMenuReference) == entity)

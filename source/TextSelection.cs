@@ -1,15 +1,14 @@
 ﻿using System;
-using Unmanaged;
 
 namespace UI
 {
     public struct TextSelection : IEquatable<TextSelection>
     {
-        public uint start;
-        public uint end;
-        public uint index;
+        public int start;
+        public int end;
+        public int index;
 
-        public readonly uint Length
+        public readonly int Length
         {
             get
             {
@@ -24,7 +23,7 @@ namespace UI
             }
         }
 
-        public TextSelection(uint start, uint end, uint index)
+        public TextSelection(int start, int end, int index)
         {
             this.start = start;
             this.end = end;
@@ -33,23 +32,23 @@ namespace UI
 
         public readonly override string ToString()
         {
-            USpan<char> buffer = stackalloc char[64];
-            uint length = ToString(buffer);
-            return buffer.GetSpan(length).ToString();
+            Span<char> buffer = stackalloc char[64];
+            int length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
-        public readonly uint ToString(USpan<char> buffer)
+        public readonly int ToString(Span<char> destination)
         {
-            uint length = 0;
-            buffer[length++] = '[';
-            length += start.ToString(buffer.Slice(length));
-            buffer[length++] = ',';
-            buffer[length++] = ' ';
-            length += end.ToString(buffer.Slice(length));
-            buffer[length++] = ',';
-            buffer[length++] = ' ';
-            length += index.ToString(buffer.Slice(length));
-            buffer[length++] = ']';
+            int length = 0;
+            destination[length++] = '[';
+            length += start.ToString(destination.Slice(length));
+            destination[length++] = ',';
+            destination[length++] = ' ';
+            length += end.ToString(destination.Slice(length));
+            destination[length++] = ',';
+            destination[length++] = ' ';
+            length += index.ToString(destination.Slice(length));
+            destination[length++] = ']';
             return length;
         }
 

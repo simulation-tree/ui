@@ -27,7 +27,7 @@ namespace UI.Functions
             return ((nint)function).GetHashCode();
         }
 
-        public readonly void Invoke(USpan<char> oldText, Text newText)
+        public readonly void Invoke(ReadOnlySpan<char> oldText, Text newText)
         {
             function(new(oldText, newText));
         }
@@ -45,20 +45,20 @@ namespace UI.Functions
         public readonly struct Input
         {
             private readonly char* oldText;
-            private readonly uint oldLength;
+            private readonly int oldLength;
             private readonly Text newText;
 
-            public readonly USpan<char> PreviousText => new(oldText, oldLength);
-            public readonly USpan<char> NewText => newText.AsSpan();
+            public readonly ReadOnlySpan<char> PreviousText => new(oldText, oldLength);
+            public readonly ReadOnlySpan<char> NewText => newText.AsSpan();
 
-            public Input(USpan<char> oldText, Text newText)
+            public Input(ReadOnlySpan<char> oldText, Text newText)
             {
-                this.oldText = oldText;
+                this.oldText = oldText.GetPointer();
                 this.oldLength = oldText.Length;
                 this.newText = newText;
             }
 
-            public readonly void SetNewText(USpan<char> newText)
+            public readonly void SetNewText(ReadOnlySpan<char> newText)
             {
                 this.newText.SetLength(newText.Length);
                 newText.CopyTo(this.newText.AsSpan());

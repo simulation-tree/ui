@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using Unmanaged;
 
 namespace UI
 {
@@ -39,20 +38,20 @@ namespace UI
 
         public readonly override string ToString()
         {
-            USpan<char> buffer = stackalloc char[64];
-            uint length = ToString(buffer);
-            return buffer.GetSpan(length).ToString();
+            Span<char> buffer = stackalloc char[64];
+            int length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
-        public readonly uint ToString(USpan<char> buffer)
+        public readonly int ToString(Span<char> destination)
         {
-            uint length = 0;
-            buffer[length++] = '[';
-            length += min.ToString(buffer.Slice(length));
-            buffer[length++] = ',';
-            buffer[length++] = ' ';
-            length += max.ToString(buffer.Slice(length));
-            buffer[length++] = ']';
+            int length = 0;
+            destination[length++] = '[';
+            length += min.ToString(destination.Slice(length));
+            destination[length++] = ',';
+            destination[length++] = ' ';
+            length += max.ToString(destination.Slice(length));
+            destination[length++] = ']';
             return length;
         }
 

@@ -1,4 +1,4 @@
-﻿using Unmanaged;
+﻿using System;
 using Worlds;
 
 namespace UI.Functions
@@ -21,7 +21,7 @@ namespace UI.Functions
         }
 #endif
 
-        public readonly void Invoke(USpan<Entity> entities, ulong userData)
+        public readonly void Invoke(Span<Entity> entities, ulong userData)
         {
             Input input = new(entities, userData);
             function(input);
@@ -36,18 +36,18 @@ namespace UI.Functions
         {
             public readonly ulong userData;
 
-            private readonly nint address;
-            private readonly uint length;
+            private readonly Entity* pointer;
+            private readonly int length;
 
             /// <summary>
             /// All entities containing the same filter, callback and identifier combinations.
             /// </summary>
-            public readonly USpan<Entity> Entities => new(address, length);
+            public readonly Span<Entity> Entities => new(pointer, length);
 
-            public Input(USpan<Entity> entities, ulong userData)
+            public Input(Span<Entity> entities, ulong userData)
             {
                 this.userData = userData;
-                this.address = entities.Address;
+                this.pointer = entities.GetPointer();
                 length = entities.Length;
             }
         }

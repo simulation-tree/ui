@@ -1,4 +1,5 @@
 ﻿using Rendering.Components;
+using System;
 using System.Runtime.InteropServices;
 using UI.Components;
 using UI.Functions;
@@ -72,16 +73,16 @@ namespace UI.ControlEditors
         {
             //store original state
             TextField textField = entity.As<TextField>();
-            USpan<char> originalText = textField.Value;
+            ReadOnlySpan<char> originalText = textField.Value;
             if (!entity.ContainsArray<TextCharacter>())
             {
-                entity.CreateArray(originalText.As<TextCharacter>());
+                entity.CreateArray(originalText.As<char, TextCharacter>());
             }
             else
             {
                 Values<TextCharacter> array = entity.GetArray<TextCharacter>();
                 array.Length = originalText.Length;
-                array.CopyFrom(originalText.As<TextCharacter>());
+                array.CopyFrom(originalText.As<char, TextCharacter>());
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -26,8 +27,8 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly USpan<SelectedLeaf> Selected => GetArray<SelectedLeaf>().AsSpan();
-        public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>().AsSpan();
+        public readonly Span<SelectedLeaf> Selected => GetArray<SelectedLeaf>().AsSpan();
+        public readonly Span<TreeNodeOption> Nodes => GetArray<TreeNodeOption>().AsSpan();
 
         public Tree(Canvas canvas)
         {
@@ -55,7 +56,7 @@ namespace UI
         {
             Vector2 size = Size;
             Values<TreeNodeOption> options = GetArray<TreeNodeOption>();
-            uint nodeCount = options.Length;
+            int nodeCount = options.Length;
             TreeNode node = new(text, this.GetCanvas());
             node.SetParent(value);
             node.Position = new(0, -nodeCount * size.Y);
@@ -69,9 +70,9 @@ namespace UI
         public readonly void UpdatePositions()
         {
             Vector2 size = Size;
-            USpan<TreeNodeOption> nodes = Nodes;
+            Span<TreeNodeOption> nodes = Nodes;
             float y = 0;
-            for (uint i = 0; i < nodes.Length; i++)
+            for (int i = 0; i < nodes.Length; i++)
             {
                 rint nodeReference = nodes[i].childNodeReference;
                 uint nodeEntity = GetReference(nodeReference);
@@ -91,8 +92,8 @@ namespace UI
 
         public readonly bool IsSelected(TreeNode node)
         {
-            USpan<SelectedLeaf> selected = Selected;
-            for (uint i = 0; i < selected.Length; i++)
+            Span<SelectedLeaf> selected = Selected;
+            for (int i = 0; i < selected.Length; i++)
             {
                 rint nodeReference = selected[i].nodeReference;
                 uint nodeEntity = GetReference(nodeReference);
@@ -108,7 +109,7 @@ namespace UI
         public readonly void SetSelected(TreeNode node, bool state)
         {
             Values<SelectedLeaf> selected = GetArray<SelectedLeaf>();
-            uint selectedCount = selected.Length;
+            int selectedCount = selected.Length;
             if (state)
             {
                 ThrowIfSelected(node);
@@ -123,8 +124,8 @@ namespace UI
             {
                 ThrowIfNotSelected(node);
 
-                uint index = 0;
-                for (uint i = 0; i < selected.Length; i++)
+                int index = 0;
+                for (int i = 0; i < selected.Length; i++)
                 {
                     rint nodeReference = selected[i].nodeReference;
                     uint nodeEntity = GetReference(nodeReference);
@@ -136,7 +137,7 @@ namespace UI
                 }
 
                 //shift back
-                for (uint i = index; i < selected.Length - 1; i++)
+                for (int i = index; i < selected.Length - 1; i++)
                 {
                     selected[i] = selected[i + 1];
                 }

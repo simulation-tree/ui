@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Diagnostics;
-using Unmanaged;
 
 namespace UI
 {
     public unsafe struct PressedCharacters : IEquatable<PressedCharacters>
     {
-        public const uint MaxPressedCharacters = 32;
+        public const int MaxPressedCharacters = 32;
 
-        private fixed ushort pressedCharacters[(int)MaxPressedCharacters];
+        private fixed ushort pressedCharacters[MaxPressedCharacters];
         private byte length;
 
         public readonly uint Length => length;
 
-        public readonly char this[uint index]
+        public readonly char this[int index]
         {
             get
             {
@@ -28,7 +27,7 @@ namespace UI
             length = 0;
         }
 
-        public void SetPressedCharacters(USpan<char> characters)
+        public void SetPressedCharacters(ReadOnlySpan<char> characters)
         {
             ThrowIfGreaterThanCapacity(characters.Length);
 
@@ -55,25 +54,25 @@ namespace UI
 
         public void Press(char character)
         {
-            ThrowIfGreaterThanCapacity((uint)(length + 1));
-            
+            ThrowIfGreaterThanCapacity(length + 1);
+
             pressedCharacters[length] = character;
             length++;
         }
 
-        public readonly uint CopyPressedCharactersTo(USpan<char> destination)
+        public readonly uint CopyPressedCharactersTo(System.Span<char> destination)
         {
             ThrowIfGreaterThanCapacity(destination.Length);
 
             fixed (ushort* p = pressedCharacters)
             {
-                new USpan<char>(p, length).CopyTo(destination);
+                new Span<char>(p, length).CopyTo(destination);
                 return length;
             }
         }
 
         [Conditional("DEBUG")]
-        private readonly void ThrowIfOutOfRange(uint index)
+        private readonly void ThrowIfOutOfRange(int index)
         {
             if (index >= length)
             {
@@ -119,7 +118,7 @@ namespace UI
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfGreaterThanCapacity(uint count)
+        private static void ThrowIfGreaterThanCapacity(int count)
         {
             if (count > MaxPressedCharacters)
             {

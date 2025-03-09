@@ -13,7 +13,6 @@ using System.Numerics;
 using Textures;
 using Transforms.Components;
 using UI.Components;
-using Unmanaged;
 using Worlds;
 
 namespace UI
@@ -110,12 +109,12 @@ namespace UI
             this.world = world;
             value = world.CreateEntity();
 
-            USpan<AvailableState> states = stackalloc AvailableState[3];
+            System.Span<AvailableState> states = stackalloc AvailableState[3];
             states[0] = new("idle");
             states[1] = new("selected");
             states[2] = new("pressed");
 
-            USpan<Transition> transitions = stackalloc Transition[4];
+            System.Span<Transition> transitions = stackalloc Transition[4];
             transitions[0] = new("idle", "selected", "selected", Transition.Condition.GreaterThan, 0f);
             transitions[1] = new("selected", "pressed", "pressed", Transition.Condition.GreaterThan, 0f);
             transitions[2] = new("pressed", "selected", "pressed", Transition.Condition.LessThan, 1f);
@@ -124,7 +123,7 @@ namespace UI
             StateMachine controlStateMachine = new(world, states, transitions);
 
             //automations for each state
-            USpan<Vector4> keyframes = stackalloc Vector4[1];
+            System.Span<Vector4> keyframes = stackalloc Vector4[1];
             keyframes[0] = new Vector4(0.8f, 0.8f, 0.8f, 1f);
             AutomationEntity<Vector4> idleAutomation = new(world, [0f], keyframes);
 
@@ -257,8 +256,8 @@ namespace UI
         private readonly MaterialSettings GetMaterialSettings(Camera camera)
         {
             Values<MaterialSettings> settings = GetArray<MaterialSettings>();
-            uint settingsCount = settings.Length;
-            for (uint i = 1; i < settingsCount; i++)
+            int settingsCount = settings.Length;
+            for (int i = 1; i < settingsCount; i++)
             {
                 MaterialSettings materialSettings = settings[i];
                 rint cameraReference = materialSettings.cameraReference;

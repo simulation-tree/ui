@@ -1,5 +1,5 @@
-﻿using UI.Components;
-using Unmanaged;
+﻿using System;
+using UI.Components;
 using Worlds;
 
 namespace UI
@@ -17,20 +17,20 @@ namespace UI
 
         public readonly override string ToString()
         {
-            USpan<char> buffer = stackalloc char[256];
-            uint length = ToString(buffer);
-            return buffer.GetSpan(length).ToString();
+            Span<char> buffer = stackalloc char[256];
+            int length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
-        public readonly uint ToString(USpan<char> buffer)
+        public readonly int ToString(Span<char> buffer)
         {
-            uint length = 0;
+            int length = 0;
             byte depth = optionPath.Depth;
             uint entity = rootMenu.value;
             World world = rootMenu.world;
-            for (uint d = 0; d < depth; d++)
+            for (int d = 0; d < depth; d++)
             {
-                uint optionIndex = optionPath[d];
+                int optionIndex = optionPath[d];
                 IsMenuOption option = world.GetArrayElement<IsMenuOption>(entity, optionIndex);
                 length += option.text.CopyTo(buffer.Slice(length));
                 if (d < depth - 1)

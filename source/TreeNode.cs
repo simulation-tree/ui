@@ -28,7 +28,7 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly USpan<TreeNodeOption> Nodes => GetArray<TreeNodeOption>().AsSpan();
+        public readonly System.Span<TreeNodeOption> Nodes => GetArray<TreeNodeOption>().AsSpan();
 
         public readonly Label Label
         {
@@ -88,14 +88,17 @@ namespace UI
 
         public override string ToString()
         {
-            USpan<char> buffer = stackalloc char[256];
-            return ToString(buffer).ToString();
+            Span<char> buffer = stackalloc char[256];
+            int length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
-        public readonly uint ToString(USpan<char> buffer)
+        public readonly int ToString(Span<char> destination)
         {
             Label text = Label;
-            return text.ProcessedText.ToString(buffer);
+            ReadOnlySpan<char> processedText = text.ProcessedText;
+            processedText.CopyTo(destination);
+            return processedText.Length;
         }
 
         public unsafe readonly TreeNode AddLeaf(ASCIIText256 text)
@@ -104,7 +107,7 @@ namespace UI
             Canvas canvas = this.GetCanvas();
             Settings settings = canvas.Settings;
             Values<TreeNodeOption> options = GetArray<TreeNodeOption>();
-            uint nodeCount = options.Length;
+            int nodeCount = options.Length;
             if (nodeCount == 0)
             {
                 //the button that toggles expanded state
@@ -138,9 +141,9 @@ namespace UI
         public readonly float UpdatePositions()
         {
             Vector2 size = Size;
-            USpan<TreeNodeOption> nodes = Nodes;
+            Span<TreeNodeOption> nodes = Nodes;
             float y = size.Y;
-            for (uint i = 0; i < nodes.Length; i++)
+            for (int i = 0; i < nodes.Length; i++)
             {
                 rint nodeReference = nodes[i].childNodeReference;
                 uint nodeEntity = GetReference(nodeReference);
@@ -162,8 +165,8 @@ namespace UI
         private readonly void UpdateChildEnabledStates()
         {
             bool expanded = IsExpanded;
-            USpan<TreeNodeOption> nodes = Nodes;
-            for (uint i = 0; i < nodes.Length; i++)
+            Span<TreeNodeOption> nodes = Nodes;
+            for (int i = 0; i < nodes.Length; i++)
             {
                 rint nodeReference = nodes[i].childNodeReference;
                 uint nodeEntity = GetReference(nodeReference);
@@ -218,7 +221,7 @@ namespace UI
             {
                 //deselect all
                 Values<SelectedLeaf> currentSelection = tree.GetArray<SelectedLeaf>();
-                for (uint i = 0; i < currentSelection.Length; i++)
+                for (int i = 0; i < currentSelection.Length; i++)
                 {
                     rint nodeReference = currentSelection[i].nodeReference;
                     uint selectedNodeEntity = tree.GetReference(nodeReference);
@@ -258,8 +261,8 @@ namespace UI
 
             //set enable state of children
             World world = expandButtonEntity.world;
-            USpan<TreeNodeOption> nodes = treeNode.Nodes;
-            for (uint i = 0; i < nodes.Length; i++)
+            Span<TreeNodeOption> nodes = treeNode.Nodes;
+            for (int i = 0; i < nodes.Length; i++)
             {
                 rint nodeReference = nodes[i].childNodeReference;
                 uint nodeEntity = treeNode.GetReference(nodeReference);

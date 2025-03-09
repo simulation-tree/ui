@@ -40,12 +40,12 @@ namespace UI
         /// <summary>
         /// Displayed text of the label after being processed.
         /// </summary>
-        public readonly USpan<char> ProcessedText => As<TextRenderer>().TextMesh.Content;
+        public readonly ReadOnlySpan<char> ProcessedText => As<TextRenderer>().TextMesh.Content;
 
         /// <summary>
         /// The original and underlying text of the label.
         /// </summary>
-        public readonly USpan<char> UnderlyingText => GetArray<LabelCharacter>().AsSpan<char>();
+        public readonly Span<char> UnderlyingText => GetArray<LabelCharacter>().AsSpan<char>();
 
         public readonly Font Font
         {
@@ -61,7 +61,7 @@ namespace UI
             }
         }
 
-        public Label(Canvas canvas, USpan<char> text, Font font = default, float size = DefaultLabelSize)
+        public Label(Canvas canvas, ReadOnlySpan<char> text, Font font = default, float size = DefaultLabelSize)
         {
             world = canvas.world;
             Settings settings = canvas.Settings;
@@ -88,7 +88,7 @@ namespace UI
             textRenderer.Material = settings.GetTextMaterial(camera);
             textRenderer.RenderMask = canvas.RenderMask;
             textRenderer.AddTag<IsLabel>();
-            textRenderer.CreateArray(text.As<LabelCharacter>());
+            textRenderer.CreateArray(text.As<char, LabelCharacter>());
 
             transform.LocalScale = Vector3.One * size;
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
@@ -125,9 +125,9 @@ namespace UI
 
             textRenderer.AddTag<IsLabel>();
 
-            USpan<char> textSpan = stackalloc char[text.Length];
+            Span<char> textSpan = stackalloc char[text.Length];
             text.CopyTo(textSpan);
-            textRenderer.CreateArray(textSpan.As<LabelCharacter>());
+            textRenderer.CreateArray(textSpan.As<char, LabelCharacter>());
 
             transform.LocalScale = Vector3.One * size;
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
@@ -155,7 +155,7 @@ namespace UI
         /// <summary>
         /// Updates the underlying text of the label.
         /// </summary>
-        public readonly void SetText(USpan<char> text)
+        public readonly void SetText(ReadOnlySpan<char> text)
         {
             Values<LabelCharacter> array = GetArray<LabelCharacter>();
             array.Length = text.Length;
@@ -175,7 +175,7 @@ namespace UI
         /// </summary>
         public readonly void SetText(ASCIIText256 text)
         {
-            USpan<char> buffer = stackalloc char[text.Length];
+            Span<char> buffer = stackalloc char[text.Length];
             text.CopyTo(buffer);
             SetText(buffer);
         }

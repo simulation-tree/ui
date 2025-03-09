@@ -89,7 +89,7 @@ namespace UI
             using List<Entity> createdEntities = new();
             editor.initializeControlField.Invoke(createdEntities, this, canvas, target, dataType, offset);
             Values<ControlEntity> referencesArray = transform.CreateArray<ControlEntity>(createdEntities.Count);
-            for (uint i = 0; i < createdEntities.Count; i++)
+            for (int i = 0; i < createdEntities.Count; i++)
             {
                 Entity createdEntity = createdEntities[i];
                 rint reference = transform.AddReference(createdEntity);

@@ -1,4 +1,5 @@
-﻿using Unmanaged;
+﻿using System;
+using Unmanaged;
 
 namespace UI.Functions
 {
@@ -11,7 +12,7 @@ namespace UI.Functions
             this.function = function;
         }
 
-        public readonly bool Invoke(USpan<char> originalText, Text result)
+        public readonly bool Invoke(Span<char> originalText, Text result)
         {
             return function(new(originalText, result));
         }
@@ -19,19 +20,19 @@ namespace UI.Functions
         public readonly struct Input
         {
             private readonly char* input;
-            private readonly uint inputLength;
+            private readonly int inputLength;
             private readonly Text result;
 
-            public readonly USpan<char> OriginalText => new(input, inputLength);
+            public readonly Span<char> OriginalText => new(input, inputLength);
 
-            public Input(USpan<char> originalText, Text result)
+            public Input(Span<char> originalText, Text result)
             {
-                this.input = originalText;
+                this.input = originalText.GetPointer();
                 this.inputLength = originalText.Length;
                 this.result = result;
             }
 
-            public readonly void SetResult(USpan<char> newText)
+            public readonly void SetResult(Span<char> newText)
             {
                 result.CopyFrom(newText);
             }

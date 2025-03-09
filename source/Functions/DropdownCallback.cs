@@ -5,24 +5,24 @@ namespace UI.Functions
     public unsafe readonly struct DropdownCallback : IEquatable<DropdownCallback>
     {
 #if NET
-        private readonly delegate* unmanaged<Dropdown, uint, uint, void> function;
+        private readonly delegate* unmanaged<Input, void> function;
 
-        public DropdownCallback(delegate* unmanaged<Dropdown, uint, uint, void> function)
+        public DropdownCallback(delegate* unmanaged<Input, void> function)
         {
             this.function = function;
         }
 #else
-        private readonly delegate*<Dropdown, uint, uint, void> function;
+        private readonly delegate*<Input, void> function;
 
-        public DropdownCallback(delegate*<Dropdown, uint, uint, void> function)
+        public DropdownCallback(delegate*<Input, void> function)
         {
             this.function = function;
         }
 #endif
 
-        public readonly void Invoke(Dropdown dropdown, uint previousOption, uint currentOption)
+        public readonly void Invoke(Dropdown dropdown, int previousOption, int currentOption)
         {
-            function(dropdown, previousOption, currentOption);
+            function(new(dropdown, previousOption, currentOption));
         }
 
         public readonly override int GetHashCode()
@@ -48,6 +48,20 @@ namespace UI.Functions
         public static bool operator !=(DropdownCallback left, DropdownCallback right)
         {
             return !(left == right);
+        }
+
+        public readonly struct Input
+        {
+            public readonly Dropdown dropdown;
+            public readonly int previousOption;
+            public readonly int currentOption;
+
+            public Input(Dropdown dropdown, int previousOption, int currentOption)
+            {
+                this.dropdown = dropdown;
+                this.previousOption = previousOption;
+                this.currentOption = currentOption;
+            }
         }
     }
 }

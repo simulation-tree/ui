@@ -6,16 +6,16 @@ namespace UI
 {
     public unsafe struct OptionPath
     {
-        public const uint Capacity = 32;
+        public const int Capacity = 32;
 
-        public const uint MaxDepth = 31;
+        public const int MaxDepth = 31;
 
         private fixed ushort path[(int)MaxDepth];
         private byte depth;
 
         public readonly ushort this[byte depth] => path[depth];
 
-        public readonly ushort this[uint depth]
+        public readonly ushort this[int depth]
         {
             get
             {
@@ -30,12 +30,12 @@ namespace UI
         /// </summary>
         public readonly byte Depth => depth;
 
-        public OptionPath(params USpan<ushort> path)
+        public OptionPath(params Span<ushort> path)
         {
             ThrowIfTooDeep(path.Length);
 
             depth = (byte)path.Length;
-            for (uint i = 0; i < path.Length; i++)
+            for (int i = 0; i < path.Length; i++)
             {
                 this.path[i] = path[i];
             }
@@ -43,31 +43,31 @@ namespace UI
 
         public OptionPath(ASCIIText256 path)
         {
-            USpan<char> buffer = stackalloc char[path.Length];
+            System.Span<char> buffer = stackalloc char[path.Length];
             path.CopyTo(buffer);
             CopyFrom(buffer);
         }
 
-        public OptionPath(USpan<char> path)
+        public OptionPath(System.Span<char> path)
         {
             CopyFrom(path);
         }
 
         public readonly override string ToString()
         {
-            USpan<char> buffer = stackalloc char[64];
-            uint length = ToString(buffer);
-            return buffer.GetSpan(length).ToString();
+            Span<char> buffer = stackalloc char[64];
+            int length = ToString(buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
-        public readonly byte ToString(USpan<char> buffer)
+        public readonly int ToString(Span<char> destination)
         {
-            byte length = 0;
-            for (uint i = 0; i < depth; i++)
+            int length = 0;
+            for (int i = 0; i < depth; i++)
             {
                 ushort index = path[i];
-                length += (byte)index.ToString(buffer.Slice(length));
-                buffer[length] = '/';
+                length += index.ToString(destination.Slice(length));
+                destination[length] = '/';
                 length++;
             }
 
@@ -79,9 +79,9 @@ namespace UI
             return length;
         }
 
-        public readonly uint CopyTo(USpan<ushort> path)
+        public readonly int CopyTo(Span<ushort> path)
         {
-            for (uint i = 0; i < depth; i++)
+            for (int i = 0; i < depth; i++)
             {
                 path[i] = this.path[i];
             }
@@ -89,10 +89,10 @@ namespace UI
             return depth;
         }
 
-        public void CopyFrom(USpan<char> path)
+        public void CopyFrom(Span<char> path)
         {
-            uint index = 0;
-            uint start = 0;
+            int index = 0;
+            int start = 0;
             depth = 0;
             while (index < path.Length)
             {
@@ -100,12 +100,12 @@ namespace UI
                 bool atEnd = index == path.Length - 1;
                 if (c == '/' || atEnd)
                 {
-                    uint length = atEnd ? path.Length - index : index - start;
+                    int length = atEnd ? path.Length - index : index - start;
                     if (length > 0)
                     {
                         ThrowIfTooDeep(depth);
 
-                        USpan<char> slice = path.Slice(start, length);
+                        ReadOnlySpan<char> slice = path.Slice(start, length);
                         this.path[depth] = ushort.Parse(slice);
                         depth++;
                     }
@@ -117,7 +117,7 @@ namespace UI
             }
         }
 
-        public readonly OptionPath Append(uint value)
+        public readonly OptionPath Append(int value)
         {
             ThrowIfTooDeep(depth);
             OptionPath newPath = this;
@@ -139,7 +139,7 @@ namespace UI
             return newPath;
         }
 
-        public readonly OptionPath Insert(byte index, uint value)
+        public readonly OptionPath Insert(int index, int value)
         {
             if (index >= depth)
             {
@@ -148,7 +148,7 @@ namespace UI
 
             ThrowIfTooDeep(depth);
             OptionPath newPath = this;
-            for (uint i = depth; i > index; i--)
+            for (int i = depth; i > index; i--)
             {
                 newPath.path[i] = newPath.path[i - 1];
             }
@@ -167,7 +167,7 @@ namespace UI
 
             OptionPath newPath = this;
             newPath.depth -= start;
-            for (uint i = 0; i < newPath.depth; i++)
+            for (int i = 0; i < newPath.depth; i++)
             {
                 newPath.path[i] = path[start + i];
             }
@@ -176,7 +176,7 @@ namespace UI
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfTooDeep(uint index)
+        private static void ThrowIfTooDeep(int index)
         {
             if (index > MaxDepth)
             {

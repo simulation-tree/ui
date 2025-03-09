@@ -1,5 +1,6 @@
 ﻿using Rendering;
 using Rendering.Components;
+using System;
 using System.Numerics;
 using Transforms;
 using Transforms.Components;
@@ -69,7 +70,7 @@ namespace UI
         /// <summary>
         /// The content of this text field.
         /// </summary>
-        public readonly USpan<char> Value => TextLabel.ProcessedText;
+        public readonly ReadOnlySpan<char> Value => TextLabel.ProcessedText;
 
         public unsafe TextField(Canvas canvas, ASCIIText256 defaultValue = default, BeginEditing beginEditing = default, TextValidation validation = default, Submit submit = default, Cancel cancel = default)
         {
@@ -121,7 +122,7 @@ namespace UI
             archetype.AddComponentType<IsSelectable>();
         }
 
-        public readonly void SetText(USpan<char> newText)
+        public readonly void SetText(Span<char> newText)
         {
             ref TextValidation validation = ref Validation;
             if (validation != default)
@@ -138,7 +139,7 @@ namespace UI
 
         public readonly void SetText(ASCIIText256 newText)
         {
-            USpan<char> buffer = stackalloc char[newText.Length];
+            Span<char> buffer = stackalloc char[newText.Length];
             newText.CopyTo(buffer);
             SetText(buffer);
         }
