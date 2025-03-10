@@ -244,43 +244,48 @@ namespace UI
         {
             World world = optionButtonEntity.world;
             Entity menuEntity = optionButtonEntity.Parent;
-            ReadOnlySpan<uint> menuChildren = menuEntity.Children;
-            int chosenIndex = 0;
-            for (int i = 0; i < menuChildren.Length; i++)
+            int childCount = menuEntity.ChildCount;
+            if (childCount > 0)
             {
-                uint childEntity = menuChildren[i];
-                if (childEntity == optionButtonEntity.value)
+                Span<uint> menuChildren = stackalloc uint[childCount];
+                menuEntity.CopyChildrenTo(menuChildren);
+                int chosenIndex = 0;
+                for (int i = 0; i < menuChildren.Length; i++)
                 {
-                    break;
+                    uint childEntity = menuChildren[i];
+                    if (childEntity == optionButtonEntity.value)
+                    {
+                        break;
+                    }
+
+                    if (world.ContainsComponent<IsTrigger>(childEntity))
+                    {
+                        chosenIndex++;
+                    }
                 }
 
-                if (world.ContainsComponent<IsTrigger>(childEntity))
+                Menu menu = menuEntity.As<Menu>();
+                ref IsMenuOption option = ref menuEntity.GetArrayElement<IsMenuOption>(chosenIndex);
+                if (option.childMenuReference != default)
                 {
-                    chosenIndex++;
+                    option.expanded = !option.expanded;
+                    uint childMenuEntity = menuEntity.GetReference(option.childMenuReference);
+                    Menu childMenu = new Entity(world, childMenuEntity).As<Menu>();
+                    Vector2 optionSize = menu.OptionSize;
+                    childMenu.OptionSize = optionSize;
+                    childMenu.Position = new(optionSize.X, 0);
+                    childMenu.IsExpanded = option.expanded;
                 }
-            }
-
-            Menu menu = menuEntity.As<Menu>();
-            ref IsMenuOption option = ref menuEntity.GetArrayElement<IsMenuOption>(chosenIndex);
-            if (option.childMenuReference != default)
-            {
-                option.expanded = !option.expanded;
-                uint childMenuEntity = menuEntity.GetReference(option.childMenuReference);
-                Menu childMenu = new Entity(world, childMenuEntity).As<Menu>();
-                Vector2 optionSize = menu.OptionSize;
-                childMenu.OptionSize = optionSize;
-                childMenu.Position = new(optionSize.X, 0);
-                childMenu.IsExpanded = option.expanded;
-            }
-            else
-            {
-                ref IsMenu component = ref menuEntity.GetComponent<IsMenu>();
-                if (component.callback != default)
+                else
                 {
-                    Menu rootMenu = menu.RootMenu;
-                    OptionPath optionPath = GetPath(menu, chosenIndex);
-                    MenuOption chosenOption = new(rootMenu, optionPath);
-                    component.callback.Invoke(chosenOption);
+                    ref IsMenu component = ref menuEntity.GetComponent<IsMenu>();
+                    if (component.callback != default)
+                    {
+                        Menu rootMenu = menu.RootMenu;
+                        OptionPath optionPath = GetPath(menu, chosenIndex);
+                        MenuOption chosenOption = new(rootMenu, optionPath);
+                        component.callback.Invoke(chosenOption);
+                    }
                 }
             }
         }
