@@ -28,7 +28,7 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly System.Span<TreeNodeOption> Nodes => GetArray<TreeNodeOption>().AsSpan();
+        public readonly Span<TreeNodeOption> Nodes => GetArray<TreeNodeOption>().AsSpan();
 
         public readonly Label Label
         {

@@ -43,12 +43,12 @@ namespace UI
 
         public OptionPath(ASCIIText256 path)
         {
-            System.Span<char> buffer = stackalloc char[path.Length];
+            Span<char> buffer = stackalloc char[path.Length];
             path.CopyTo(buffer);
             CopyFrom(buffer);
         }
 
-        public OptionPath(System.Span<char> path)
+        public OptionPath(ReadOnlySpan<char> path)
         {
             CopyFrom(path);
         }
@@ -79,17 +79,17 @@ namespace UI
             return length;
         }
 
-        public readonly int CopyTo(Span<ushort> path)
+        public readonly int CopyTo(Span<ushort> destination)
         {
             for (int i = 0; i < depth; i++)
             {
-                path[i] = this.path[i];
+                destination[i] = path[i];
             }
 
             return depth;
         }
 
-        public void CopyFrom(Span<char> path)
+        public void CopyFrom(ReadOnlySpan<char> path)
         {
             int index = 0;
             int start = 0;

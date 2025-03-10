@@ -60,14 +60,13 @@ namespace UI
             length++;
         }
 
-        public readonly uint CopyPressedCharactersTo(System.Span<char> destination)
+        public readonly void CopyPressedCharactersTo(Span<char> destination)
         {
             ThrowIfGreaterThanCapacity(destination.Length);
 
             fixed (ushort* p = pressedCharacters)
             {
                 new Span<char>(p, length).CopyTo(destination);
-                return length;
             }
         }
 

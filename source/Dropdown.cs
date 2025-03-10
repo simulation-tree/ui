@@ -70,7 +70,7 @@ namespace UI
                 component.selectedOption = value;
 
                 Menu menu = Menu;
-                System.Span<IsMenuOption> options = menu.Options;
+                Span<IsMenuOption> options = menu.Options;
                 ASCIIText256 text = default;
                 OptionPath path = value;
                 while (path.Depth > 0)
@@ -144,7 +144,7 @@ namespace UI
             }
         }
 
-        public readonly System.Span<IsMenuOption> Options => Menu.Options;
+        public readonly Span<IsMenuOption> Options => Menu.Options;
         public readonly ref DropdownCallback Callback => ref GetComponent<IsDropdown>().callback;
 
         public unsafe Dropdown(Canvas canvas, Vector2 optionSize, DropdownCallback callback = default)

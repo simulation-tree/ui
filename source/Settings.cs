@@ -109,12 +109,12 @@ namespace UI
             this.world = world;
             value = world.CreateEntity();
 
-            System.Span<AvailableState> states = stackalloc AvailableState[3];
+            Span<AvailableState> states = stackalloc AvailableState[3];
             states[0] = new("idle");
             states[1] = new("selected");
             states[2] = new("pressed");
 
-            System.Span<Transition> transitions = stackalloc Transition[4];
+            Span<Transition> transitions = stackalloc Transition[4];
             transitions[0] = new("idle", "selected", "selected", Transition.Condition.GreaterThan, 0f);
             transitions[1] = new("selected", "pressed", "pressed", Transition.Condition.GreaterThan, 0f);
             transitions[2] = new("pressed", "selected", "pressed", Transition.Condition.LessThan, 1f);
@@ -123,7 +123,7 @@ namespace UI
             StateMachine controlStateMachine = new(world, states, transitions);
 
             //automations for each state
-            System.Span<Vector4> keyframes = stackalloc Vector4[1];
+            Span<Vector4> keyframes = stackalloc Vector4[1];
             keyframes[0] = new Vector4(0.8f, 0.8f, 0.8f, 1f);
             AutomationEntity<Vector4> idleAutomation = new(world, [0f], keyframes);
 
