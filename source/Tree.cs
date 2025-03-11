@@ -135,12 +135,7 @@ namespace UI
                 }
 
                 //shift back
-                for (int i = index; i < selected.Length - 1; i++)
-                {
-                    selected[i] = selected[i + 1];
-                }
-
-                selected.Length--;
+                selected.RemoveAt(index);
                 node.BackgroundColor = new(1, 1, 1, 1);
                 node.Label.Color = new(0, 0, 0, 1);
             }

@@ -81,7 +81,6 @@ namespace UI.ControlEditors
             else
             {
                 Values<TextCharacter> array = entity.GetArray<TextCharacter>();
-                array.Length = originalText.Length;
                 array.CopyFrom(originalText.As<char, TextCharacter>());
             }
         }
