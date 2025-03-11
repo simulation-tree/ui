@@ -31,7 +31,7 @@ namespace UI.ControlEditors
             Entity target = input.Target;
             if (input.dataType.IsComponent)
             {
-                ComponentType componentType = input.ComponentType;
+                int componentType = input.ComponentType;
                 if (componentType == schema.GetComponentType<ASCIIText256>())
                 {
                     textField.SetText(target.GetComponent<ASCIIText256>());
@@ -46,8 +46,8 @@ namespace UI.ControlEditors
             }
             else
             {
-                ArrayElementType arrayElementType = input.ArrayElementType;
-                if (arrayElementType == schema.GetArrayType<char>())
+                int arrayType = input.ArrayType;
+                if (arrayType == schema.GetArrayType<char>())
                 {
                     textField.SetText(target.GetArray<char>().AsSpan());
                 }

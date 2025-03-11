@@ -52,17 +52,17 @@ namespace UI
         }
 
         public readonly bool IsComponentType => GetComponent<IsControlField>().dataType.IsComponent;
-        public readonly bool IsArrayElementType => GetComponent<IsControlField>().dataType.IsArrayElement;
+        public readonly bool IsArrayType => GetComponent<IsControlField>().dataType.IsArrayElement;
         public readonly ComponentType ComponentType => GetComponent<IsControlField>().dataType.ComponentType;
-        public readonly ArrayElementType ArrayElementType => GetComponent<IsControlField>().dataType.ArrayType;
+        public readonly ArrayType ArrayType => GetComponent<IsControlField>().dataType.ArrayType;
 
         public ControlField(Canvas canvas, ASCIIText256 label, Entity target, ComponentType componentType, ControlEditor editor, uint offset = 0) :
             this(canvas, label, target, new DataType(componentType, 0), editor, offset)
         {
         }
 
-        public ControlField(Canvas canvas, ASCIIText256 label, Entity target, ArrayElementType arrayElementType, ControlEditor editor, uint offset = 0) :
-            this(canvas, label, target, new DataType(arrayElementType, 0), editor, offset)
+        public ControlField(Canvas canvas, ASCIIText256 label, Entity target, ArrayType arrayType, ControlEditor editor, uint offset = 0) :
+            this(canvas, label, target, new DataType(arrayType, 0), editor, offset)
         {
         }
 
@@ -128,10 +128,10 @@ namespace UI
             }
             else if (dataType.IsArrayElement)
             {
-                ArrayElementType arrayElementType = dataType.ArrayType;
-                if (!entity.ContainsArray(arrayElementType))
+                ArrayType arrayType = dataType.ArrayType;
+                if (!entity.ContainsArray(arrayType))
                 {
-                    throw new NullReferenceException($"Entity `{entity}` is missing array `{arrayElementType.ToString(entity.world.Schema)}`");
+                    throw new NullReferenceException($"Entity `{entity}` is missing array `{arrayType.ToString(entity.world.Schema)}`");
                 }
             }
         }

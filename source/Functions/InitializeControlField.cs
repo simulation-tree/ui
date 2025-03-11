@@ -35,23 +35,23 @@ namespace UI.Functions
             public readonly Canvas Canvas => new Entity(world, canvas).As<Canvas>();
             public readonly Entity Target => new(world, target);
 
-            public readonly ComponentType ComponentType
+            public readonly int ComponentType
             {
                 get
                 {
                     ThrowIfNotComponentType();
 
-                    return dataType.ComponentType;
+                    return dataType.index;
                 }
             }
 
-            public readonly ArrayElementType ArrayElementType
+            public readonly int ArrayType
             {
                 get
                 {
-                    ThrowIfNotArrayElementType();
+                    ThrowIfNotArrayType();
 
-                    return dataType.ArrayType;
+                    return dataType.index;
                 }
             }
 
@@ -81,7 +81,7 @@ namespace UI.Functions
             }
 
             [Conditional("DEBUG")]
-            private readonly void ThrowIfNotArrayElementType()
+            private readonly void ThrowIfNotArrayType()
             {
                 if (!dataType.IsArrayElement)
                 {
