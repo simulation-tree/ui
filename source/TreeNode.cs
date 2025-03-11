@@ -133,8 +133,7 @@ namespace UI
             node.IsEnabled = false;
 
             rint childNodeReference = AddReference(node);
-            options.Length++;
-            options[nodeCount] = new(childNodeReference);
+            options.Add(new(childNodeReference));
             return node;
         }
 

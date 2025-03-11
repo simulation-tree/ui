@@ -62,8 +62,7 @@ namespace UI
             node.Position = new(0, -nodeCount * size.Y);
             node.Size = size;
             rint nodeReference = AddReference(node);
-            options.Length++;
-            options[nodeCount] = new(nodeReference);
+            options.Add(new(nodeReference));
             return node;
         }
 
@@ -115,8 +114,7 @@ namespace UI
                 ThrowIfSelected(node);
 
                 rint nodeReference = AddReference(node);
-                selected.Length++;
-                selected[selectedCount] = new(nodeReference);
+                selected.Add(new(nodeReference));
                 node.BackgroundColor = new(0, 0.5f, 1, 1);
                 node.Label.Color = new(1, 1, 1, 1);
             }

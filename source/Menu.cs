@@ -229,10 +229,9 @@ namespace UI
                 optionButtonLabel.Pivot = new(0f, 1f, 0f);
 
                 rint childMenuReference = default;
-                options.Length++;
                 rint buttonReference = AddReference(optionButton);
                 rint buttonLabelReference = AddReference(optionButtonLabel);
-                options[optionCount] = new(label, buttonReference, buttonLabelReference, childMenuReference);
+                options.Add(new(label, buttonReference, buttonLabelReference, childMenuReference));
                 OptionPath path = default;
                 path = path.Append(optionCount);
                 return path;

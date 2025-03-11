@@ -297,8 +297,7 @@ namespace UI
             newSettings.triangleMaterialReference = AddReference(triangleMaterial);
             newSettings.textMaterialReference = AddReference(textMaterial);
             newSettings.dropShadowMaterialReference = AddReference(dropShadowMaterial);
-            settings.Length++;
-            settings[settingsCount] = newSettings;
+            settings.Add(newSettings);
             return newSettings;
         }
 
