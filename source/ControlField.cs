@@ -53,20 +53,10 @@ namespace UI
 
         public readonly bool IsComponentType => GetComponent<IsControlField>().dataType.IsComponent;
         public readonly bool IsArrayType => GetComponent<IsControlField>().dataType.IsArrayElement;
-        public readonly ComponentType ComponentType => GetComponent<IsControlField>().dataType.ComponentType;
-        public readonly ArrayType ArrayType => GetComponent<IsControlField>().dataType.ArrayType;
+        public readonly int ComponentType => GetComponent<IsControlField>().dataType.index;
+        public readonly int ArrayType => GetComponent<IsControlField>().dataType.index;
 
-        public ControlField(Canvas canvas, ASCIIText256 label, Entity target, ComponentType componentType, ControlEditor editor, uint offset = 0) :
-            this(canvas, label, target, new DataType(componentType, 0), editor, offset)
-        {
-        }
-
-        public ControlField(Canvas canvas, ASCIIText256 label, Entity target, ArrayType arrayType, ControlEditor editor, uint offset = 0) :
-            this(canvas, label, target, new DataType(arrayType, 0), editor, offset)
-        {
-        }
-
-        private ControlField(Canvas canvas, ASCIIText256 label, Entity target, DataType dataType, ControlEditor editor, uint offset)
+        public ControlField(Canvas canvas, ASCIIText256 label, Entity target, DataType dataType, ControlEditor editor, uint offset = 0)
         {
             ThrowIfMissingData(target, dataType);
 
@@ -110,9 +100,8 @@ namespace UI
         public static ControlField Create<C, E>(Canvas canvas, ASCIIText256 label, Entity target) where C : unmanaged where E : unmanaged, IControlEditor
         {
             Schema schema = canvas.world.Schema;
-            ComponentType componentType = schema.GetComponentType<C>();
             ControlEditor editor = ControlEditor.Get<E>();
-            return new ControlField(canvas, label, target, componentType, editor);
+            return new ControlField(canvas, label, target, DataType.GetComponent<C>(schema), editor);
         }
 
         [Conditional("DEBUG")]
@@ -120,18 +109,16 @@ namespace UI
         {
             if (dataType.IsComponent)
             {
-                ComponentType componentType = dataType.ComponentType;
-                if (!entity.ContainsComponent(componentType))
+                if (!entity.ContainsComponent(dataType.index))
                 {
-                    throw new NullReferenceException($"Entity `{entity}` is missing component `{componentType.ToString(entity.world.Schema)}`");
+                    throw new NullReferenceException($"Entity `{entity}` is missing component `{dataType.ToString(entity.world.Schema)}`");
                 }
             }
             else if (dataType.IsArrayElement)
             {
-                ArrayType arrayType = dataType.ArrayType;
-                if (!entity.ContainsArray(arrayType))
+                if (!entity.ContainsArray(dataType.index))
                 {
-                    throw new NullReferenceException($"Entity `{entity}` is missing array `{arrayType.ToString(entity.world.Schema)}`");
+                    throw new NullReferenceException($"Entity `{entity}` is missing array `{dataType.ToString(entity.world.Schema)}`");
                 }
             }
         }
