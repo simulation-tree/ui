@@ -84,7 +84,7 @@ namespace UI
                             if (option.childMenuReference != default)
                             {
                                 uint childMenuEntity = menu.GetReference(option.childMenuReference);
-                                options = world.GetArray<IsMenuOption>(childMenuEntity).AsSpan();
+                                options = world.GetArray<IsMenuOption>(childMenuEntity);
                                 path = path.Slice(1);
                                 menu = new Entity(world, childMenuEntity).As<Menu>();
                             }

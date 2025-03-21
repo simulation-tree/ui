@@ -41,7 +41,7 @@ namespace UI.ControlEditors
                 int arrayType = input.ArrayType;
                 if (arrayType == schema.GetArrayType<char>())
                 {
-                    textField.SetText(target.GetArray<char>().AsSpan());
+                    textField.SetText(target.GetArray<char>());
                 }
                 else if (arrayType == schema.GetArrayType<LabelCharacter>())
                 {

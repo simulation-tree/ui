@@ -26,7 +26,7 @@ namespace UI
         /// <summary>
         /// All options of this menu not including descendants.
         /// </summary>
-        public readonly Span<IsMenuOption> Options => GetArray<IsMenuOption>().AsSpan();
+        public readonly Span<IsMenuOption> Options => GetArray<IsMenuOption>();
 
         public readonly ref MenuCallback Callback => ref GetComponent<IsMenu>().callback;
 
