@@ -18,17 +18,17 @@ namespace UI.Tests
     {
         static UITests()
         {
-            TypeRegistry.Load<RenderingTypeBank>();
-            TypeRegistry.Load<MaterialsTypeBank>();
-            TypeRegistry.Load<UITypeBank>();
-            TypeRegistry.Load<AutomationsTypeBank>();
-            TypeRegistry.Load<TransformsTypeBank>();
-            TypeRegistry.Load<MeshesTypeBank>();
-            TypeRegistry.Load<DataTypeBank>();
-            TypeRegistry.Load<FontsTypeBank>();
-            TypeRegistry.Load<TexturesTypeBank>();
-            TypeRegistry.Load<CamerasTypeBank>();
-            TypeRegistry.Load<TextRenderingTypeBank>();
+            MetadataRegistry.Load<RenderingTypeBank>();
+            MetadataRegistry.Load<MaterialsTypeBank>();
+            MetadataRegistry.Load<UITypeBank>();
+            MetadataRegistry.Load<AutomationsTypeBank>();
+            MetadataRegistry.Load<TransformsTypeBank>();
+            MetadataRegistry.Load<MeshesTypeBank>();
+            MetadataRegistry.Load<DataTypeBank>();
+            MetadataRegistry.Load<FontsTypeBank>();
+            MetadataRegistry.Load<TexturesTypeBank>();
+            MetadataRegistry.Load<CamerasTypeBank>();
+            MetadataRegistry.Load<TextRenderingTypeBank>();
         }
 
         protected override Schema CreateSchema()
