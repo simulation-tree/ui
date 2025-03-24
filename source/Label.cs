@@ -158,8 +158,7 @@ namespace UI
         public readonly void SetText(ReadOnlySpan<char> text)
         {
             Values<LabelCharacter> array = GetArray<LabelCharacter>();
-            array.Length = text.Length;
-            text.CopyTo(array.AsSpan<char>());
+            array.CopyFrom(text.As<char, LabelCharacter>());
         }
 
         /// <summary>
