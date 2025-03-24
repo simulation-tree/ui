@@ -229,7 +229,7 @@ namespace UI
                     selectedNode.Label.Color = new(0, 0, 0, 1);
                 }
 
-                currentSelection.Length = 0;
+                currentSelection.Clear();
             }
 
             TreeNode node = nodeEntity.As<TreeNode>();
