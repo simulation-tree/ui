@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace UI
 {
-    public unsafe struct PressedCharacters : IEquatable<PressedCharacters>
+    public struct PressedCharacters : IEquatable<PressedCharacters>
     {
         public const int MaxPressedCharacters = 32;
 
-        private fixed ushort pressedCharacters[MaxPressedCharacters];
+        private PressedCharactersBuffer buffer;
         private byte length;
 
-        public readonly uint Length => length;
+        public readonly int Length => length;
 
         public readonly char this[int index]
         {
@@ -18,7 +19,7 @@ namespace UI
             {
                 ThrowIfOutOfRange(index);
 
-                return (char)pressedCharacters[index];
+                return buffer[index];
             }
         }
 
@@ -31,9 +32,9 @@ namespace UI
         {
             ThrowIfGreaterThanCapacity(characters.Length);
 
-            fixed (ushort* p = pressedCharacters)
+            for (int i = 0; i < characters.Length; i++)
             {
-                characters.CopyTo(new(p, MaxPressedCharacters));
+                buffer[i] = characters[i];
             }
 
             length = (byte)characters.Length;
@@ -41,9 +42,9 @@ namespace UI
 
         public readonly bool Contains(char character)
         {
-            for (uint i = 0; i < length; i++)
+            for (int i = 0; i < length; i++)
             {
-                if (pressedCharacters[i] == character)
+                if (buffer[i] == character)
                 {
                     return true;
                 }
@@ -56,7 +57,7 @@ namespace UI
         {
             ThrowIfGreaterThanCapacity(length + 1);
 
-            pressedCharacters[length] = character;
+            buffer[length] = character;
             length++;
         }
 
@@ -64,9 +65,9 @@ namespace UI
         {
             ThrowIfGreaterThanCapacity(destination.Length);
 
-            fixed (ushort* p = pressedCharacters)
+            for (int i = 0; i < length; i++)
             {
-                new Span<char>(p, length).CopyTo(destination);
+                destination[i] = buffer[i];
             }
         }
 
@@ -91,9 +92,9 @@ namespace UI
                 return false;
             }
 
-            for (uint i = 0; i < length; i++)
+            for (int i = 0; i < length; i++)
             {
-                if (pressedCharacters[i] != other.pressedCharacters[i])
+                if (buffer[i] != other.buffer[i])
                 {
                     return false;
                 }
@@ -107,9 +108,9 @@ namespace UI
             unchecked
             {
                 int hash = 17;
-                for (uint i = 0; i < length; i++)
+                for (int i = 0; i < length; i++)
                 {
-                    hash = hash * 23 + pressedCharacters[i];
+                    hash = hash * 23 + buffer[i];
                 }
 
                 return hash;
@@ -134,5 +135,24 @@ namespace UI
         {
             return !(left == right);
         }
+
+#if NET
+        [InlineArray(MaxPressedCharacters)]
+        private struct PressedCharactersBuffer
+        {
+            private char element0;
+        }
+#else
+        private unsafe struct PressedCharactersBuffer
+        {
+            private fixed char buffer[MaxPressedCharacters];
+
+            public char this[int index]
+            {
+                get => buffer[index];
+                set => buffer[index] = value;
+            }
+        }
+#endif
     }
 }
