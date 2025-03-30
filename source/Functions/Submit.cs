@@ -1,13 +1,14 @@
 ﻿using System;
+using Unmanaged;
 using Worlds;
 
 namespace UI.Functions
 {
     public unsafe readonly struct Submit : IEquatable<Submit>
     {
-        private readonly delegate* unmanaged<Entity, Settings, Boolean> function;
+        private readonly delegate* unmanaged<Entity, Settings, Bool> function;
 
-        public Submit(delegate* unmanaged<Entity, Settings, Boolean> function)
+        public Submit(delegate* unmanaged<Entity, Settings, Bool> function)
         {
             this.function = function;
         }
@@ -27,7 +28,7 @@ namespace UI.Functions
             return ((nint)function).GetHashCode();
         }
 
-        public readonly Boolean Invoke(Entity entity, Settings settings)
+        public readonly Bool Invoke(Entity entity, Settings settings)
         {
             return function(entity, settings);
         }

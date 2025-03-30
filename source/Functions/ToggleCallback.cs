@@ -1,21 +1,22 @@
 ﻿using System;
+using Unmanaged;
 
 namespace UI.Functions
 {
     public unsafe readonly struct ToggleCallback : IEquatable<ToggleCallback>
     {
 #if NET
-        private readonly delegate* unmanaged<Toggle, Boolean, void> function;
+        private readonly delegate* unmanaged<Toggle, Bool, void> function;
 
-        public ToggleCallback(delegate* unmanaged<Toggle, Boolean, void> function)
+        public ToggleCallback(delegate* unmanaged<Toggle, Bool, void> function)
         {
             this.function = function;
         }
 
 #else
-        private readonly delegate*<Toggle, Boolean, void> function;
+        private readonly delegate*<Toggle, Bool, void> function;
 
-        public ToggleCallback(delegate*<Toggle, Boolean, void> function)
+        public ToggleCallback(delegate*<Toggle, Bool, void> function)
         {
             this.function = function;
         }

@@ -56,7 +56,7 @@ namespace UI.ControlEditors
         }
 
         [UnmanagedCallersOnly]
-        private static Boolean Submit(Entity textField, Settings settings)
+        private static Bool Submit(Entity textField, Settings settings)
         {
             if (settings.PressedCharacters.Contains(Settings.ShiftCharacter))
             {

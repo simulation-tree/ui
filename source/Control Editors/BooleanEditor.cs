@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Transforms.Components;
 using UI.Functions;
+using Unmanaged;
 using Worlds;
 
 namespace UI.ControlEditors
@@ -29,7 +30,7 @@ namespace UI.ControlEditors
         }
 
         [UnmanagedCallersOnly]
-        private static void BooleanToggled(Toggle toggle, Boolean newValue)
+        private static void BooleanToggled(Toggle toggle, Bool newValue)
         {
             ControlField controlField = toggle.Parent.As<ControlField>();
             Entity target = controlField.Target;

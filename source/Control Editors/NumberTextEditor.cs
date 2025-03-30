@@ -80,7 +80,7 @@ namespace UI.ControlEditors
         }
 
         [UnmanagedCallersOnly]
-        private static Boolean Submit(Entity entity, Settings settings)
+        private static Bool Submit(Entity entity, Settings settings)
         {
             TextField textField = entity.As<TextField>();
             ReadOnlySpan<char> newText = textField.Value;

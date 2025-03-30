@@ -5,9 +5,9 @@ namespace UI.Functions
 {
     public unsafe readonly struct TryProcessLabel
     {
-        private readonly delegate* unmanaged<Input, Boolean> function;
+        private readonly delegate* unmanaged<Input, Bool> function;
 
-        public TryProcessLabel(delegate* unmanaged<Input, Boolean> function)
+        public TryProcessLabel(delegate* unmanaged<Input, Bool> function)
         {
             this.function = function;
         }
