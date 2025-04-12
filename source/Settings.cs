@@ -134,24 +134,7 @@ namespace UI
             AutomationEntity<Vector4> pressedAutomation = new(world, [0f], keyframes);
 
             //create default quad mesh
-            Mesh quadMesh = new(world);
-            Mesh.Collection<Vector3> positions = quadMesh.CreatePositions(4);
-            positions[0] = new(0, 0, 0);
-            positions[1] = new(1, 0, 0);
-            positions[2] = new(1, 1, 0);
-            positions[3] = new(0, 1, 0);
-            Mesh.Collection<Vector2> uvs = quadMesh.CreateUVs(4);
-            uvs[0] = new(0, 0);
-            uvs[1] = new(1, 0);
-            uvs[2] = new(1, 1);
-            uvs[3] = new(0, 1);
-            Mesh.Collection<Vector3> normals = quadMesh.CreateNormals(4);
-            normals[0] = new(0, 0, 1);
-            normals[1] = new(0, 0, 1);
-            normals[2] = new(0, 0, 1);
-            normals[3] = new(0, 0, 1);
-            quadMesh.AddTriangle(0, 1, 2);
-            quadMesh.AddTriangle(2, 3, 0);
+            Mesh quadMesh = Mesh.CreateBottomLeftQuad(world);
 
             Texture squareTexture = new(world, EmbeddedResource.GetAddress<SquareTexture>());
             Texture triangleTexture = new(world, EmbeddedResource.GetAddress<TriangleTexture>());
@@ -164,7 +147,7 @@ namespace UI
             squareMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             squareMaterial.AddTextureBinding(new(1, 0), squareTexture);
 
-            Material triangleMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedMaterial>());
+            Material triangleMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedTransparentMaterial>());
             triangleMaterial.AddInstanceBinding<Color>();
             triangleMaterial.AddInstanceBinding<LocalToWorld>();
             triangleMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
@@ -175,7 +158,7 @@ namespace UI
             textMaterial.AddInstanceBinding<Color>();
             textMaterial.AddInstanceBinding<LocalToWorld>();
 
-            Material dropShadowMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedMaterial>());
+            Material dropShadowMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedTransparentMaterial>());
             dropShadowMaterial.AddInstanceBinding<Color>();
             dropShadowMaterial.AddInstanceBinding<LocalToWorld>();
             dropShadowMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));

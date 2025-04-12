@@ -108,7 +108,6 @@ namespace UI
 
             MeshRenderer highlightRenderer = highlight;
             highlightRenderer.Mesh = highlightRenderer.Mesh.Clone();
-            highlightRenderer.Mesh.CreateColors(0);
 
             rint textReference = background.AddReference(text);
             rint cursorReference = background.AddReference(cursor);
