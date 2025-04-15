@@ -10,6 +10,7 @@ using Rendering;
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Textures;
 using Transforms.Components;
 using UI.Components;
@@ -102,6 +103,7 @@ namespace UI
 
         public readonly ref TextSelection TextSelection => ref GetComponent<TextEditState>().value;
 
+        [SkipLocalsInit]
         public Settings(World world)
         {
             ThrowIfAlreadyExists(world);
@@ -234,6 +236,23 @@ namespace UI
             rint dropShadowMaterialReference = component.dropShadowMaterialReference;
             uint dropShadowMaterialEntity = GetReference(dropShadowMaterialReference);
             return new Entity(world, dropShadowMaterialEntity).As<Material>();
+        }
+
+        public readonly bool IsDropShadowMaterial(uint materialEntity)
+        {
+            ReadOnlySpan<MaterialSettings> settings = GetArray<MaterialSettings>();
+            for (int i = 0; i < settings.Length; i++)
+            {
+                MaterialSettings materialSettings = settings[i];
+                rint dropShadowMaterialReference = materialSettings.dropShadowMaterialReference;
+                uint dropShadowMaterialEntity = GetReference(dropShadowMaterialReference);
+                if (dropShadowMaterialEntity == materialEntity)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private readonly MaterialSettings GetMaterialSettings(Camera camera)
