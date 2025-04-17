@@ -238,6 +238,44 @@ namespace UI
             return new Entity(world, dropShadowMaterialEntity).As<Material>();
         }
 
+        public readonly bool IsUIMaterial(uint materialEntity)
+        {
+            ReadOnlySpan<MaterialSettings> settings = GetArray<MaterialSettings>();
+            for (int i = 0; i < settings.Length; i++)
+            {
+                MaterialSettings materialSettings = settings[i];
+                rint squareMaterialReference = materialSettings.squareMaterialReference;
+                uint squareMaterialEntity = GetReference(squareMaterialReference);
+                if (squareMaterialEntity == materialEntity)
+                {
+                    return true;
+                }
+
+                rint triangleMaterialReference = materialSettings.triangleMaterialReference;
+                uint triangleMaterialEntity = GetReference(triangleMaterialReference);
+                if (triangleMaterialEntity == materialEntity)
+                {
+                    return true;
+                }
+
+                rint textMaterialReference = materialSettings.textMaterialReference;
+                uint textMaterialEntity = GetReference(textMaterialReference);
+                if (textMaterialEntity == materialEntity)
+                {
+                    return true;
+                }
+
+                rint dropShadowMaterialReference = materialSettings.dropShadowMaterialReference;
+                uint dropShadowMaterialEntity = GetReference(dropShadowMaterialReference);
+                if (dropShadowMaterialEntity == materialEntity)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public readonly bool IsDropShadowMaterial(uint materialEntity)
         {
             ReadOnlySpan<MaterialSettings> settings = GetArray<MaterialSettings>();

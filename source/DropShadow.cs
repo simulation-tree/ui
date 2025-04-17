@@ -26,7 +26,7 @@ namespace UI
             dropShadowRenderer.AddComponent(new Color(0f, 0f, 0f, 0.5f));
 
             Transform transform = dropShadowRenderer.Become<Transform>();
-            transform.LocalPosition = new(0, 0, -0.02f);
+            transform.LocalPosition = new(0, 0, Settings.ZScale);
             transform.AddComponent(Anchor.BottomLeft);
 
             rint dropShadowMeshReference = transform.AddReference(dropShadowMesh);
