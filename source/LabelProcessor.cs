@@ -16,5 +16,10 @@ namespace UI
         {
             archetype.AddComponentType<IsLabelProcessor>();
         }
+
+        public static LabelProcessor Create(World world, TryProcessLabel function)
+        {
+            return new(world, function);
+        }
     }
 }
