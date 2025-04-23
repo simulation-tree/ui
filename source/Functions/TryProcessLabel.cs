@@ -23,7 +23,7 @@ namespace UI.Functions
             private readonly int inputLength;
             private readonly Text result;
 
-            public readonly Span<char> OriginalText => new(input, inputLength);
+            public readonly ReadOnlySpan<char> OriginalText => new(input, inputLength);
 
             public Input(Span<char> originalText, Text result)
             {

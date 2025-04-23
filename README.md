@@ -18,8 +18,8 @@ using (World world = new())
 A canvas and an interaction context are needed to build UI from. They only require a reference to an **orthographic** camera.
 ```cs
 Window window = new(world, "Editor", new(200, 200), new(900, 720), "vulkan");
-Camera camera = new(world, window, CameraSettings.CreateOrthographic(1f));
-Canvas canvas = new(world, settings, camera);
+Camera camera = Camera.CreateOrthographic(world, window, 1f));
+Canvas canvas = new(settings, camera);
 ```
 
 ### Custom `IVirtualWindow` types
@@ -102,6 +102,46 @@ testLabel.Parent = canvas;
 testLabel.Anchor = Anchor.TopLeft;
 testLabel.Color = Color.Black;
 testLabel.Pivot = new(0f, 1f, 0f);
+```
+
+### Preprocessing labels
+
+Assume the following context:
+```cs
+Label testLabel = new(world, context, "This is {{something}} to be replaced");
+```
+
+All label entities contain two arrays to describe their content. One for the original
+text as `TextCharacter`, and another for the processed text as `LabelCharacter`. This
+allows processing of the original text, possible in two ways:
+
+With a label processor entity function, it gives maximum flexibility as it lets the
+programmer replace the entire text with a new one:
+```cs
+LabelProcessor.Create(world, new(&ReplaceText));
+
+[UnmanagedCallersOnly]
+private static Bool ReplaceText(TryProcessLabel.Input input)
+{
+    ReadOnlySpan<char> original = input.OriginalText;
+    if (original.Contains("{{something}}"))
+    {
+        input.SetResult("Actually a different piece of text");
+        return true; //text becomes "Actually a different piece of text"
+    }
+
+    return false;
+}
+```
+
+With a `IsToken` component, the component expects the token without the {{ and }}.
+Along with a `char`/`LabelCharacter`/`TextCharacter` array for the replacement text:
+```cs
+Entity dataEntity = new(world);
+dataEntity.AddComponent(new IsToken("something"));
+dataEntity.CreateArray("green".AsSpan());
+
+//text becomes "This is green to be replaced"
 ```
 
 ### Buttons
