@@ -62,7 +62,7 @@ namespace UI
             background.AddComponent(new IsResizable(IsResizable.EdgeMask.All));
 
             Image header = new(canvas);
-            header.Anchor = new(new(0f, false), new(1f, false), default, new(1f, false), new(1f, false), default);
+            header.Anchor = new(0f, 1f, default, 1f, 1f, default);
             header.Pivot = new(0f, 1f, 0f);
             header.Size = new(1f, 26f);
             header.Color = new(0.2f, 0.2f, 0.2f, 1);
@@ -110,7 +110,7 @@ namespace UI
             ScrollBar scrollBar = new(canvas, Vector2.UnitY, 0.5f);
             scrollBar.SetParent(background);
             scrollBar.Size = new(24f, 1f);
-            scrollBar.Anchor = new(new(1f, false), new(0f, false), default, new(1f, false), new(26f, true), default);
+            scrollBar.Anchor = new(1f, 0f, default, 1f, 26f, default, Anchor.Relativeness.MaxY);
             scrollBar.Pivot = new(1f, 0f, 0f);
             scrollBar.BackgroundColor = new(0.2f, 0.2f, 0.2f, 1);
             scrollBar.ScrollHandleColor = new(1, 1, 1, 1);
@@ -119,7 +119,7 @@ namespace UI
             View view = new(world, canvas);
             view.SetParent(background);
             view.ViewPosition = new(0f, 0f);
-            view.Anchor = new(new(0f, false), new(0, false), default, new(24f, true), new(26f, true), default);
+            view.Anchor = new(0f, 0f, default, 24f, 26f, default, Anchor.Relativeness.MaxX | Anchor.Relativeness.MaxY);
             view.ContentSize = new(100f, 100f);
             view.SetScrollBar(scrollBar);
 

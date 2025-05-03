@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using Transforms;
 using Transforms.Components;
 using Worlds;
@@ -38,22 +39,36 @@ namespace UI
         public readonly ref float Width => ref As<Transform>().LocalScale.X;
         public readonly ref float Height => ref As<Transform>().LocalScale.Y;
 
+        /// <summary>
+        /// Rotation of the UI transform on the Z axis.
+        /// </summary>
         public readonly float Rotation
         {
             get
             {
-                Quaternion rotation = As<Transform>().LocalRotation;
-                return new EulerAngles(rotation).value.Z;
+                Quaternion rot = As<Transform>().LocalRotation;
+                float y = 2f * (rot.W * rot.Z + rot.X * rot.Y);
+                float x = 1f - 2f * (rot.Y * rot.Y + rot.Z * rot.Z);
+                return MathF.Atan2(y, x);
             }
             set
             {
-                ref Quaternion rotation = ref As<Transform>().LocalRotation;
-                rotation = Quaternion.CreateFromYawPitchRoll(0f, 0f, value);
+                ref Quaternion rot = ref As<Transform>().LocalRotation;
+                rot = Quaternion.CreateFromYawPitchRoll(0f, 0f, value);
             }
         }
 
         public readonly ref Anchor Anchor => ref GetComponent<Anchor>();
         public readonly ref Vector3 Pivot => ref GetComponent<Pivot>().value;
+
+        public UITransform(World world, Vector2 position, Vector2 size, float rotation = default)
+        {
+            this.world = world;
+            Vector3 worldPosition = new(position, 0);
+            Quaternion worldRotation = Quaternion.CreateFromYawPitchRoll(0f, 0f, rotation);
+            Vector3 worldScale = new(size, 1);
+            value = new Transform(world, worldPosition, worldRotation, worldScale).value;
+        }
 
         readonly void IEntity.Describe(ref Archetype archetype)
         {

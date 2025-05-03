@@ -92,7 +92,7 @@ namespace UI
 
             Transform scrollRegion = new(world);
             scrollRegion.SetParent(background);
-            scrollRegion.AddComponent(new Anchor(new(4, true), new(4, true), default, new(4, true), new(4, true), default));
+            scrollRegion.AddComponent(new Anchor(4, 4, default, 4, 4, default, Anchor.Relativeness.X | Anchor.Relativeness.Y));
             scrollRegion.AddComponent(new IsSelectable(canvas.SelectionMask));
 
             Image scrollHandle = new(canvas);
@@ -100,12 +100,12 @@ namespace UI
             scrollHandle.Color = new(0, 0, 0, 1);
             if (axis.Y > axis.X)
             {
-                scrollHandle.Anchor = new(new(0f, false), default, default, new(1f, false), default, default);
+                scrollHandle.Anchor = new(0f, default, default, 1f, default, default);
                 scrollHandle.Size = new(1, handlePercentageSize);
             }
             else if (axis.X > axis.Y)
             {
-                scrollHandle.Anchor = new(default, new(0f, false), default, default, new(1f, false), default);
+                scrollHandle.Anchor = new(default, 0f, default, default, 1f, default);
                 scrollHandle.Size = new(handlePercentageSize, 1f);
             }
             else
