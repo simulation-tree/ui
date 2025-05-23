@@ -6,8 +6,8 @@ namespace UI.Components
     public struct IsUIObjectRequest
     {
         public ASCIIText256 address;
-        public TimeSpan timeout;
-        public TimeSpan duration;
+        public double timeout;
+        public double duration;
         public Status status;
 
         [Obsolete("Default constructor not supported", true)]
@@ -16,11 +16,11 @@ namespace UI.Components
             throw new NotSupportedException();
         }
 
-        public IsUIObjectRequest(ASCIIText256 address, TimeSpan timeout)
+        public IsUIObjectRequest(ASCIIText256 address, double timeout)
         {
             this.address = address;
             this.timeout = timeout;
-            duration = TimeSpan.Zero;
+            duration = 0;
             status = Status.Submitted;
         }
 
