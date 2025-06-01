@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using Data;
+using System.Numerics;
 using Transforms;
 using Transforms.Components;
 using UI.Components;
@@ -25,9 +26,9 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly ref Vector4 BackgroundColor => ref GetComponent<BaseColor>().value;
+        public readonly ref Color BackgroundColor => ref GetComponent<BaseColor>().value;
 
-        public readonly ref Vector4 CheckmarkColor
+        public readonly ref Color CheckmarkColor
         {
             get
             {

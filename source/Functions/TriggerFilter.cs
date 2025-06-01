@@ -21,10 +21,9 @@ namespace UI.Functions
         }
 #endif
 
-        public readonly void Invoke(Span<Entity> entities, ulong userData)
+        public readonly void Invoke(World world, Span<uint> entities, ulong userData)
         {
-            Input input = new(entities, userData);
-            function(input);
+            function(new(world, entities, userData));
         }
 
         public readonly override int GetHashCode()
@@ -34,20 +33,22 @@ namespace UI.Functions
 
         public readonly struct Input
         {
+            public readonly World world;
             public readonly ulong userData;
 
-            private readonly Entity* pointer;
+            private readonly uint* entities;
             private readonly int length;
 
             /// <summary>
             /// All entities containing the same filter, callback and identifier combinations.
             /// </summary>
-            public readonly Span<Entity> Entities => new(pointer, length);
+            public readonly Span<uint> Entities => new(entities, length);
 
-            public Input(Span<Entity> entities, ulong userData)
+            public Input(World world, Span<uint> entities, ulong userData)
             {
+                this.world = world;
                 this.userData = userData;
-                this.pointer = entities.GetPointer();
+                this.entities = entities.GetPointer();
                 length = entities.Length;
             }
         }

@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using Data;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
 using Transforms.Components;
@@ -26,7 +27,7 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly ref Vector4 Color => ref As<Image>().Color;
+        public readonly ref Color Color => ref As<Image>().Color;
 
         public unsafe Button(TriggerCallback callback, Canvas canvas)
         {
@@ -47,10 +48,10 @@ namespace UI
         [UnmanagedCallersOnly]
         private static void Filter(TriggerFilter.Input input)
         {
-            foreach (ref Entity entity in input.Entities)
+            int selectableType = input.world.Schema.GetComponentType<IsSelectable>();
+            foreach (ref uint entity in input.Entities)
             {
-                //todo: efficiency: doing individual calls within a filter function
-                IsSelectable component = entity.GetComponent<IsSelectable>();
+                IsSelectable component = input.world.GetComponent<IsSelectable>(entity, selectableType);
                 if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;

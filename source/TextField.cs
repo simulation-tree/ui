@@ -1,4 +1,5 @@
-﻿using Rendering;
+﻿using Data;
+using Rendering;
 using Rendering.Components;
 using System;
 using System.Numerics;
@@ -30,7 +31,7 @@ namespace UI
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
         public readonly ref bool Editing => ref GetComponent<IsTextField>().editing;
-        public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
+        public readonly ref Color BackgroundColor => ref As<Image>().Color;
 
         public readonly Label TextLabel
         {
@@ -52,7 +53,7 @@ namespace UI
             }
         }
 
-        public readonly Vector4 TextColor
+        public readonly Color TextColor
         {
             get => TextLabel.Color;
             set

@@ -21,9 +21,9 @@ namespace UI.Functions
         }   
 #endif
 
-        public readonly void Invoke(Entity entity)
+        public readonly void Invoke(World world, uint entity)
         {
-            function(entity);
+            function(new(world, entity));
         }
 
         public readonly override int GetHashCode()

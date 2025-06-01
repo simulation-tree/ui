@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Data;
+using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
@@ -39,7 +40,7 @@ namespace UI
             }
         }
 
-        public readonly ref Vector4 BackgroundColor
+        public readonly ref Color BackgroundColor
         {
             get
             {
@@ -181,9 +182,10 @@ namespace UI
         [UnmanagedCallersOnly]
         private static void Filter(TriggerFilter.Input input)
         {
-            foreach (ref Entity entity in input.Entities)
+            int selectableType = input.world.Schema.GetComponentType<IsSelectable>();
+            foreach (ref uint entity in input.Entities)
             {
-                IsSelectable component = entity.GetComponent<IsSelectable>();
+                IsSelectable component = input.world.GetComponent<IsSelectable>(entity, selectableType);
                 if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;

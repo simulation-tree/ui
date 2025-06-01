@@ -1,4 +1,5 @@
 ﻿using Collections.Generic;
+using Data;
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -22,7 +23,7 @@ namespace UI
             }
         }
 
-        public readonly ref Vector4 LabelColor => ref Label.Color;
+        public readonly ref Color LabelColor => ref Label.Color;
         public readonly ref Vector2 Position => ref As<UITransform>().Position;
         public readonly ref float X => ref As<UITransform>().X;
         public readonly ref float Y => ref As<UITransform>().Y;

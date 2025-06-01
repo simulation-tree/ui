@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Data;
+using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Transforms;
@@ -28,7 +29,7 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
+        public readonly ref Color BackgroundColor => ref As<Image>().Color;
 
         public readonly UITransform Container
         {
@@ -90,7 +91,7 @@ namespace UI
 
             //close button x shape
             {
-                Vector4 lineColor = Vector4.Lerp(new(0, 0, 0, 1), new(1, 0, 0, 1), 0.3f);
+                Color lineColor = new(Vector4.Lerp(new(0, 0, 0, 1), new(1, 0, 0, 1), 0.3f));
 
                 Image line1 = new(canvas);
                 line1.SetParent(closeButton);

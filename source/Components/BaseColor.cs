@@ -1,12 +1,12 @@
-﻿using System.Numerics;
+﻿using Data;
 
 namespace UI.Components
 {
     public struct BaseColor
     {
-        public Vector4 value;
+        public Color value;
 
-        public BaseColor(Vector4 value)
+        public BaseColor(Color value)
         {
             this.value = value;
         }

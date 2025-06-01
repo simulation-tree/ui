@@ -1,4 +1,5 @@
 ﻿using Automations;
+using Data;
 using Materials;
 using Materials.Components;
 using Rendering;
@@ -30,7 +31,7 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly ref Vector4 Color => ref GetComponent<BaseColor>().value;
+        public readonly ref Color Color => ref GetComponent<BaseColor>().value;
 
         public readonly Material Material
         {
@@ -65,9 +66,9 @@ namespace UI
             transform.LocalPosition = new(0f, 0f, Settings.ZScale);
             transform.AddComponent(new Anchor());
             transform.AddComponent(new Pivot());
-            transform.AddComponent(new ColorTint(new Vector4(1f)));
-            transform.AddComponent(new BaseColor(new Vector4(1f)));
-            transform.AddComponent(new Color(new Vector4(1f)));
+            transform.AddComponent(new ColorTint(new Color(1f)));
+            transform.AddComponent(new BaseColor(new Color(1f)));
+            transform.AddComponent(new Color(1f));
             transform.AddComponent(ComponentMix.Create<ColorTint, BaseColor, Color>(ComponentMix.Operation.FloatingMultiply, 4, schema));
             transform.SetParent(canvas);
             value = transform.value;

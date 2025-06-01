@@ -1,12 +1,12 @@
-﻿using System.Numerics;
+﻿using Data;
 
 namespace UI.Components
 {
     public struct ColorTint
     {
-        public Vector4 value;
+        public Color value;
 
-        public ColorTint(Vector4 value)
+        public ColorTint(Color value)
         {
             this.value = value;
         }

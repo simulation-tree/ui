@@ -1,4 +1,5 @@
 using Cameras;
+using Data;
 using Materials;
 using System;
 using System.Numerics;
@@ -25,7 +26,7 @@ namespace UI
 
         public readonly ref Anchor Anchor => ref As<UITransform>().Anchor;
         public readonly ref Vector3 Pivot => ref As<UITransform>().Pivot;
-        public readonly ref Vector4 BackgroundColor => ref As<Image>().Color;
+        public readonly ref Color BackgroundColor => ref As<Image>().Color;
 
         public readonly Label Label
         {
@@ -37,7 +38,7 @@ namespace UI
             }
         }
 
-        public readonly ref Vector4 LabelColor => ref Label.Color;
+        public readonly ref Color LabelColor => ref Label.Color;
 
         public readonly Image Triangle
         {
@@ -49,7 +50,7 @@ namespace UI
             }
         }
 
-        public readonly ref Vector4 TriangleColor => ref Triangle.Color;
+        public readonly ref Color TriangleColor => ref Triangle.Color;
 
         public readonly Menu Menu
         {
@@ -197,9 +198,10 @@ namespace UI
         [UnmanagedCallersOnly]
         public static void Filter(TriggerFilter.Input input)
         {
-            foreach (ref Entity entity in input.Entities)
+            int selectableType = input.world.Schema.GetComponentType<IsSelectable>();
+            foreach (ref uint entity in input.Entities)
             {
-                IsSelectable component = entity.GetComponent<IsSelectable>();
+                IsSelectable component = input.world.GetComponent<IsSelectable>(entity, selectableType);
                 if (!component.WasPrimaryInteractedWith || !component.IsSelected)
                 {
                     entity = default;
