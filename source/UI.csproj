@@ -38,9 +38,9 @@
 
   <ItemGroup>
     <Content Include="bin/Debug/net9.0/UI.dll" Pack="true" PackagePath="tools/debug/UI.dll" Visible="false"/>
-    <Content Include="bin/Debug/net9.0/UI.xml" Pack="true" PackagePath="tools/debug/UI.xml" Visible="false"/>
+    <Content Include="bin/Debug/net9.0/UI.xml" Pack="true" PackagePath="tools/debug/UI.xml" Visible="false" Condition="Exists('bin/Debug/net9.0/UI.xml')"/>
     <Content Include="bin/Release/net9.0/UI.dll" Pack="true" PackagePath="tools/release/UI.dll" Visible="false"/>
-    <Content Include="bin/Release/net9.0/UI.xml" Pack="true" PackagePath="tools/release/UI.xml" Visible="false"/>
+    <Content Include="bin/Release/net9.0/UI.xml" Pack="true" PackagePath="tools/release/UI.xml" Visible="false" Condition="Exists('bin/Release/net9.0/UI.xml')"/>
     <Content Include="build/UI.targets" Pack="true" PackagePath="build/UI.targets" Visible="false"/>
   </ItemGroup>
 
