@@ -144,25 +144,25 @@ namespace UI
 
             //create default coloured unlit material
             Material squareMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedMaterial>());
-            squareMaterial.AddInstanceBinding<Color>();
-            squareMaterial.AddInstanceBinding<LocalToWorld>();
+            squareMaterial.AddPushConstant<Color>();
+            squareMaterial.AddPushConstant<LocalToWorld>();
             squareMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             squareMaterial.AddTextureBinding(new(1, 0), squareTexture);
 
             Material triangleMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedTransparentMaterial>());
-            triangleMaterial.AddInstanceBinding<Color>();
-            triangleMaterial.AddInstanceBinding<LocalToWorld>();
+            triangleMaterial.AddPushConstant<Color>();
+            triangleMaterial.AddPushConstant<LocalToWorld>();
             triangleMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             triangleMaterial.AddTextureBinding(new(1, 0), triangleTexture);
 
             Material textMaterial = new(world, EmbeddedResource.GetAddress<TextMaterial>());
             textMaterial.AddComponentBinding<CameraMatrices>(new(1, 0), default(Entity));
-            textMaterial.AddInstanceBinding<Color>();
-            textMaterial.AddInstanceBinding<LocalToWorld>();
+            textMaterial.AddPushConstant<Color>();
+            textMaterial.AddPushConstant<LocalToWorld>();
 
             Material dropShadowMaterial = new(world, EmbeddedResource.GetAddress<UnlitTexturedTransparentMaterial>());
-            dropShadowMaterial.AddInstanceBinding<Color>();
-            dropShadowMaterial.AddInstanceBinding<LocalToWorld>();
+            dropShadowMaterial.AddPushConstant<Color>();
+            dropShadowMaterial.AddPushConstant<LocalToWorld>();
             dropShadowMaterial.AddComponentBinding<CameraMatrices>(new(0, 0), default(Entity));
             dropShadowMaterial.AddTextureBinding(new(1, 0), radialGradientTexture);
 
