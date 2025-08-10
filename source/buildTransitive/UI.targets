@@ -3,7 +3,7 @@
 
     <ItemGroup>
         <Reference Include="UI">
-            <HintPath>$(MSBuildThisFileDirectory)..\lib\net9.0\$(Configuration)\UI.dll</HintPath>
+            <HintPath>$(MSBuildThisFileDirectory)..\lib\$(TargetFramework)\$(Configuration)\UI.dll</HintPath>
         </Reference>
     </ItemGroup>
 

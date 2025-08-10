@@ -15,20 +15,6 @@ jobs:
         with:
           path: ${{ github.event.repository.name }}
             
-      - name: Checkout `worlds`
-        uses: actions/checkout@v4.1.2
-        with:
-          repository: simulation-tree/worlds
-          token: ${{ secrets.PAT }}
-          path: worlds
-      
-      - name: Checkout `types`
-        uses: actions/checkout@v4.1.2
-        with:
-          repository: simulation-tree/types
-          token: ${{ secrets.PAT }}
-          path: types
-      
       - name: Checkout `transforms`
         uses: actions/checkout@v4.1.2
         with:
@@ -85,6 +71,13 @@ jobs:
           token: ${{ secrets.PAT }}
           path: automations
       
+      - name: Checkout `worlds`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: simulation-tree/worlds
+          token: ${{ secrets.PAT }}
+          path: worlds
+      
       - name: Checkout `unmanaged`
         uses: actions/checkout@v4.1.2
         with:
@@ -92,12 +85,12 @@ jobs:
           token: ${{ secrets.PAT }}
           path: unmanaged
       
-      - name: Checkout `simulation`
+      - name: Checkout `types`
         uses: actions/checkout@v4.1.2
         with:
-          repository: simulation-tree/simulation
+          repository: simulation-tree/types
           token: ${{ secrets.PAT }}
-          path: simulation
+          path: types
       
       - name: Checkout `collections`
         uses: actions/checkout@v4.1.2
@@ -105,6 +98,13 @@ jobs:
           repository: simulation-tree/collections
           token: ${{ secrets.PAT }}
           path: collections
+      
+      - name: Checkout `simulation`
+        uses: actions/checkout@v4.1.2
+        with:
+          repository: simulation-tree/simulation
+          token: ${{ secrets.PAT }}
+          path: simulation
       
       - name: Checkout `transform-systems`
         uses: actions/checkout@v4.1.2
@@ -158,7 +158,9 @@ jobs:
       - name: Setup
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version:  |
+            9.0.x
+            10.0.x
 
       - name: Set VERSION variable from tag
         run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
@@ -176,7 +178,7 @@ jobs:
         run: dotnet build "${{ github.event.repository.name }}/tests" -c Release /p:Version=${VERSION}
             
       - name: Test
-        run: dotnet test "${{ github.event.repository.name }}/tests" -c Release --logger "trx"
+        run: dotnet test "${{ github.event.repository.name }}/tests" -c Release --logger "trx" --framework net10.0
             
       - name: Pack `UI`
         run: dotnet pack "${{ github.event.repository.name }}/source" /p:Version=${VERSION} --no-build --output .
