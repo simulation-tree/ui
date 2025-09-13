@@ -11,10 +11,7 @@ namespace UI.Components
 
 #if NET
         [Obsolete("Default constructor not available", true)]
-        public IsTrigger()
-        {
-
-        }
+        public IsTrigger() { }
 #endif
 
         public IsTrigger(TriggerFilter filter, TriggerCallback callback, ulong userData = default)
@@ -26,13 +23,10 @@ namespace UI.Components
 
         public readonly override int GetHashCode()
         {
-            unchecked
-            {
-                int hash = 17;
-                hash = hash * 23 + filter.GetHashCode();
-                hash = hash * 23 + callback.GetHashCode();
-                return hash;
-            }
+            int hash = 17;
+            hash = hash * 23 + filter.GetHashCode();
+            hash = hash * 23 + callback.GetHashCode();
+            return hash;
         }
     }
 }
