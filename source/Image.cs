@@ -1,7 +1,7 @@
 ﻿using Automations;
 using Data;
 using Materials;
-using Materials.Components;
+using Materials.Arrays;
 using Rendering;
 using Rendering.Components;
 using System.Numerics;
